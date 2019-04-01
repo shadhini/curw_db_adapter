@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKeyConstraint, ForeignKey
+from sqlalchemy import Column, ForeignKey
 from sqlalchemy.dialects.mysql import DOUBLE, DATETIME, JSON, INTEGER, \
     VARCHAR, ENUM, DECIMAL
 from sqlalchemy.orm import relationship
@@ -11,12 +11,13 @@ class Source(Base):
     __tablename__ = 'source'
 
     id = Column(INTEGER(11), nullable=False, primary_key=True, autoincrement=True)
-    name = Column(VARCHAR(45), nullable=False)
+    model = Column(VARCHAR(25), nullable=False)
+    version = Column(VARCHAR(25), nullable=False)
     parameters = Column(JSON)
 
     def __repr__(self):
-        return "<Source(name='%s', parameters='%s')>" \
-               % (self.name, self.parameters)
+        return "<Source(id='%s', model='%s', version='%s', parameters='%s')>" \
+               % (self.id, self.model, self.version, self.parameters)
 
 
 class Station(Base):
@@ -26,14 +27,13 @@ class Station(Base):
     name = Column(VARCHAR(45), nullable=False)
     latitude = Column(DOUBLE, nullable=False)
     longitude = Column(DOUBLE, nullable=False)
-    resolution = Column(VARCHAR(50), nullable=False)
+
     description = Column(VARCHAR(255))
 
     def __repr__(self):
-        return "<Station(name='%s', latitude='%r', longitude='%r', " \
-               "resolution='%s',description='%s')>" \
-               % (self.name, self.latitude, self.longitude, self.resolution,
-                  self.description)
+        return "<Station(id='%s', name='%s', latitude='%r', longitude='%r', " \
+               "description='%s')>" \
+               % (self.id, self.name, self.latitude, self.longitude, self.description)
 
 
 class Unit(Base):
@@ -44,7 +44,8 @@ class Unit(Base):
     type = Column(ENUM('Accumulative', 'Instantaneous', 'Mean'), nullable=False)
 
     def __repr__(self):
-        return "<Unit(unit='%s', type='%s')>" % (self.unit, self.type)
+        return "<Unit(id='%s', unit='%s', type='%s')>" \
+               % (self.id, self.unit, self.type)
 
 
 class Variable(Base):
@@ -54,7 +55,7 @@ class Variable(Base):
     variable = Column(VARCHAR(100), nullable=False)
 
     def __repr__(self):
-        return "<Variable(variable='%s')>" % self.variable
+        return "<Variable(id='%s', variable='%s')>" % (self.id, self.variable)
 
 
 class Run(Base):
@@ -77,10 +78,10 @@ class Run(Base):
     unit_relationship = relationship('Unit', foreign_keys='Run.unit')
 
     def __repr__(self):
-        return "<Run(sim_tag='%s', station='%d', source='%d', variable='%d'," \
-               " unit='%d', fgt='%r', scheduled_date='%r')>" \
-               % (self.sim_tag, self.station, self.source, self.variable,
-                  self.unit, self.fgt, self.scheduled_date)
+        return "<Run(id='%s', sim_tag='%s', station='%d', source='%d', " \
+               "variable='%d', unit='%d', fgt='%r', scheduled_date='%r')>" \
+               % (self.id, self.sim_tag, self.station, self.source,
+                  self.variable, self.unit, self.fgt, self.scheduled_date)
 
 
 class Data(Base):
@@ -89,12 +90,12 @@ class Data(Base):
     id = Column(VARCHAR(64), ForeignKey(Run.id), nullable=False, primary_key=True)
     time = Column(DATETIME, nullable=False, primary_key=True)
     value = Column(DECIMAL(8, 3), nullable=False)
-    fgt = Column(DATETIME, nullable=False)  # to be removed
+    # fgt = Column(DATETIME, nullable=False)  # to be removed
 
     id_relationship = relationship('Run', foreign_keys='Data.id')
 
     def __repr__(self):
-        return "<Date(time='%s', value='%r', fgt='%r')>" \
-               % (self.time, self.value, self.fgt)
+        return "<Date(id='%s', time='%s', value='%r')>" \
+               % (self.id, self.time, self.value)
 
 
