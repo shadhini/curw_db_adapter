@@ -133,7 +133,7 @@ class Timeseries:
 		:param timeseries_id: string timeseries id
 		:param start_date: datetime object
 		:param end_date: datetime object
-		:return: array of [id, time, value]
+		:return: array of [id, time, value]: pandas DataFrame
 		"""
 
 		if not isinstance(start_date, datetime) or \
@@ -156,10 +156,17 @@ class Timeseries:
 		finally:
 			session.close()
 
-	def update_timeseries(self, timeseries_id, timeseries, should_overwrite): # not checcked
+	def update_timeseries(self, timeseries_id, timeseries, should_overwrite):
 
-		# timeseries should be a pandas Dataframe, with 'time' as index,
-		# and 'value' as the column.
+		"""
+		Add timeseries to the Data table / Update timeseries in the Data table
+		:param timeseries_id:
+		:param timeseries: pandas DataFrame, with 'time' as index
+		and 'value' s the column
+		:param should_overwrite:
+		:return:
+		"""
+
 		if not isinstance(timeseries, pd.DataFrame):
 			raise ValueError(
 					'The "timeseries" shoud be a pandas Dataframe '
@@ -177,6 +184,11 @@ class Timeseries:
 				return True
 
 			else:
+				# The bulk save feature allows for a lower-latency INSERT/UPDATE
+				# of rows at the expense of most other unit-of-work features.
+				# Features such as object management, relationship handling,
+				# and SQL clause support are silently omitted in favor of raw
+				# INSERT/UPDATES of records.
 				# raise IntegrityError on duplicate key.
 				data_obj_list = []
 				for index, row in timeseries.iterrows():

@@ -2,7 +2,7 @@ DIALECT = "mysql"
 DRIVER = "pymysql"
 
 USERNAME = "root"
-PASSWORD = "password"
-HOST = "127.0.0.1"
+PASSWORD = "cfcwm07"
+HOST = "35.230.102.148"
 PORT = 3306
 DATABASE = "test-schema"
