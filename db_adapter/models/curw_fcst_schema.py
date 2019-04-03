@@ -15,6 +15,8 @@ class Source(Base):
     version = Column(VARCHAR(25), nullable=False)
     parameters = Column(JSON)
 
+    run_relationship = relationship("Run", back_populates="source_relationship", cascade="all, delete, delete-orphan")
+
     def __repr__(self):
         return "<Source(id='%s', model='%s', version='%s', parameters='%s')>" \
                % (self.id, self.model, self.version, self.parameters)
@@ -23,12 +25,14 @@ class Source(Base):
 class Station(Base):
     __tablename__ = 'station'
 
-    id = Column(INTEGER(11), nullable=False, primary_key=True, autoincrement=True)
+    id = Column(INTEGER(11), nullable=False, primary_key=True, autoincrement=False)
     name = Column(VARCHAR(45), nullable=False)
     latitude = Column(DOUBLE, nullable=False)
     longitude = Column(DOUBLE, nullable=False)
 
     description = Column(VARCHAR(255))
+
+    run_relationship = relationship("Run", back_populates="station_relationship", cascade="all, delete, delete-orphan")
 
     def __repr__(self):
         return "<Station(id='%s', name='%s', latitude='%r', longitude='%r', " \
@@ -43,6 +47,8 @@ class Unit(Base):
     unit = Column(VARCHAR(10), nullable=False)
     type = Column(ENUM('Accumulative', 'Instantaneous', 'Mean'), nullable=False)
 
+    run_relationship = relationship("Run", back_populates="unit_relationship", cascade="all, delete, delete-orphan")
+
     def __repr__(self):
         return "<Unit(id='%s', unit='%s', type='%s')>" \
                % (self.id, self.unit, self.type)
@@ -53,6 +59,8 @@ class Variable(Base):
 
     id = Column(INTEGER(11), nullable=False, primary_key=True, autoincrement=True)
     variable = Column(VARCHAR(100), nullable=False)
+
+    run_relationship = relationship("Run", back_populates="variable_relationship", cascade="all, delete, delete-orphan")
 
     def __repr__(self):
         return "<Variable(id='%s', variable='%s')>" % (self.id, self.variable)
@@ -72,10 +80,12 @@ class Run(Base):
     fgt = Column(DATETIME, nullable=False)
     scheduled_date = Column(DATETIME, nullable=False)
 
-    station_relationship = relationship('Station', foreign_keys='Run.station')
-    source_relationship = relationship('Source', foreign_keys='Run.source')
-    variable_relationship = relationship('Variable', foreign_keys='Run.variable')
-    unit_relationship = relationship('Unit', foreign_keys='Run.unit')
+    station_relationship = relationship('Station', foreign_keys='Run.station', back_populates="run_relationship")
+    source_relationship = relationship('Source', foreign_keys='Run.source', back_populates="run_relationship")
+    variable_relationship = relationship('Variable', foreign_keys='Run.variable', back_populates="run_relationship")
+    unit_relationship = relationship('Unit', foreign_keys='Run.unit', back_populates="run_relationship")
+
+    data_relationship = relationship("Data", back_populates="id_relationship", cascade="all, delete, delete-orphan")
 
     def __repr__(self):
         return "<Run(id='%s', sim_tag='%s', station='%d', source='%d', " \
@@ -92,7 +102,7 @@ class Data(Base):
     value = Column(DECIMAL(8, 3), nullable=False)
     # fgt = Column(DATETIME, nullable=False)  # to be removed
 
-    id_relationship = relationship('Run', foreign_keys='Data.id')
+    id_relationship = relationship('Run', foreign_keys='Data.id', back_populates="data_relationship")
 
     def __repr__(self):
         return "<Date(id='%s', time='%s', value='%r')>" \

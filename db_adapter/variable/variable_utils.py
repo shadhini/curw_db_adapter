@@ -16,3 +16,25 @@ class Variable:
 			return None if variable_row is None else variable_row.id
 		finally:
 			session.close()
+
+	def add_variable(self, variable):
+		"""
+		Insert variable into the database
+		:param variable: string
+		:return: True if the unit has been added to the database
+		"""
+
+		session = self.Session()
+
+		try:
+			source = Variable(
+					variable=variable
+					)
+
+			session.add(source)
+			session.commit()
+
+			return True
+
+		finally:
+			session.close()
