@@ -35,7 +35,7 @@ def get_unit_id(session, unit, unit_type) -> str:
     :param session: session made by sessionmaker for the database engine
     :param unit:
     :param unit_type: UnitType enum value. This value can be any of {Accumulative, Instantaneous, Mean} set
-    :return: str: source id
+    :return: str: unit id
     """
 
     try:
@@ -74,7 +74,7 @@ def add_unit(session, unit, unit_type):
 
 def add_units(units, session):
     """
-    Add units into Source table
+    Add units into Unit table
     :param units: list of json objects that define unit attributes
     e.g.:
     {
