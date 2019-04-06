@@ -6,8 +6,7 @@ from db_adapter.constants import (
     )
 from db_adapter.constants import DIALECT_MYSQL, DRIVER_PYMYSQL
 
-from db_adapter.station import StationEnum, get_station_by_id, get_station_id, delete_station_by_id, delete_station
-from db_adapter.scripts import add_stations
+from db_adapter.station import StationEnum, get_station_by_id, get_station_id, delete_station_by_id, delete_station, add_stations
 
 stations = [
         {
@@ -54,17 +53,20 @@ stations = [
                 }
         ]
 
-print("########### Add Stations ########################")
-# print(add_stations(stations))
-
 engine = get_engine(DIALECT_MYSQL, DRIVER_PYMYSQL, CURW_FCST_HOST, CURW_FCST_PORT, CURW_FCST_DATABASE,
             CURW_FCST_USERNAME, CURW_FCST_PASSWORD)
 
 Session = get_sessionmaker(engine=engine)  # Session is a class
 session = Session()
 
+
+print("########### Add Stations ########################")
+print(add_stations(stations=stations, session=session))
+
+
 print("########### Get Stations by id ##################")
 print("Id 300001:", get_station_by_id(session=session, id_="300001"))
+
 
 print("########## Retrieve station id ##################")
 print("latitude=6.872778, longitude=80.564444, station_type=StationEnum.Government:", get_station_id(session=session,

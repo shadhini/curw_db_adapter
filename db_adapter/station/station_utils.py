@@ -1,10 +1,17 @@
 from db_adapter.models import Station
 from db_adapter.station.station_enum import StationEnum
 
-
-# print("getRange: " + str(StationEnum.getRange("CUrW")))
-# print("getRange/getType: " + str(StationEnum.getRange(StationEnum.getType("CUrW"))))
-# print("getType: " + str(StationEnum.getType("CUrW")))
+"""
+Station JSON Object would looks like this 
+e.g.:
+    {
+        'name'        : 'wrf0_79.875435_6.535172',
+        'latitude'    : '6.535172',
+        'longitude'   : '79.875435',
+        'description' : '',
+        'station_type': StationEnum.WRF
+    }
+"""
 
 
 def get_station_by_id(session, id_):
@@ -51,7 +58,7 @@ def get_station_id(session, latitude, longitude, station_type) -> str:
 
 def add_station(session, name, latitude, longitude, description, station_type):
     """
-    Insert stations into the database
+    Insert sources into the database
 
     Station ids ranged as below;
     - 1 xx xxx - CUrW (stationId: curw_<SOMETHING>)
@@ -102,6 +109,29 @@ def add_station(session, name, latitude, longitude, description, station_type):
         session.close()
 
 
+def add_stations(stations, session):
+    """
+    Add stations into Station table
+    :param stations: list of json objects that define station attributes
+    e.g.:
+    {
+        'name'        : 'wrf0_79.875435_6.535172',
+        'latitude'    : '6.535172',
+        'longitude'   : '79.875435',
+        'description' : '',
+        'station_type': StationEnum.WRF
+    }
+    :return:
+    """
+
+    for station in stations:
+
+        print(add_station(session=session, name=station.get('name'), latitude=station.get('latitude'),
+                longitude=station.get('longitude'), station_type=station.get('station_type'),
+                description=station.get('description')))
+        print(station.get('name'))
+
+
 def delete_station(session, latitude, longitude, station_type):
     """
     Delete station from Station table
@@ -121,6 +151,7 @@ def delete_station(session, latitude, longitude, station_type):
             session.commit()
             return True
         else:
+            print("There's no record in the database with the source id ", id_)
             return False
     finally:
         session.close()
@@ -136,10 +167,13 @@ def delete_station_by_id(session, id_):
 
     try:
         station = session.query(Station).get(id_)
-        session.delete(station)
-        session.commit()
-        status = session.query(Station).filter_by(id=id_).count()
-        print("Count: ", status)
-        return True if status==0 else False
+        if station is not None:
+            session.delete(station)
+            session.commit()
+            status = session.query(Station).filter_by(id=id_).count()
+            return True if status==0 else False
+        else:
+            print("There's no record in the database with the source id ", id_)
+            return False
     finally:
         session.close()

@@ -1,4 +1,4 @@
-from db_adapter.scripts import create_curw_fcst_db
+from db_adapter.models import create_curw_fcst_db
 
 print("Create test schema")
 
