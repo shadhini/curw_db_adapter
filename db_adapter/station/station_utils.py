@@ -151,7 +151,7 @@ def delete_station(session, latitude, longitude, station_type):
             session.commit()
             return True
         else:
-            print("There's no record in the database with the source id ", id_)
+            print("There's no record in the database with the station id ", id_)
             return False
     finally:
         session.close()
@@ -173,7 +173,7 @@ def delete_station_by_id(session, id_):
             status = session.query(Station).filter_by(id=id_).count()
             return True if status==0 else False
         else:
-            print("There's no record in the database with the source id ", id_)
+            print("There's no record in the database with the station id ", id_)
             return False
     finally:
         session.close()

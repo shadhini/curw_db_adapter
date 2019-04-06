@@ -7,7 +7,7 @@ def get_engine(dialect, driver, host, port, db, user, password):
     """ Connecting to database """
 
     db_url = "%s+%s://%s:%s@%s:%d/%s" % (dialect, driver, user, password, host, port, db)
-    return create_engine(db_url, echo=True)
+    return create_engine(db_url, echo=False)
 
 
 def get_sessionmaker(engine):
