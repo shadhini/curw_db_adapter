@@ -1,29 +1,27 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
-import paramiko
 
 
-def get_engine(host, port, user, password, db):
-
+def get_engine(dialect, driver, host, port, db, user, password):
     """ Connecting to database """
 
-    db_url = "mysql+pymysql://%s:%s@%s:%d/%s" % (user, password, host, port, db)
-    # "mysql+pymysql://sylvain:passwd@localhost/db?host=localhost?port=3306")
+    db_url = "%s+%s://%s:%s@%s:%d/%s" % (dialect, driver, user, password, host, port, db)
     return create_engine(db_url, echo=True)
 
 
 def get_sessionmaker(engine):
     return sessionmaker(bind=engine)
 
+# ---- declarative_base ----
 # allows us to create classes that include directives to describe the actual
 # database table they will be mapped to.
 
 
-# Base class for all the schema model classes
-Base = declarative_base()
+# CurwFcstBase class for all the schema model classes of "curw-fcst" database
+CurwFcstBase = declarative_base()
 
-
+# import paramiko
 # ssh = paramiko.SSHClient()
 #
 # ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())

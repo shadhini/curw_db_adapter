@@ -3,7 +3,7 @@ from pprint import PrettyPrinter
 
 class DataLayerError(Exception):
     """
-    Base class for data-layer errors.
+    CurwFcstBase class for data-layer errors.
     """
 
     def __init__(self):

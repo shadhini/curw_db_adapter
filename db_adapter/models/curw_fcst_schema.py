@@ -4,10 +4,10 @@ from sqlalchemy.dialects.mysql import DOUBLE, DATETIME, JSON, INTEGER, \
 from sqlalchemy.orm import relationship
 
 
-from db_adapter.base import Base
+from db_adapter.base import CurwFcstBase
 
 
-class Source(Base):
+class Source(CurwFcstBase):
     __tablename__ = 'source'
 
     id = Column(INTEGER(11), nullable=False, primary_key=True, autoincrement=True)
@@ -22,7 +22,7 @@ class Source(Base):
                % (self.id, self.model, self.version, self.parameters)
 
 
-class Station(Base):
+class Station(CurwFcstBase):
     __tablename__ = 'station'
 
     id = Column(INTEGER(11), nullable=False, primary_key=True, autoincrement=False)
@@ -40,7 +40,7 @@ class Station(Base):
                % (self.id, self.name, self.latitude, self.longitude, self.description)
 
 
-class Unit(Base):
+class Unit(CurwFcstBase):
     __tablename__ = 'unit'
 
     id = Column(INTEGER(11), nullable=False, primary_key=True, autoincrement=True)
@@ -54,7 +54,7 @@ class Unit(Base):
                % (self.id, self.unit, self.type)
 
 
-class Variable(Base):
+class Variable(CurwFcstBase):
     __tablename__ = 'variable'
 
     id = Column(INTEGER(11), nullable=False, primary_key=True, autoincrement=True)
@@ -66,7 +66,7 @@ class Variable(Base):
         return "<Variable(id='%s', variable='%s')>" % (self.id, self.variable)
 
 
-class Run(Base):
+class Run(CurwFcstBase):
     __tablename__ = 'run'
 
     id = Column(VARCHAR(64), nullable=False, primary_key=True, unique=True)
@@ -94,7 +94,7 @@ class Run(Base):
                   self.variable, self.unit, self.fgt, self.scheduled_date)
 
 
-class Data(Base):
+class Data(CurwFcstBase):
     __tablename__='data'
 
     id = Column(VARCHAR(64), ForeignKey(Run.id), nullable=False, primary_key=True)
