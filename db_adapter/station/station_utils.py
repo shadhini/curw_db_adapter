@@ -1,3 +1,4 @@
+import traceback
 from db_adapter.models import Station
 from db_adapter.station.station_enum import StationEnum
 
@@ -19,11 +20,14 @@ def get_station_by_id(session, id_):
     Retrieve station by id
     :param session: session made by sessionmaker for the database engine
     :param id_: station id
-    :return: Station
+    :return: Station if the stations exists in the database, else None
     """
     try:
         station_row = session.query(Station).get(id_)
         return None if station_row is None else station_row
+    except Exception as e:
+        traceback.print_exc()
+        return False
     finally:
         session.close()
 
@@ -36,7 +40,7 @@ def get_station_id(session, latitude, longitude, station_type) -> str:
     :param longitude:
     :param station_type: StationEnum: which defines the station type
     such as 'CUrW', 'WRF'
-    :return: str: station id
+    :return: str: station id, if station exists in the db, else None
     """
 
     initial_value = str(station_type.value)
@@ -52,6 +56,9 @@ def get_station_id(session, latitude, longitude, station_type) -> str:
             .filter_by(longitude=longitude) \
             .first()
         return None if station_row is None else station_row.id
+    except Exception as e:
+        traceback.print_exc()
+        return False
     finally:
         session.close()
 
@@ -79,7 +86,7 @@ def add_station(session, name, latitude, longitude, description, station_type):
     :param description: string
     :param station_type: StationEnum: which defines the station type
     such as 'CUrW'
-    :return: True if the station is added into the 'Station' table
+    :return: True if the station is added into the 'Station' table, else False
     """
     initial_value = station_type.value
     range_ = StationEnum.getRange(station_type)
@@ -105,6 +112,10 @@ def add_station(session, name, latitude, longitude, description, station_type):
 
         session.add(station)
         session.commit()
+        return True
+    except Exception as e:
+        traceback.print_exc()
+        return False
     finally:
         session.close()
 
@@ -140,16 +151,14 @@ def delete_station(session, latitude, longitude, station_type):
     :param longitude:
     :param station_type: StationEnum: which defines the station type
     such as 'CUrW'
-    :return: True if the deletion was successful
+    :return: True if the deletion was successful, else False
     """
 
     id_ = get_station_id(session, latitude=latitude, longitude=longitude, station_type=station_type)
 
     try:
         if id_ is not None:
-            delete_station_by_id(session, id_)
-            session.commit()
-            return True
+            return delete_station_by_id(session, id_)
         else:
             print("There's no record in the database with the station id ", id_)
             return False
@@ -162,7 +171,7 @@ def delete_station_by_id(session, id_):
     Delete station from Station table by id
     :param session: session made by sessionmaker for the database engine
     :param id_:
-    :return: True if the deletion was successful
+    :return: True if the deletion was successful, else False
     """
 
     try:
@@ -175,5 +184,8 @@ def delete_station_by_id(session, id_):
         else:
             print("There's no record in the database with the station id ", id_)
             return False
+    except Exception as e:
+        traceback.print_exc()
+        return False
     finally:
         session.close()

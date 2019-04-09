@@ -1,3 +1,4 @@
+import traceback
 from db_adapter.models import Unit
 
 """
@@ -19,12 +20,15 @@ def get_unit_by_id(session, id_):
     Retrieve unit by id
     :param session: session made by sessionmaker for the database engine
     :param id_: unit id
-    :return: Unit
+    :return: Unit if unit exists in the db, else None
     """
 
     try:
         unit_row = session.query(Unit).get(id_)
         return None if unit_row is None else unit_row
+    except Exception as e:
+        traceback.print_exc()
+        return False
     finally:
         session.close()
 
@@ -35,7 +39,7 @@ def get_unit_id(session, unit, unit_type) -> str:
     :param session: session made by sessionmaker for the database engine
     :param unit:
     :param unit_type: UnitType enum value. This value can be any of {Accumulative, Instantaneous, Mean} set
-    :return: str: unit id
+    :return: str: unit id if unit exists in the db, else None
     """
 
     try:
@@ -44,6 +48,9 @@ def get_unit_id(session, unit, unit_type) -> str:
             .filter_by(type=unit_type.value) \
             .first()
         return None if unit_row is None else unit_row.id
+    except Exception as e:
+        traceback.print_exc()
+        return False
     finally:
         session.close()
 
@@ -54,7 +61,7 @@ def add_unit(session, unit, unit_type):
     :param session: session made by sessionmaker for the database engine
     :param unit: string
     :param unit_type: UnitType enum value. This value can be any of {Accumulative, Instantaneous, Mean} set
-    :return: True if the unit has been added to the "Unit" table of the database
+    :return: True if the unit has been added to the "Unit" table of the database, else False
     """
 
     try:
@@ -67,7 +74,9 @@ def add_unit(session, unit, unit_type):
         session.commit()
 
         return True
-
+    except Exception as e:
+        traceback.print_exc()
+        return False
     finally:
         session.close()
 
@@ -101,16 +110,14 @@ def delete_unit(session, unit, unit_type):
     :param session: session made by sessionmaker for the database engine
     :param unit: string
     :param unit_type: UnitType enum value. This value can be any of {Accumulative, Instantaneous, Mean} set
-    :return: True if the deletion was successful
+    :return: True if the deletion was successful, else False
     """
 
     id_ = get_unit_id(session=session, unit=unit, unit_type=unit_type)
 
     try:
         if id_ is not None:
-            delete_unit_by_id(session, id_)
-            session.commit()
-            return True
+            return delete_unit_by_id(session, id_)
         else:
             print("There's no record in the database with the unit id ", id_)
             return False
@@ -123,7 +130,7 @@ def delete_unit_by_id(session, id_):
     Delete unit from Unit table by id
     :param session: session made by sessionmaker for the database engine
     :param id_:
-    :return: True if the deletion was successful
+    :return: True if the deletion was successful, else False
     """
 
     try:
@@ -136,5 +143,8 @@ def delete_unit_by_id(session, id_):
         else:
             print("There's no record in the database with the unit id ", id_)
             return False
+    except Exception as e:
+        traceback.print_exc()
+        return False
     finally:
         session.close()

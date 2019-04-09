@@ -1,37 +1,4 @@
-# def get_variable_id(self, variable) -> str:
-#     session = self.Session()
-# 
-#     try:
-#         variable_row = session.query(Variable) \
-#             .filter_by(variable=variable) \
-#             .first()
-#         return None if variable_row is None else variable_row.id
-#     finally:
-#         session.close()
-# 
-# 
-# def add_variable(self, variable):
-#     """
-#     Insert variable into the database
-#     :param variable: string
-#     :return: True if the variable has been added to the database
-#     """
-# 
-#     session = self.Session()
-# 
-#     try:
-#         source = Variable(
-#                 variable=variable
-#                 )
-# 
-#         session.add(source)
-#         session.commit()
-# 
-#         return True
-# 
-#     finally:
-#         session.close()
-
+import traceback
 from db_adapter.models import Variable
 
 """
@@ -48,12 +15,15 @@ def get_variable_by_id(session, id_):
     Retrieve variable by id
     :param session: session made by sessionmaker for the database engine
     :param id_: variable id
-    :return: Variable
+    :return: Variable if variable exists in the db, else None
     """
 
     try:
         variable_row = session.query(Variable).get(id_)
         return None if variable_row is None else variable_row
+    except Exception as e:
+        traceback.print_exc()
+        return False
     finally:
         session.close()
 
@@ -63,7 +33,7 @@ def get_variable_id(session, variable) -> str:
     Retrieve Variable id
     :param session: session made by sessionmaker for the database engine
     :param variable:
-    :return: str: variable id
+    :return: str: variable id if variable exists in the db, else None
     """
 
     try:
@@ -71,6 +41,9 @@ def get_variable_id(session, variable) -> str:
             .filter_by(variable=variable) \
             .first()
         return None if variable_row is None else variable_row.id
+    except Exception as e:
+        traceback.print_exc()
+        return False
     finally:
         session.close()
 
@@ -80,7 +53,7 @@ def add_variable(session, variable):
     Insert variables into the database
     :param session: session made by sessionmaker for the database engine
     :param variable: string
-    :return: True if the variable has been added to the "Variable" table of the database
+    :return: True if the variable has been added to the "Variable" table of the database, else False
     """
 
     try:
@@ -92,7 +65,9 @@ def add_variable(session, variable):
         session.commit()
 
         return True
-
+    except Exception as e:
+        traceback.print_exc()
+        return False
     finally:
         session.close()
 
@@ -120,16 +95,14 @@ def delete_variable(session, variable):
     Delete variable from Variable table, given variable name
     :param session: session made by sessionmaker for the database engine
     :param variable: string
-    :return: True if the deletion was successful
+    :return: True if the deletion was successful, else False
     """
 
     id_ = get_variable_id(session=session, variable=variable)
 
     try:
         if id_ is not None:
-            delete_variable_by_id(session, id_)
-            session.commit()
-            return True
+            return delete_variable_by_id(session, id_)
         else:
             print("There's no record in the database with the variable id ", id_)
             return False
@@ -142,7 +115,7 @@ def delete_variable_by_id(session, id_):
     Delete variable from Variable table by id
     :param session: session made by sessionmaker for the database engine
     :param id_:
-    :return: True if the deletion was successful
+    :return: True if the deletion was successful, else False
     """
 
     try:
@@ -155,5 +128,8 @@ def delete_variable_by_id(session, id_):
         else:
             print("There's no record in the database with the variable id ", id_)
             return False
+    except Exception as e:
+        traceback.print_exc()
+        return False
     finally:
         session.close()

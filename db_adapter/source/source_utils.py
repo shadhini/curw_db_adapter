@@ -1,5 +1,5 @@
 from db_adapter.models import Source
-
+import traceback
 
 """
 Source JSON Object would looks like this 
@@ -27,12 +27,15 @@ def get_source_by_id(session, id_):
     Retrieve source by id
     :param session: session made by sessionmaker for the database engine
     :param id_: source id
-    :return: Source
+    :return: Source if source exists in the database, else None
     """
 
     try:
         source_row = session.query(Source).get(id_)
         return None if source_row is None else source_row
+    except Exception as e:
+        traceback.print_exc()
+        return False
     finally:
         session.close()
 
@@ -43,7 +46,7 @@ def get_source_id(session, model, version) -> str:
     :param session: session made by sessionmaker for the database engine
     :param model:
     :param version:
-    :return: str: source id
+    :return: str: source id if source exists in the database, else None
     """
 
     try:
@@ -52,6 +55,9 @@ def get_source_id(session, model, version) -> str:
             .filter_by(version=version) \
             .first()
         return None if source_row is None else source_row.id
+    except Exception as e:
+        traceback.print_exc()
+        return False
     finally:
         session.close()
 
@@ -63,7 +69,7 @@ def add_source(session, model, version, parameters):
     :param model: string
     :param version: string
     :param parameters: JSON
-    :return: True if the source has been added to the "Source' table of the database
+    :return: True if the source has been added to the "Source' table of the database, else False
     """
 
     try:
@@ -77,7 +83,9 @@ def add_source(session, model, version, parameters):
         session.commit()
 
         return True
-
+    except Exception as e:
+        traceback.print_exc()
+        return False
     finally:
         session.close()
 
@@ -118,16 +126,14 @@ def delete_source(session, model, version):
     :param session: session made by sessionmaker for the database engine
     :param model: str
     :param version: str
-    :return: True if the deletion was successful
+    :return: True if the deletion was successful, else False
     """
 
     id_ = get_source_id(session=session, model=model, version=version)
 
     try:
         if id_ is not None:
-            delete_source_by_id(session, id_)
-            session.commit()
-            return True
+            return delete_source_by_id(session, id_)
         else:
             print("There's no record in the database with the source id ", id_)
             return False
@@ -140,7 +146,7 @@ def delete_source_by_id(session, id_):
     Delete source from Source table by id
     :param session: session made by sessionmaker for the database engine
     :param id_:
-    :return: True if the deletion was successful
+    :return: True if the deletion was successful, else False
     """
 
     try:
@@ -153,5 +159,8 @@ def delete_source_by_id(session, id_):
         else:
             print("There's no record in the database with the source id ", id_)
             return False
+    except Exception as e:
+        traceback.print_exc()
+        return False
     finally:
         session.close()
