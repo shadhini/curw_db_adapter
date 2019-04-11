@@ -69,7 +69,7 @@ class Timeseries:
             session.close()
 
     def insert_timeseries(self, sim_tag, scheduled_date, latitude, longitude,
-                          model, version, variable, unit, unit_type, fgt):
+                          model, version, variable, unit, unit_type, fgt, start_date, end_date):
 
         # to do : add timeseries to Data table
 
@@ -102,13 +102,15 @@ class Timeseries:
         tms_id = Timeseries.generate_timeseries_id(tms_meta)
 
         station_id = get_station_id(self, latitude, longitude)
-        source_id = get_source_id(self, model, version)
+        source_id = get_source_id(self,model, version)
         variable_id = get_variable_id(self, variable)
         unit_id = get_unit_id(self, unit, unit_type)
 
         run = Run(
                 id=tms_id,
                 sim_tag=sim_tag,
+                start_date=start_date,
+                end_date=end_date,
                 station=station_id,
                 source=source_id,
                 variable=variable_id,
@@ -128,7 +130,7 @@ class Timeseries:
         finally:
             session.close()
 
-    def insert_timeseries(self, tms_id, sim_tag, scheduled_date, station_id, source_id, variable_id, unit_id, fgt):
+    def insert_timeseries(self, tms_id, sim_tag, scheduled_date, station_id, source_id, variable_id, unit_id, fgt, start_date, end_date):
 
         """
         :param tms_id:
@@ -144,6 +146,8 @@ class Timeseries:
         run = Run(
                 id=tms_id,
                 sim_tag=sim_tag,
+                start_date=start_date,
+                end_date= end_date,
                 station=station_id,
                 source=source_id,
                 variable=variable_id,
