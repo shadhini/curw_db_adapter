@@ -85,7 +85,7 @@ class Timeseries:
         :param unit:
         :param unit_type:
         :param fgt:
-        :return: str: timeseries id
+        :return: str: timeseries id if insertion was successful, else False
         """
         tms_meta = {
                 'sim_tag'       : sim_tag,
@@ -123,6 +123,43 @@ class Timeseries:
             session.add(run)
             session.commit()
             return tms_id
+        except Exception as e:
+            return False
+        finally:
+            session.close()
+
+    def insert_timeseries(self, tms_id, sim_tag, scheduled_date, station_id, source_id, variable_id, unit_id, fgt):
+
+        """
+        :param tms_id:
+        :param sim_tag:
+        :param scheduled_date:
+        :param station_id:
+        :param source_id:
+        :param variable_id:
+        :param unit_id:
+        :param fgt:
+        :return: timeseries id if insertion was successful, else False
+        """
+        run = Run(
+                id=tms_id,
+                sim_tag=sim_tag,
+                station=station_id,
+                source=source_id,
+                variable=variable_id,
+                unit=unit_id,
+                fgt=fgt,
+                scheduled_date=scheduled_date
+                )
+
+        session = self.Session()
+
+        try:
+            session.add(run)
+            session.commit()
+            return tms_id
+        except Exception as e:
+            return False
         finally:
             session.close()
 
