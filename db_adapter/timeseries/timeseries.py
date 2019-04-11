@@ -5,10 +5,10 @@ import json
 from datetime import datetime
 
 from db_adapter.models import Data, Run
-from db_adapter.station import StationUtils
-from db_adapter.source import Source
-from db_adapter.variable import Variable
-from db_adapter.unit import Unit
+from db_adapter.station import get_station_id
+from db_adapter.source import get_source_id
+from db_adapter.variable import get_variable_id
+from db_adapter.unit import get_unit_id
 
 
 # to do: avoid hash collisions
@@ -101,10 +101,10 @@ class Timeseries:
 
         tms_id = Timeseries.generate_timeseries_id(tms_meta)
 
-        station_id = StationUtils.get_station_id(self, latitude, longitude)
-        source_id = Source.get_source_id(self, model, version)
-        variable_id = Variable.get_variable_id(self, variable)
-        unit_id = Unit.get_unit_id(self, unit, unit_type)
+        station_id = get_station_id(self, latitude, longitude)
+        source_id = get_source_id(self, model, version)
+        variable_id = get_variable_id(self, variable)
+        unit_id = get_unit_id(self, unit, unit_type)
 
         run = Run(
                 id=tms_id,
