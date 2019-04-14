@@ -68,13 +68,35 @@ class Timeseries:
         finally:
             session.close()
 
-    def insert_timeseries(self, sim_tag, scheduled_date, latitude, longitude,
-                          model, version, variable, unit, unit_type, fgt, start_date, end_date):
+    def insert_data(self, tms_id, timeseries):
+        """
+        Insert timeseries to Data table in the database
+        :param tms_id: hash value
+        :param timeseries: list of [time, value] lists
+        :return: timeseries id if insertion was successful
+        """
 
-        # to do : add timeseries to Data table
+        data_objects = []
 
+        for item in range(len(timeseries)):
+            data_objects.append(Data(id=tms_id, time=item[0], value=item[1]))
+
+        session = self.Session()
+
+        try:
+            session.add_all(data_objects)
+            session.commit()
+            return tms_id
+        except Exception as e:
+            return False
+        finally:
+            session.close()
+
+    def insert_timeseries(self, timeseries, sim_tag, scheduled_date, latitude, longitude,
+                          model, version, variable, unit, unit_type, fgt):
         """
         Insert new timeseries into the Run table and Data table
+        :param timeseries: list of [time, value] lists
         :param sim_tag:
         :param scheduled_date:
         :param latitude:
@@ -83,7 +105,7 @@ class Timeseries:
         :param version:
         :param variable:
         :param unit:
-        :param unit_type:
+        :param unit_type: str value
         :param fgt:
         :return: str: timeseries id if insertion was successful, else False
         """
@@ -109,8 +131,8 @@ class Timeseries:
         run = Run(
                 id=tms_id,
                 sim_tag=sim_tag,
-                start_date=start_date,
-                end_date=end_date,
+                start_date=timeseries[0][0],
+                end_date=timeseries[-1][0],
                 station=station_id,
                 source=source_id,
                 variable=variable_id,
@@ -124,30 +146,33 @@ class Timeseries:
         try:
             session.add(run)
             session.commit()
-            return tms_id
+            return self.insert_data(tms_id, timeseries)
         except Exception as e:
             return False
         finally:
             session.close()
 
-    def insert_timeseries(self, tms_id, sim_tag, scheduled_date, station_id, source_id, variable_id, unit_id, fgt, start_date, end_date):
+    def insert_timeseries(self, tms_id, timeseries, sim_tag, scheduled_date, station_id, source_id, variable_id,
+                          unit_id, fgt):
 
         """
+        Insert new timeseries into the Run table and Data table
         :param tms_id:
+        :param timeseries: list of [time, value] lists
         :param sim_tag:
         :param scheduled_date:
         :param station_id:
         :param source_id:
         :param variable_id:
-        :param unit_id:
+        :param unit_id: str value
         :param fgt:
         :return: timeseries id if insertion was successful, else False
         """
         run = Run(
                 id=tms_id,
                 sim_tag=sim_tag,
-                start_date=start_date,
-                end_date= end_date,
+                start_date=timeseries[0][0],
+                end_date=timeseries[-1][0],
                 station=station_id,
                 source=source_id,
                 variable=variable_id,
@@ -161,11 +186,32 @@ class Timeseries:
         try:
             session.add(run)
             session.commit()
-            return tms_id
+            return self.insert_data(tms_id, timeseries)
         except Exception as e:
             return False
         finally:
             session.close()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     def get_timeseries(self, timeseries_id, start_date, end_date):
         """
@@ -212,7 +258,7 @@ class Timeseries:
         if not isinstance(timeseries, pd.DataFrame):
             raise ValueError(
                     'The "timeseries" shoud be a pandas Dataframe '
-                    'containing (time, value) in a rows')
+                    'containing (time, value) in rows')
 
         session = self.Session()
         try:
