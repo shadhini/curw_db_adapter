@@ -1,6 +1,7 @@
 import pandas as pd
 import hashlib
 import json
+import traceback
 
 from datetime import datetime
 
@@ -65,6 +66,9 @@ class Timeseries:
         try:
             run_row = session.query(Run).filter_by(id=event_id).first()
             return None if run_row is None else run_row.id
+        except Exception as e:
+            traceback.print_exc()
+            return False
         finally:
             session.close()
 
@@ -73,7 +77,7 @@ class Timeseries:
         Insert timeseries to Data table in the database
         :param tms_id: hash value
         :param timeseries: list of [time, value] lists
-        :return: timeseries id if insertion was successful
+        :return: timeseries id if insertion was successful, else False
         """
 
         data_objects = []
@@ -88,6 +92,7 @@ class Timeseries:
             session.commit()
             return tms_id
         except Exception as e:
+            traceback.print_exc()
             return False
         finally:
             session.close()
@@ -95,7 +100,7 @@ class Timeseries:
     def insert_timeseries(self, timeseries, sim_tag, scheduled_date, latitude, longitude,
                           model, version, variable, unit, unit_type, fgt):
         """
-        Insert new timeseries into the Run table and Data table
+        Insert new timeseries into the Run table and Data table, this will generate the tieseries id from the given data
         :param timeseries: list of [time, value] lists
         :param sim_tag:
         :param scheduled_date:
@@ -148,15 +153,16 @@ class Timeseries:
             session.commit()
             return self.insert_data(tms_id, timeseries)
         except Exception as e:
+            traceback.print_exc()
             return False
         finally:
             session.close()
 
-    def insert_timeseries(self, tms_id, timeseries, sim_tag, scheduled_date, station_id, source_id, variable_id,
+    def insert_timeseries_by_ids(self, tms_id, timeseries, sim_tag, scheduled_date, station_id, source_id, variable_id,
                           unit_id, fgt):
 
         """
-        Insert new timeseries into the Run table and Data table
+        Insert new timeseries into the Run table and Data table, for given timeseries id
         :param tms_id:
         :param timeseries: list of [time, value] lists
         :param sim_tag:
@@ -188,6 +194,7 @@ class Timeseries:
             session.commit()
             return self.insert_data(tms_id, timeseries)
         except Exception as e:
+            traceback.print_exc()
             return False
         finally:
             session.close()
