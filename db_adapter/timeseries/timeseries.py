@@ -97,15 +97,17 @@ class Timeseries:
         :return: timeseries id if insertion was successful, else False
         """
 
-        data_objects = []
-
-        for item in range(len(timeseries)):
-            data_objects.append(Data(id=tms_id, time=timeseries[item][0], value=float(timeseries[item][1])))
+        # data_objects = []
+        #
+        # for item in range(len(timeseries)):
+        #     data_objects.append(Data(id=tms_id, time=timeseries[item][0], value=float(timeseries[item][1])))
 
         session = self.session
 
         try:
-            session.add_all(data_objects)
+            for item in range(len(timeseries)):
+                session.merge(Data(id=tms_id, time=timeseries[item][0], value=float(timeseries[item][1])))
+            # session.add_all(data_objects)
             session.commit()
             return tms_id
         except Exception as e:
