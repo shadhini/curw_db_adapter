@@ -100,7 +100,7 @@ class Timeseries:
         data_objects = []
 
         for item in range(len(timeseries)):
-            data_objects.append(Data(id=tms_id, time=item[0], value=item[1]))
+            data_objects.append(Data(id=tms_id, time=timeseries[item][0], value=timeseries[item][1]))
 
         session = self.session
 
