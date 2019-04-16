@@ -72,6 +72,23 @@ class Timeseries:
         finally:
             session.close()
 
+    def is_id_exists(self, id_):
+        """
+        Check whether a given timeseries id exists in the database
+        :param id_:
+        :return: True, if id is in the database, False otherwise
+        """
+        session = self.session
+
+        try:
+            tms_entry = session.query(Run).filter_by(id=id_)
+            return False if tms_entry is None else True
+        except Exception as e:
+            traceback.print_exc()
+            return False
+        finally:
+            session.close()
+
     def insert_data(self, tms_id, timeseries):
         """
         Insert timeseries to Data table in the database
