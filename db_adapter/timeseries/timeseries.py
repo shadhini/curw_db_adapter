@@ -16,8 +16,8 @@ from db_adapter.unit import get_unit_id
 
 
 class Timeseries:
-    def __init__(self, session_creator):
-        self.Session = session_creator
+    def __init__(self, session):
+        self.session = session
 
     @staticmethod
     def generate_timeseries_id(meta_data: object) -> object:
@@ -60,7 +60,7 @@ class Timeseries:
         :return: timeseries id if exist else None
         """
 
-        session = self.Session()
+        session = self.session
 
         event_id = self.generate_timeseries_id(meta_data)
         try:
@@ -85,7 +85,7 @@ class Timeseries:
         for item in range(len(timeseries)):
             data_objects.append(Data(id=tms_id, time=item[0], value=item[1]))
 
-        session = self.Session()
+        session = self.session
 
         try:
             session.add_all(data_objects)
@@ -146,7 +146,7 @@ class Timeseries:
                 scheduled_date=scheduled_date
                 )
 
-        session = self.Session()
+        session = self.session
 
         try:
             session.add(run)
@@ -187,7 +187,7 @@ class Timeseries:
                 scheduled_date=scheduled_date
                 )
 
-        session = self.Session()
+        session = self.session
 
         try:
             session.add(run)
