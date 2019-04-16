@@ -158,7 +158,7 @@ class Timeseries:
         finally:
             session.close()
 
-    def insert_timeseries_by_ids(self, tms_id, timeseries, sim_tag, scheduled_date, station_id, source_id, variable_id,
+    def insert_timeseries(self, tms_id, timeseries, sim_tag, scheduled_date, station_id, source_id, variable_id,
                           unit_id, fgt):
 
         """
