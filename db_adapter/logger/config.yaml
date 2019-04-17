@@ -15,7 +15,7 @@ handlers:
   fh:
     class: logging.handlers.TimedRotatingFileHandler
     formatter: simple
-    level: INFO
+    level: WARNING
     filename: db_adapter.log
     when: D
     interval: 1
