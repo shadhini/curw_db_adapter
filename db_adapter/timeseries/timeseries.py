@@ -10,6 +10,7 @@ from db_adapter.station import get_station_id
 from db_adapter.source import get_source_id
 from db_adapter.variable import get_variable_id
 from db_adapter.unit import get_unit_id
+from db_adapter.logger import logger
 
 
 # to do: avoid hash collisions
@@ -67,6 +68,7 @@ class Timeseries:
             run_row = session.query(Run).filter_by(id=event_id).first()
             return None if run_row is None else run_row.id
         except Exception as e:
+            logger.error("Exception occurred while retrieving timeseries id for metadata={}".format(meta_data))
             traceback.print_exc()
             return False
         finally:
@@ -84,6 +86,7 @@ class Timeseries:
             tms_entry = session.query(Run).filter_by(id=id_)
             return False if tms_entry is None else True
         except Exception as e:
+            logger.error("Exception occurred while checking whether timeseries id {} exists in the run table".format(id_))
             traceback.print_exc()
             return False
         finally:
@@ -97,11 +100,6 @@ class Timeseries:
         :return: timeseries id if insertion was successful, else False
         """
 
-        # data_objects = []
-        #
-        # for item in range(len(timeseries)):
-        #     data_objects.append(Data(id=tms_id, time=timeseries[item][0], value=float(timeseries[item][1])))
-
         session = self.session
 
         try:
@@ -111,6 +109,7 @@ class Timeseries:
             session.commit()
             return tms_id
         except Exception as e:
+            logger.error("Exception occurred while inserting data to data table for tms id {}".format(tms_id))
             traceback.print_exc()
             return False
         finally:
@@ -172,6 +171,9 @@ class Timeseries:
             session.commit()
             return self.insert_data(tms_id, timeseries)
         except Exception as e:
+            logger.error("Exception occurred while inserting timeseries for sim_tag={}, scheduled_date={}, latitude={}, "
+                         "longitude={}, model={}, version={}, variable={}, unit={}, unit_type={}, fgt={}"
+                .format(sim_tag, scheduled_date, latitude, longitude, model, version, variable, unit, unit_type, fgt))
             traceback.print_exc()
             return False
         finally:
@@ -213,6 +215,9 @@ class Timeseries:
             session.commit()
             return self.insert_data(tms_id, timeseries)
         except Exception as e:
+            logger.error("Exception occurred while inserting timeseries for tms_id={}, sim_tag={}, scheduled_date={}, "
+                         "station_id={}, source_id={}, variable_id={}, unit_id={}, fgt={}"
+                    .format(tms_id, sim_tag, scheduled_date, station_id, source_id, variable_id, unit_id, fgt))
             traceback.print_exc()
             return False
         finally:

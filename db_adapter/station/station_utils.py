@@ -1,6 +1,7 @@
 import traceback
 from db_adapter.models import Station
 from db_adapter.station.station_enum import StationEnum
+from db_adapter.logger import logger
 
 """
 Station JSON Object would looks like this 
@@ -26,6 +27,7 @@ def get_station_by_id(session, id_):
         station_row = session.query(Station).get(id_)
         return None if station_row is None else station_row
     except Exception as e:
+        logger.error("Exception occurred while retrieving station with id {}".format(id_))
         traceback.print_exc()
         return False
     finally:
@@ -57,6 +59,8 @@ def get_station_id(session, latitude, longitude, station_type) -> str:
             .first()
         return None if station_row is None else station_row.id
     except Exception as e:
+        logger.error("Exception occurred while retrieving station id: latitude={}, longitude={}, "
+                     "and station_type{}".format(latitude,longitude, station_type))
         traceback.print_exc()
         return False
     finally:
@@ -114,6 +118,8 @@ def add_station(session, name, latitude, longitude, description, station_type):
         session.commit()
         return True
     except Exception as e:
+        logger.error("Exception occurred while adding station: name={}, latitude={}, longitude={}, description={}, "
+                     "and station_type={}".format(name, latitude, longitude, description, station_type))
         traceback.print_exc()
         return False
     finally:
@@ -160,6 +166,7 @@ def delete_station(session, latitude, longitude, station_type):
         if id_ is not None:
             return delete_station_by_id(session, id_)
         else:
+            logger.info("There's no record in the database with the station id {}".format(id_))
             print("There's no record in the database with the station id ", id_)
             return False
     finally:
@@ -182,9 +189,11 @@ def delete_station_by_id(session, id_):
             status = session.query(Station).filter_by(id=id_).count()
             return True if status==0 else False
         else:
+            logger.info("There's no record in the database with the station id {}".format(id_))
             print("There's no record in the database with the station id ", id_)
             return False
     except Exception as e:
+        logger.error("Exception occurred while deleting station with id {}".format(id_))
         traceback.print_exc()
         return False
     finally:

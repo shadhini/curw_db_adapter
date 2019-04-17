@@ -1,4 +1,5 @@
 from db_adapter.models import Source
+from db_adapter.logger import logger
 import traceback
 
 """
@@ -34,6 +35,7 @@ def get_source_by_id(session, id_):
         source_row = session.query(Source).get(id_)
         return None if source_row is None else source_row
     except Exception as e:
+        logger.error("Exception occurred while retrieving source with source_id {}".format(id_))
         traceback.print_exc()
         return False
     finally:
@@ -56,6 +58,7 @@ def get_source_id(session, model, version) -> str:
             .first()
         return None if source_row is None else source_row.id
     except Exception as e:
+        logger.error("Exception occurred while retrieving source id: model={} and version={}".format(model, version))
         traceback.print_exc()
         return False
     finally:
@@ -84,6 +87,8 @@ def add_source(session, model, version, parameters):
 
         return True
     except Exception as e:
+        logger.error("Exception occurred while adding source: model={}, version={} and parameters={}"
+            .format(model, version, parameters))
         traceback.print_exc()
         return False
     finally:
@@ -136,6 +141,7 @@ def delete_source(session, model, version):
             return delete_source_by_id(session, id_)
         else:
             print("There's no record in the database with the source id ", id_)
+            logger.info("There's no record in the database with the source id {}".format(id_))
             return False
     finally:
         session.close()
@@ -158,8 +164,10 @@ def delete_source_by_id(session, id_):
             return True if status==0 else False
         else:
             print("There's no record in the database with the source id ", id_)
+            logger.info("There's no record in the database with the source id {}".format(id_))
             return False
     except Exception as e:
+        logger.error("Exception occurred while deleting source with it {}".format(id_))
         traceback.print_exc()
         return False
     finally:

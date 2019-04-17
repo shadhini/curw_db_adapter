@@ -1,5 +1,6 @@
 import traceback
 from db_adapter.models import Variable
+from db_adapter.logger import logger
 
 """
 Variable JSON Object would looks like this
@@ -22,6 +23,7 @@ def get_variable_by_id(session, id_):
         variable_row = session.query(Variable).get(id_)
         return None if variable_row is None else variable_row
     except Exception as e:
+        logger.error("Exception occurred while retrieving variable with id {}".format(id_))
         traceback.print_exc()
         return False
     finally:
@@ -42,6 +44,7 @@ def get_variable_id(session, variable) -> str:
             .first()
         return None if variable_row is None else variable_row.id
     except Exception as e:
+        logger.error("Exception occurred while retrieving variable id: variable={}".format(variable))
         traceback.print_exc()
         return False
     finally:
@@ -66,6 +69,7 @@ def add_variable(session, variable):
 
         return True
     except Exception as e:
+        logger.error("Exception occurred while adding variable: variable={}".format(variable))
         traceback.print_exc()
         return False
     finally:
@@ -104,6 +108,7 @@ def delete_variable(session, variable):
         if id_ is not None:
             return delete_variable_by_id(session, id_)
         else:
+            logger.info("There's no record in the database with the variable id {}".format(id_))
             print("There's no record in the database with the variable id ", id_)
             return False
     finally:
@@ -126,9 +131,11 @@ def delete_variable_by_id(session, id_):
             status = session.query(Variable).filter_by(id=id_).count()
             return True if status==0 else False
         else:
+            logger.info("There's no record in the database with the variable id {}".format(id_))
             print("There's no record in the database with the variable id ", id_)
             return False
     except Exception as e:
+        logger.error("Exception occurred while deleting variable with id {}".format(id_))
         traceback.print_exc()
         return False
     finally:

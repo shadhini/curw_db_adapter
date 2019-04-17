@@ -22,6 +22,7 @@ setuptools.setup(
         install_requires=['pymysql',
                           'SQLAlchemy',
                           'pandas',
-                          'numpy'],
+                          'numpy',
+                          'PyYAML'],
         zip_safe=False
         )

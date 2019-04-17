@@ -1,5 +1,6 @@
 import traceback
 from db_adapter.models import Unit
+from db_adapter.logger import logger
 
 """
 Unit JSON Object would looks like this
@@ -27,6 +28,7 @@ def get_unit_by_id(session, id_):
         unit_row = session.query(Unit).get(id_)
         return None if unit_row is None else unit_row
     except Exception as e:
+        logger.error("Exception occurred while retrieving unit with id {}".format(id_))
         traceback.print_exc()
         return False
     finally:
@@ -49,6 +51,7 @@ def get_unit_id(session, unit, unit_type) -> str:
             .first()
         return None if unit_row is None else unit_row.id
     except Exception as e:
+        logger.error("Exception occurred while retrieving unit id: unit={} and unit_type={}".format(unit, unit_type))
         traceback.print_exc()
         return False
     finally:
@@ -75,6 +78,7 @@ def add_unit(session, unit, unit_type):
 
         return True
     except Exception as e:
+        logger.error("Exception occurred while adding unit: unit={}, unit_type={}".format(unit, unit_type))
         traceback.print_exc()
         return False
     finally:
@@ -119,6 +123,7 @@ def delete_unit(session, unit, unit_type):
         if id_ is not None:
             return delete_unit_by_id(session, id_)
         else:
+            logger.info("There's no record in the database with the unit id {}".format(id_))
             print("There's no record in the database with the unit id ", id_)
             return False
     finally:
@@ -141,9 +146,11 @@ def delete_unit_by_id(session, id_):
             status = session.query(Unit).filter_by(id=id_).count()
             return True if status==0 else False
         else:
+            logger.info("There's no record in the database with the unit id {}".format(id_))
             print("There's no record in the database with the unit id ", id_)
             return False
     except Exception as e:
+        logger.error("Exception occurred while deleting unit with id {}".format(id_))
         traceback.print_exc()
         return False
     finally:
