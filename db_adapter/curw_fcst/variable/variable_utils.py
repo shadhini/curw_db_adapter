@@ -1,5 +1,5 @@
 import traceback
-from db_adapter.models import Variable
+from db_adapter.curw_fcst.models import Variable
 from db_adapter.logger import logger
 
 """

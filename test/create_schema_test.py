@@ -1,5 +1,27 @@
-from db_adapter.models import create_curw_fcst_db
+from db_adapter.base import get_engine, CurwFcstBase
+from db_adapter.constants import DIALECT_MYSQL, DRIVER_PYMYSQL
+
+from db_adapter.logger import logger
+
+
+USERNAME = "root"
+PASSWORD = "password"
+HOST = "127.0.0.1"
+PORT = 3306
+DATABASE = "test_schema"
 
 print("Create test schema")
 
-print(create_curw_fcst_db())
+
+def create_test_schema_db():
+
+    # connect to the MySQL engine
+    engine = get_engine(DIALECT_MYSQL, DRIVER_PYMYSQL, HOST, PORT, DATABASE,
+            USERNAME, PASSWORD)
+
+    # create the schema using classes defined
+    CurwFcstBase.metadata.create_all(engine)
+
+    logger.info("test_schema schema generated.")
+
+

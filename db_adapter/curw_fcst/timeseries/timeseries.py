@@ -5,11 +5,11 @@ import traceback
 
 from datetime import datetime
 
-from db_adapter.models import Data, Run
-from db_adapter.station import get_station_id
-from db_adapter.source import get_source_id
-from db_adapter.variable import get_variable_id
-from db_adapter.unit import get_unit_id
+from db_adapter.curw_fcst.models import Data, Run
+from db_adapter.curw_fcst.station import get_station_id
+from db_adapter.curw_fcst.source import get_source_id
+from db_adapter.curw_fcst.variable import get_variable_id
+from db_adapter.curw_fcst.unit import get_unit_id
 from db_adapter.logger import logger
 
 
@@ -116,7 +116,7 @@ class Timeseries:
             session.close()
 
     def insert_timeseries(self, timeseries, sim_tag, scheduled_date, latitude, longitude,
-                          model, version, variable, unit, unit_type, fgt):
+                          model, version, variable, unit, unit_type, fgt, start_date, end_date):
         """
         Insert new timeseries into the Run table and Data table, this will generate the tieseries id from the given data
         :param timeseries: list of [time, value] lists
@@ -154,8 +154,8 @@ class Timeseries:
         run = Run(
                 id=tms_id,
                 sim_tag=sim_tag,
-                start_date=timeseries[0][0],
-                end_date=timeseries[-1][0],
+                start_date=start_date,
+                end_date=end_date,
                 station=station_id,
                 source=source_id,
                 variable=variable_id,
@@ -180,7 +180,7 @@ class Timeseries:
             session.close()
 
     def insert_timeseries(self, tms_id, timeseries, sim_tag, scheduled_date, station_id, source_id, variable_id,
-                          unit_id, fgt):
+                          unit_id, fgt, start_date, end_date):
 
         """
         Insert new timeseries into the Run table and Data table, for given timeseries id
@@ -198,8 +198,8 @@ class Timeseries:
         run = Run(
                 id=tms_id,
                 sim_tag=sim_tag,
-                start_date=timeseries[0][0],
-                end_date=timeseries[-1][0],
+                start_date=start_date,
+                end_date=end_date,
                 station=station_id,
                 source=source_id,
                 variable=variable_id,

@@ -1,4 +1,3 @@
-import json
 from db_adapter.base import get_engine, get_sessionmaker
 from db_adapter.constants import (
     CURW_FCST_USERNAME, CURW_FCST_PASSWORD, CURW_FCST_HOST, CURW_FCST_PORT,
@@ -6,7 +5,7 @@ from db_adapter.constants import (
     )
 from db_adapter.constants import DIALECT_MYSQL, DRIVER_PYMYSQL
 
-from db_adapter.source import get_source_by_id, get_source_id, add_sources, delete_source, delete_source_by_id
+from db_adapter.curw_fcst.source import delete_source
 
 sources = [
         {

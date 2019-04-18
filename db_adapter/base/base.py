@@ -26,14 +26,3 @@ def get_sessionmaker(engine):
 logger.info("Declaring an orm mapping for curw_fcst database.")
 CurwFcstBase = declarative_base()
 
-# import paramiko
-# ssh = paramiko.SSHClient()
-#
-# ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-#
-# ssh.connect('104.198.0.87', username='uwcc-admin',
-#         key_filename='/home/shadhini/.ssh/uwcc-admin')
-#
-# stdin, stdout, stderr = ssh.exec_command('ls')
-# print (stdout.readlines())
-# ssh.close()
