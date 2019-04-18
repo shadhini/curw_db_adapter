@@ -56,6 +56,7 @@ class Timeseries:
     def get_timeseries_id(self, meta_data):
 
         """
+        Check whether a timeseries id exists in the database for a given set of meta data
         :param meta_data: Dict with 'sim_tag', 'scheduled_date', 'latitude',
         'longitude', 'model', 'version', 'variable', 'unit', 'unit_type' keys
         :return: timeseries id if exist else None
@@ -118,7 +119,7 @@ class Timeseries:
     def insert_timeseries(self, timeseries, sim_tag, scheduled_date, latitude, longitude,
                           model, version, variable, unit, unit_type, fgt, start_date, end_date):
         """
-        Insert new timeseries into the Run table and Data table, this will generate the tieseries id from the given data
+        Insert new timeseries into the Run table and Data table, this will generate the tieseries id from the given meta data
         :param timeseries: list of [time, value] lists
         :param sim_tag:
         :param scheduled_date:
