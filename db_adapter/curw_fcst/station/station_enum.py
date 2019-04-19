@@ -2,22 +2,23 @@ from enum import Enum
 
 
 class StationEnum(Enum):
+
     """
-	StationEnum ids ranged as below;
+    StationEnum ids ranged as below;
 
-	- 1 xx xxx - CUrW (StationEnumId: curw_<SOMETHING>)
-	- 2 xx xxx - Megapolis (StationEnumId: megapolis_<SOMETHING>)
-	- 3 xx xxx - Government (StationEnumId: gov_<SOMETHING>. May follow as gov_irr_<SOMETHING>)
-	- 4 xx xxx - Public (StationEnumId: pub_<SOMETHING>)
-	- 8 xx xxx - Satellite (StationEnumId: sat_<SOMETHING>)
+        - 1 xx xxx - CUrW (StationEnumId: curw_<SOMETHING>)
+        - 2 xx xxx - Megapolis (StationEnumId: megapolis_<SOMETHING>)
+        - 3 xx xxx - Government (StationEnumId: gov_<SOMETHING>. May follow as gov_irr_<SOMETHING>)
+        - 4 xx xxx - Public (StationEnumId: pub_<SOMETHING>)
+        - 8 xx xxx - Satellite (StationEnumId: sat_<SOMETHING>)
 
-	Simulation models StationEnum ids ranged over 1’000’000 as below;
-	- 1 1xx xxx - WRF (StationEnumId: wrf_<SOMETHING>)
-	- 1 2xx xxx - FLO2D (StationEnumId: flo2d_<SOMETHING>)
+        Simulation models StationEnum ids ranged over 1’000’000 as below;
+        - 1 1xx xxx - WRF (StationEnumId: wrf_<SOMETHING>)
+        - 1 2xx xxx - FLO2D (StationEnumId: flo2d_<SOMETHING>)
 
-	Other;
-	- 2 xxx xxx - Other (StationEnumId: other_<SOMETHING>)
-	"""
+        Other;
+        - 2 xxx xxx - Other (StationEnumId: other_<SOMETHING>)
+    """
     CUrW = 100000
     Megapolis = 200000
     Government = 300000
