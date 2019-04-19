@@ -1,5 +1,5 @@
 import traceback
-from db_adapter.curw_fcst import Station
+from db_adapter.curw_fcst.models import Station
 from db_adapter.curw_fcst import StationEnum
 from db_adapter.logger import logger
 
