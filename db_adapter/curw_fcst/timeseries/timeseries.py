@@ -13,9 +13,6 @@ from db_adapter.curw_fcst.unit import get_unit_id
 from db_adapter.logger import logger
 
 
-# to do: avoid hash collisions
-
-
 class Timeseries:
     def __init__(self, session):
         self.session = session
