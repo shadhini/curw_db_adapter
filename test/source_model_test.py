@@ -1,11 +1,13 @@
 from db_adapter.base import get_engine, get_sessionmaker
-from db_adapter.constants import (
-    CURW_FCST_USERNAME, CURW_FCST_PASSWORD, CURW_FCST_HOST, CURW_FCST_PORT,
-    CURW_FCST_DATABASE,
-    )
 from db_adapter.constants import DIALECT_MYSQL, DRIVER_PYMYSQL
 
-from db_adapter.curw_fcst.source import delete_source
+from db_adapter.curw_fcst.source import delete_source, add_sources
+
+USERNAME = "root"
+PASSWORD = "password"
+HOST = "127.0.0.1"
+PORT = 3306
+DATABASE = "curw_fcst"
 
 sources = [
         {
@@ -64,28 +66,28 @@ sources = [
                 }
         ]
 
-engine = get_engine(DIALECT_MYSQL, DRIVER_PYMYSQL, CURW_FCST_HOST, CURW_FCST_PORT, CURW_FCST_DATABASE,
-            CURW_FCST_USERNAME, CURW_FCST_PASSWORD)
+engine = get_engine(DIALECT_MYSQL, DRIVER_PYMYSQL, HOST, PORT, DATABASE,
+            USERNAME, PASSWORD)
 
 Session = get_sessionmaker(engine=engine)  # Session is a class
 session = Session()
 
 
 print("########### Add Sources #################################")
-# print(add_sources(sources=sources, session=session))
+print(add_sources(sources=sources, session=session))
 
 
-print("########### Get Sources by id ###########################")
+# print("########### Get Sources by id ###########################")
 # print("Id 3:", get_source_by_id(session=session, id_="3"))
-
-
-print("########## Retrieve source id ###########################")
+#
+#
+# print("########## Retrieve source id ###########################")
 # print("'model': 'OBS_WATER_LEVEL', 'version': ''", get_source_id(session=session, model="OBS_WATER_LEVEL", version=""))
-
-
-print("######### Delete source by id ###########################")
+#
+#
+# print("######### Delete source by id ###########################")
 # print("Id 3 deleted status: ", delete_source_by_id(session=session, id_=3))
-
-print("######### Delete source with given model, version #######")
-print("model': 'wrfSE', 'version': 'v3' delete status :",
-        delete_source(session=session, model="wrfSE", version="v3"))
+#
+# print("######### Delete source with given model, version #######")
+# print("model': 'wrfSE', 'version': 'v3' delete status :",
+#         delete_source(session=session, model="wrfSE", version="v3"))
