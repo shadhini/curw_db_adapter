@@ -5,12 +5,8 @@ import traceback
 """
 Source JSON Object would looks like this 
 e.g.:
-   {
-        'model'     : 'wrfSE',
-        'parameters': { }
-    }
     {
-        'model'     : 'OBS_WATER_LEVEL',
+        'source'     : 'OBS_WATER_LEVEL',
         'parameters': {
                 "CHANNEL_CELL_MAP"               : {
                         "594" : "Wellawatta", "1547": "Ingurukade", "3255": "Yakbedda", "3730": "Wellampitiya",
@@ -40,39 +36,39 @@ def get_source_by_id(session, id_):
         session.close()
 
 
-def get_source_id(session, model) -> str:
+def get_source_id(session, source) -> str:
     """
     Retrieve Source id
     :param session: session made by sessionmaker for the database engine
-    :param model:
+    :param source:
     :return: str: source id if source exists in the database, else None
     """
 
     try:
         source_row = session.query(Source) \
-            .filter_by(model=model) \
+            .filter_by(source=source) \
             .first()
         return None if source_row is None else source_row.id
     except Exception as e:
-        logger.error("Exception occurred while retrieving source id: model={}".format(model))
+        logger.error("Exception occurred while retrieving source id: source={}".format(source))
         traceback.print_exc()
         return False
     finally:
         session.close()
 
 
-def add_source(session, model, parameters):
+def add_source(session, source, parameters):
     """
     Insert sources into the database
     :param session: session made by sessionmaker for the database engine
-    :param model: string
+    :param source: string
     :param parameters: JSON
     :return: True if the source has been added to the "Source' table of the database, else False
     """
 
     try:
         source = Source(
-                model=model,
+                source=source,
                 parameters=parameters
                 )
 
@@ -81,8 +77,8 @@ def add_source(session, model, parameters):
 
         return True
     except Exception as e:
-        logger.error("Exception occurred while adding source: model={} and parameters={}"
-            .format(model, parameters))
+        logger.error("Exception occurred while adding source: source={} and parameters={}"
+            .format(source, parameters))
         traceback.print_exc()
         return False
     finally:
@@ -94,14 +90,8 @@ def add_sources(sources, session):
     Add sources into Source table
     :param sources: list of json objects that define source attributes
     e.g.:
-   {
-        'model'     : 'wrfSE',
-        'version'   : 'v3',
-        'parameters': { }
-    }
     {
-        'model'     : 'OBS_WATER_LEVEL',
-        'version'   : '',
+        'source'     : 'OBS_WATER_LEVEL',
         'parameters': {
                 "CHANNEL_CELL_MAP"               : {
                         "594" : "Wellawatta", "1547": "Ingurukade", "3255": "Yakbedda", "3730": "Wellampitiya",
@@ -114,19 +104,19 @@ def add_sources(sources, session):
 
     for source in sources:
 
-        print(add_source(session=session, model=source.get('model'), parameters=source.get('parameters')))
-        print(source.get('model'))
+        print(add_source(session=session, source=source.get('source'), parameters=source.get('parameters')))
+        print(source.get('source'))
 
 
-def delete_source(session, model):
+def delete_source(session, source):
     """
-    Delete source from Source table, given model and version
+    Delete source from Source table, given source and version
     :param session: session made by sessionmaker for the database engine
-    :param model: str
+    :param source: str
     :return: True if the deletion was successful, else False
     """
 
-    id_ = get_source_id(session=session, model=model)
+    id_ = get_source_id(session=session, source=source)
 
     try:
         if id_ is not None:

@@ -11,7 +11,7 @@ class Source(CurwObsBase):
     __tablename__ = 'source'
 
     id = Column(INTEGER(11), nullable=False, primary_key=True, autoincrement=True)
-    model = Column(VARCHAR(25), nullable=False)
+    source = Column(VARCHAR(25), nullable=False)
     parameters = Column(JSON, nullable=True)
 
     run_relationship = relationship("Run", back_populates="source_relationship", cascade="all, delete, delete-orphan")
