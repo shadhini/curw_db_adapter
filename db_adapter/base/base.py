@@ -26,3 +26,6 @@ def get_sessionmaker(engine):
 logger.info("Declaring an orm mapping for curw_fcst database.")
 CurwFcstBase = declarative_base()
 
+# CurwObsBase class for all the schema model classes of "curw-obs" database
+logger.info("Declaring an orm mapping for curw_obs database.")
+CurwObsBase = declarative_base()
