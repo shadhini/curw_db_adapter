@@ -1,6 +1,6 @@
 import traceback
-from db_adapter.curw_fcst.models import Station
-from db_adapter.curw_fcst.station.station_enum import StationEnum
+from db_adapter.curw_obs.models import Station
+from db_adapter.curw_obs.station.station_enum import StationEnum
 from db_adapter.logger import logger
 
 """
@@ -11,7 +11,7 @@ e.g.:
         'latitude'    : '6.535172',
         'longitude'   : '79.875435',
         'description' : '',
-        'station_type': StationEnum.WRF
+        'station_type': StationEnum.Government
     }
 """
 
