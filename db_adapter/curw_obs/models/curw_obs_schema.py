@@ -69,7 +69,6 @@ class Run(CurwObsBase):
     __tablename__ = 'run'
 
     id = Column(VARCHAR(64), nullable=False, primary_key=True, unique=True)
-    sim_tag = Column(VARCHAR(100), nullable=True)
     station = Column(INTEGER(11), ForeignKey(Station.id), nullable=False)
     source = Column(INTEGER(11), ForeignKey(Source.id), nullable=False)
     variable = Column(INTEGER(11), ForeignKey(Variable.id), nullable=False)
