@@ -2,6 +2,7 @@ import pandas as pd
 import hashlib
 import json
 import traceback
+import sqlalchemy as db
 
 from datetime import datetime
 
@@ -221,15 +222,27 @@ class Timeseries:
         finally:
             session.close()
 
+    def update_fgt(self, scheduled_date, fgt):
+        """
+        Update fgt for inserted timeseries
+        :param scheduled_date:
+        :return:
+        """
+        session = self.session
 
-
-
-
-
-
-
-
-
+        try:
+            session.query(Run) \
+                .filter_by(scheduled_date=scheduled_date) \
+                .update({ Run.fgt: fgt }, synchronize_session=False)
+            session.commit()
+            return True
+        except Exception as e:
+            logger.error("Exception occurred while updating fgt for scheduled_date={}"
+                    .format(scheduled_date))
+            traceback.print_exc()
+            return False
+        finally:
+            session.close()
 
 
 
