@@ -77,7 +77,7 @@ class Run(CurwFcstBase):
     source = Column(INTEGER(11), ForeignKey(Source.id), nullable=False)
     variable = Column(INTEGER(11), ForeignKey(Variable.id), nullable=False)
     unit = Column(INTEGER(11), ForeignKey(Unit.id), nullable=False)
-    fgt = Column(DATETIME, nullable=False)
+    fgt = Column(DATETIME, nullable=True)
     scheduled_date = Column(DATETIME, nullable=False)
 
     station_relationship = relationship('Station', foreign_keys='Run.station', back_populates="run_relationship")
