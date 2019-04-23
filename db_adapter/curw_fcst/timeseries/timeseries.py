@@ -51,7 +51,7 @@ class Timeseries:
         event_id = sha256.hexdigest()
         return event_id
 
-    def get_timeseries_id(self, meta_data):
+    def get_timeseries_id_if_exists(self, meta_data):
 
         """
         Check whether a timeseries id exists in the database for a given set of meta data
