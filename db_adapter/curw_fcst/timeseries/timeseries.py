@@ -2,7 +2,6 @@ import pandas as pd
 import hashlib
 import json
 import traceback
-import sqlalchemy as db
 
 from datetime import datetime
 
