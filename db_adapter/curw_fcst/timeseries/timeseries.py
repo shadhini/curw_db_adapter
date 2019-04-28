@@ -3,6 +3,8 @@ import hashlib
 import json
 import traceback
 
+from sqlalchemy.sql import select
+
 from datetime import datetime
 
 from db_adapter.curw_fcst.models import Data, Run
@@ -14,11 +16,12 @@ from db_adapter.logger import logger
 
 
 class Timeseries:
-    def __init__(self, session):
-        self.session = session
+    def __init__(self, engine):
+        self.engine = engine
 
     @staticmethod
     def generate_timeseries_id(meta_data: object) -> object:
+
         """
         Generate the event id for given metadata
         Only 'sim_tag', 'scheduled_date', 'latitude', 'longitude', 'model',
@@ -59,18 +62,18 @@ class Timeseries:
         :return: timeseries id if exist else None
         """
 
-        session = self.session
+        conn = self.engine.connect()
 
         event_id = self.generate_timeseries_id(meta_data)
         try:
-            run_row = session.query(Run).filter_by(id=event_id).first()
-            return None if run_row is None else run_row.id
+            run_row = conn.execute(select([Run.id]).where(Run.id==event_id)).fetchone()
+            return None if run_row is None else run_row[Run.__table__.c.id]
         except Exception as e:
             logger.error("Exception occurred while retrieving timeseries id for metadata={}".format(meta_data))
             traceback.print_exc()
             return False
         finally:
-            session.close()
+            conn.close()
 
     def is_id_exists(self, id_):
         """
@@ -78,46 +81,58 @@ class Timeseries:
         :param id_:
         :return: True, if id is in the database, False otherwise
         """
-        session = self.session
+        conn = self.engine.connect()
 
         try:
-            tms_entry = session.query(Run).filter_by(id=id_)
-            return False if tms_entry is None else True
+            tms_entry = conn.execute(select([Run.id]).where(Run.id == id_)).fetchone()
+            return False if tms_entry is None else tms_entry[Run.__table__.c.id]
         except Exception as e:
-            logger.error("Exception occurred while checking whether timeseries id {} exists in the run table".format(id_))
+            logger.error(
+                    "Exception occurred while checking whether timeseries id {} exists in the run table".format(id_))
             traceback.print_exc()
             return False
         finally:
-            session.close()
+            conn.close()
 
-    def insert_data(self, tms_id, timeseries):
+    def insert_data(self, timeseries):
         """
         Insert timeseries to Data table in the database
-        :param tms_id: hash value
-        :param timeseries: list of [time, value] lists
-        :return: timeseries id if insertion was successful, else False
+        :param timeseries: list of python dictionaries with 'tms_id', 'time', 'value' keys
+        e.g.:
+        [
+            {
+                "tms_id": "00000ee01a1e41780098f5dc9564bde365c8e6688ebf443ee5c1a75ef56c3b06",
+                "time": "2019-03-25 23:30:00",
+                "value": 0.000
+            },
+            {
+                "tms_id": "00000ee01a1e41780098f5dc9564bde365c8e6688ebf443ee5c1a75ef56c3b06",
+                "time": "2019-03-25 23:45:00",
+                "value": 0.020
+            }
+        ]
+
+        :return: True if insertion is successful, else False
         """
 
-        session = self.session
+        engine = self.engine
 
         try:
-            for item in range(len(timeseries)):
-                session.merge(Data(id=tms_id, time=timeseries[item][0], value=float(timeseries[item][1])))
-            # session.add_all(data_objects)
-            session.commit()
-            return tms_id
+            engine.execute(Data.__table__.insert(), timeseries)
+            return True
         except Exception as e:
-            logger.error("Exception occurred while inserting data to data table for tms id {}".format(tms_id))
+            logger.error(
+                    "Exception occurred while inserting data to data table for tms id {}".format(timeseries[0]['id']))
             traceback.print_exc()
             return False
         finally:
-            session.close()
+            return
 
     def insert_timeseries(self, timeseries, sim_tag, scheduled_date, latitude, longitude,
                           model, version, variable, unit, unit_type, fgt, start_date, end_date):
         """
         Insert new timeseries into the Run table and Data table, this will generate the tieseries id from the given meta data
-        :param timeseries: list of [time, value] lists
+        :param timeseries: list of [id, time, value] dictionaries
         :param sim_tag:
         :param scheduled_date:
         :param latitude:
@@ -128,7 +143,7 @@ class Timeseries:
         :param unit:
         :param unit_type: str value
         :param fgt:
-        :return: str: timeseries id if insertion was successful, else False
+        :return: str: True if insertion was successful, else raise Exception
         """
         tms_meta = {
                 'sim_tag'       : sim_tag,
@@ -145,81 +160,74 @@ class Timeseries:
         tms_id = Timeseries.generate_timeseries_id(tms_meta)
 
         station_id = get_station_id(self, latitude, longitude)
-        source_id = get_source_id(self,model, version)
+        source_id = get_source_id(self, model, version)
         variable_id = get_variable_id(self, variable)
         unit_id = get_unit_id(self, unit, unit_type)
 
-        run = Run(
-                id=tms_id,
-                sim_tag=sim_tag,
-                start_date=start_date,
-                end_date=end_date,
-                station=station_id,
-                source=source_id,
-                variable=variable_id,
-                unit=unit_id,
-                fgt=fgt,
-                scheduled_date=scheduled_date
-                )
+        run = {
+                'id'            : tms_id,
+                'sim_tag'       : sim_tag,
+                'start_date'    : start_date,
+                'end_date'      : end_date,
+                'station'       : station_id,
+                'source'        : source_id,
+                'variable'      : variable_id,
+                'unit'          : unit_id,
+                'fgt'           : None,
+                'scheduled_date': scheduled_date
+                }
 
-        session = self.session
+        engine = self.engine
 
+        connection = engine.connect()
+        trans = connection.begin()
         try:
-            session.add(run)
-            session.commit()
-            return self.insert_data(tms_id, timeseries)
-        except Exception as e:
-            logger.error("Exception occurred while inserting timeseries for sim_tag={}, scheduled_date={}, latitude={}, "
-                         "longitude={}, model={}, version={}, variable={}, unit={}, unit_type={}, fgt={}"
-                .format(sim_tag, scheduled_date, latitude, longitude, model, version, variable, unit, unit_type, fgt))
+            connection.execute(Run.insert(), run)
+            self.insert_data(timeseries)
+            trans.commit()
+            return True
+        except:
+            trans.rollback()
+            logger.error(
+                    "Exception occurred while inserting timeseries for sim_tag={}, scheduled_date={}, latitude={}, "
+                    "longitude={}, model={}, version={}, variable={}, unit={}, unit_type={}, fgt={}"
+                        .format(sim_tag, scheduled_date, latitude, longitude, model, version, variable, unit, unit_type,
+                            fgt))
             traceback.print_exc()
-            return False
+            raise Exception("Incomplete Timeseries Insertion : tms_id{}".format(tms_id))
         finally:
-            session.close()
+            connection.close()
+            return
 
-    def insert_timeseries(self, tms_id, timeseries, sim_tag, scheduled_date, station_id, source_id, variable_id,
-                          unit_id, fgt, start_date, end_date):
+    def insert_timeseries(self, timeseries, run):
 
         """
         Insert new timeseries into the Run table and Data table, for given timeseries id
-        :param tms_id:
-        :param timeseries: list of [time, value] lists
-        :param sim_tag:
-        :param scheduled_date:
-        :param station_id:
-        :param source_id:
-        :param variable_id:
-        :param unit_id: str value
-        :param fgt:
-        :return: timeseries id if insertion was successful, else False
+        :param run: dictionary that contains each row's column in run table
+        :param timeseries: list of dictionaries that contain each row's columns in data table
+        :return: True if insertion was successful, else raise Exception
         """
-        run = Run(
-                id=tms_id,
-                sim_tag=sim_tag,
-                start_date=start_date,
-                end_date=end_date,
-                station=station_id,
-                source=source_id,
-                variable=variable_id,
-                unit=unit_id,
-                fgt=fgt,
-                scheduled_date=scheduled_date
-                )
 
-        session = self.session
+        engine = self.engine
 
+        connection = engine.connect()
+        trans = connection.begin()
         try:
-            session.add(run)
-            session.commit()
-            return self.insert_data(tms_id, timeseries)
-        except Exception as e:
+            connection.execute(Run.__table__.insert(), run)
+            connection.execute(Data.__table__.insert(), timeseries)
+            trans.commit()
+            return True
+        except:
+            trans.rollback()
             logger.error("Exception occurred while inserting timeseries for tms_id={}, sim_tag={}, scheduled_date={}, "
-                         "station_id={}, source_id={}, variable_id={}, unit_id={}, fgt={}"
-                    .format(tms_id, sim_tag, scheduled_date, station_id, source_id, variable_id, unit_id, fgt))
+                         "station_id={}, source_id={}, variable_id={}, unit_id={}"
+                .format(run['id'], run['sim_tag'], run['scheduled_date'], run['station'], run['source'], ['variable'],
+                    run['unit']))
             traceback.print_exc()
-            return False
+            raise Exception("Incomplete Timeseries Insertion : tms_id{}".format(run['id']))
         finally:
-            session.close()
+            connection.close()
+            return
 
     def update_fgt(self, scheduled_date, fgt):
         """
@@ -237,21 +245,11 @@ class Timeseries:
             return True
         except Exception as e:
             logger.error("Exception occurred while updating fgt for scheduled_date={}"
-                    .format(scheduled_date))
+                .format(scheduled_date))
             traceback.print_exc()
             return False
         finally:
             session.close()
-
-
-
-
-
-
-
-
-
-
 
 
     def get_timeseries(self, timeseries_id, start_date, end_date):

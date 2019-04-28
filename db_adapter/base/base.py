@@ -13,18 +13,22 @@ def get_engine(dialect, driver, host, port, db, user, password):
     return create_engine(db_url, echo=False)
 
 
-# scoped_session is used for thread safety
 def get_sessionmaker(engine):
     logger.info("Define a Session class which will serve as a factory for new Session objects.")
-    session = scoped_session(sessionmaker())
+    return sessionmaker(bind=engine)
 
-    # removes the current Session associated with the thread
-    session.remove()
-
-    session.configure(bind=engine, autoflush=False, expire_on_commit=False)
-    # autoFLush: To sync the state of your application data with the state of the data in the databases
-
-    return session
+# # scoped_session is used for thread safety
+# def get_sessionmaker(engine):
+#     logger.info("Define a Session class which will serve as a factory for new Session objects.")
+#     session = scoped_session(sessionmaker())
+#
+#     # removes the current Session associated with the thread
+#     session.remove()
+#
+#     session.configure(bind=engine, autoflush=False, expire_on_commit=False)
+#     # autoFLush: To sync the state of your application data with the state of the data in the databases
+#
+#     return session
 
 # ---- declarative_base ----
 # allows us to create classes that include directives to describe the actual
