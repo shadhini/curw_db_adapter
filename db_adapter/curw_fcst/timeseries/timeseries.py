@@ -119,7 +119,8 @@ class Timeseries:
         engine = self.engine
 
         try:
-            engine.execute(Data.__table__.insert(), timeseries)
+            engine.execute(Data.__table__.insert(), timeseries[0])
+            engine.execute(Data.__table__.update(), timeseries)
             return True
         except Exception as e:
             logger.error(
