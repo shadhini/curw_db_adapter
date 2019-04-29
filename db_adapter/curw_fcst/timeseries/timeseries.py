@@ -129,7 +129,7 @@ class Timeseries:
         engine = self.engine
 
         try:
-            engine.execute(Data.insert(append_string='ON DUPLICATE KEY UPDATE id=id'), timeseries)
+            engine.execute(Data.__table__.insert(append_string='ON DUPLICATE KEY UPDATE id=id'), timeseries)
             # engine.execute(Data.insert(), timeseries[0])
             return True
         except Exception as e:
