@@ -134,7 +134,7 @@ class Timeseries:
 
         try:
             # engine.execute(Data.__table__.insert(mysql_append_string='ON DUPLICATE KEY UPDATE id=id'), timeseries)
-            connection.execute(Data.__table__.insert(), timeseries[0])
+            # connection.execute(Data.__table__.insert(), timeseries[0])
             connection.execute(Data.__table__.update().values(id=bindparam('id'), time=bindparam('time'), value=bindparam('value')), timeseries)
             return True
         except Exception as e:
@@ -268,7 +268,6 @@ class Timeseries:
             return False
         finally:
             session.close()
-
 
     def get_timeseries(self, timeseries_id, start_date, end_date):
         """
