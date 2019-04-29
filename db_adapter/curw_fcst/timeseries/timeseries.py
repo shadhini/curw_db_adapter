@@ -130,10 +130,12 @@ class Timeseries:
 
         engine = self.engine
 
+        connection = engine.connect()
+
         try:
             # engine.execute(Data.__table__.insert(mysql_append_string='ON DUPLICATE KEY UPDATE id=id'), timeseries)
-            engine.execute(Data.__table__.insert(), timeseries[0])
-            engine.execute(Data.__table__.update().values(id=bindparam('id'), time=bindparam('time'), value=bindparam('value')), timeseries)
+            connection.execute(Data.__table__.insert(), timeseries[0])
+            connection.execute(Data.__table__.update().values(id=bindparam('id'), time=bindparam('time'), value=bindparam('value')), timeseries)
             return True
         except Exception as e:
             logger.error(
@@ -141,6 +143,7 @@ class Timeseries:
             traceback.print_exc()
             raise Exception("Incomplete Timeseries Insertion : tms_id{}".format(timeseries[0]['id']))
         finally:
+            connection.close()
             return
 
     def insert_timeseries(self, timeseries, sim_tag, scheduled_date, latitude, longitude,
