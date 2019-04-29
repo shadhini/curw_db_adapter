@@ -11,8 +11,8 @@ from db_adapter.logger import logger
 @compiles(Insert)
 def append_string(insert, compiler, **kw):
     s = compiler.visit_insert(insert, **kw)
-    if 'append_string' in insert.kwargs:
-        return s + " " + insert.kwargs['append_string']
+    if 'appendstring' in insert.kwargs:
+        return s + " " + insert.kwargs['appendstring']
     return s
 
 
