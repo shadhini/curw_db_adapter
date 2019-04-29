@@ -226,7 +226,7 @@ class Timeseries:
         trans = connection.begin()
         try:
             connection.execute(Run.__table__.insert(), run)
-            connection.execute(Data.__table__.insert(), timeseries)
+            engine.execute(Data.insert(append_string='ON DUPLICATE KEY UPDATE id=id'), timeseries)
             trans.commit()
             return True
         except:
