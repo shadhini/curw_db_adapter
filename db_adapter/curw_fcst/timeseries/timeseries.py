@@ -4,6 +4,8 @@ import json
 import traceback
 
 from sqlalchemy.sql import select
+from sqlalchemy.ext.compiler import compiles
+from sqlalchemy.sql.expression import Insert
 
 from datetime import datetime
 
@@ -13,6 +15,14 @@ from db_adapter.curw_fcst.source import get_source_id
 from db_adapter.curw_fcst.variable import get_variable_id
 from db_adapter.curw_fcst.unit import get_unit_id
 from db_adapter.logger import logger
+
+@compiles(Insert)
+def append_string(insert, compiler, **kw):
+    s = compiler.visit_insert(insert, **kw)
+    if 'append_string' in insert.kwargs:
+        return s + " " + insert.kwargs['append_string']
+    return s
+
 
 
 class Timeseries:
@@ -119,8 +129,8 @@ class Timeseries:
         engine = self.engine
 
         try:
-            engine.execute(Data.__table__.insert(), timeseries[0])
-            engine.execute(Data.__table__.update(), timeseries)
+            engine.execute(Data.insert(append_string='ON DUPLICATE KEY UPDATE id=id'), timeseries)
+            # engine.execute(Data.insert(), timeseries[0])
             return True
         except Exception as e:
             logger.error(
@@ -226,7 +236,7 @@ class Timeseries:
                 .format(run['id'], run['sim_tag'], run['scheduled_date'], run['station'], run['source'], ['variable'],
                     run['unit']))
             traceback.print_exc()
-            raise Exception("Incomplete Timeseries Insertion : tms_id{}".format(run['id']))
+            raise Exception("Incomplete Timeseries Insertion : tms_id {}".format(run['id']))
         finally:
             connection.close()
             return
