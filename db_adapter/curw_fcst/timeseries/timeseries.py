@@ -20,8 +20,8 @@ from db_adapter.logger import logger
 @compiles(Insert)
 def append_string(insert, compiler, **kw):
     s = compiler.visit_insert(insert, **kw)
-    if 'mysql_appendstring' in insert.kwargs:
-        return s + " " + insert.kwargs['mysql_appendstring']
+    if 'mysql_append_string' in insert.kwargs:
+        return s + " " + insert.kwargs['mysql_append_string']
     return s
 
 
@@ -129,7 +129,7 @@ class Timeseries:
         engine = self.engine
 
         try:
-            engine.execute(Data.__table__.insert(mysql_appendstring='ON DUPLICATE KEY UPDATE id=id'), timeseries)
+            engine.execute(Data.__table__.insert(mysql_append_string='ON DUPLICATE KEY UPDATE id=id'), timeseries)
             # engine.execute(Data.insert(), timeseries[0])
             return True
         except Exception as e:
@@ -226,7 +226,7 @@ class Timeseries:
         trans = connection.begin()
         try:
             connection.execute(Run.__table__.insert(), run)
-            engine.execute(Data.__table__.insert(mysql_appendstring='ON DUPLICATE KEY UPDATE id=id'), timeseries)
+            engine.execute(Data.__table__.insert(mysql_append_string='ON DUPLICATE KEY UPDATE id=id'), timeseries)
             trans.commit()
             return True
         except:
