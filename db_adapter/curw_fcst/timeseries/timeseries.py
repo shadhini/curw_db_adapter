@@ -17,12 +17,12 @@ from db_adapter.curw_fcst.unit import get_unit_id
 from db_adapter.logger import logger
 
 
-# @compiles(Insert)
-# def append_string(insert, compiler, **kw):
-#     s = compiler.visit_insert(insert, **kw)
-#     if 'append_string' in insert.kwargs:
-#         return s + " " + insert.kwargs['append_string']
-#     return s
+@compiles(Insert)
+def append_string(insert, compiler, **kw):
+    s = compiler.visit_insert(insert, **kw)
+    if 'mysql_appendstring' in insert.kwargs:
+        return s + " " + insert.kwargs['mysql_appendstring']
+    return s
 
 
 class Timeseries:
