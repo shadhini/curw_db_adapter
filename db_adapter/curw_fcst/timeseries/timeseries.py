@@ -16,13 +16,13 @@ from db_adapter.curw_fcst.variable import get_variable_id
 from db_adapter.curw_fcst.unit import get_unit_id
 from db_adapter.logger import logger
 
-@compiles(Insert)
-def append_string(insert, compiler, **kw):
-    s = compiler.visit_insert(insert, **kw)
-    if 'append_string' in insert.kwargs:
-        return s + " " + insert.kwargs['append_string']
-    return s
 
+# @compiles(Insert)
+# def append_string(insert, compiler, **kw):
+#     s = compiler.visit_insert(insert, **kw)
+#     if 'append_string' in insert.kwargs:
+#         return s + " " + insert.kwargs['append_string']
+#     return s
 
 
 class Timeseries:
