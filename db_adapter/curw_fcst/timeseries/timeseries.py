@@ -4,8 +4,10 @@ import json
 import traceback
 
 from sqlalchemy.sql import select
-from sqlalchemy.ext.compiler import compiles
-from sqlalchemy.sql.expression import Insert
+from sqlalchemy import bindparam
+
+# from sqlalchemy.ext.compiler import compiles
+# from sqlalchemy.sql.expression import Insert
 
 from datetime import datetime
 
@@ -16,13 +18,13 @@ from db_adapter.curw_fcst.variable import get_variable_id
 from db_adapter.curw_fcst.unit import get_unit_id
 from db_adapter.logger import logger
 
-
-@compiles(Insert)
-def append_string(insert, compiler, **kw):
-    s = compiler.visit_insert(insert, **kw)
-    if 'mysql_append_string' in insert.kwargs:
-        return s + " " + insert.kwargs['mysql_append_string']
-    return s
+#
+# @compiles(Insert)
+# def append_string(insert, compiler, **kw):
+#     s = compiler.visit_insert(insert, **kw)
+#     if 'mysql_append_string' in insert.kwargs:
+#         return s + " " + insert.kwargs['mysql_append_string']
+#     return s
 
 
 class Timeseries:
@@ -128,16 +130,23 @@ class Timeseries:
 
         engine = self.engine
 
+        connection = engine.connect()
+        trans = connection.begin()
+
         try:
-            engine.execute(Data.__table__.insert(mysql_append_string='ON DUPLICATE KEY UPDATE id=id'), timeseries)
-            # engine.execute(Data.insert(), timeseries[0])
+            # engine.execute(Data.__table__.insert(mysql_append_string='ON DUPLICATE KEY UPDATE id=id'), timeseries)
+            connection.execute(Data.__table__.insert(), timeseries[0])
+            connection.execute(Data.__table__.update().values(id=bindparam('id'), time=bindparam('time'), value=bindparam('value')), timeseries)
+            trans.commit()
             return True
         except Exception as e:
+            trans.rollback()
             logger.error(
                     "Exception occurred while inserting data to data table for tms id {}".format(timeseries[0]['id']))
             traceback.print_exc()
-            return False
+            raise Exception("Incomplete Timeseries Insertion : tms_id{}".format(timeseries[0]['id']))
         finally:
+            connection.close()
             return
 
     def insert_timeseries(self, timeseries, sim_tag, scheduled_date, latitude, longitude,
@@ -226,7 +235,7 @@ class Timeseries:
         trans = connection.begin()
         try:
             connection.execute(Run.__table__.insert(), run)
-            engine.execute(Data.__table__.insert(mysql_append_string='ON DUPLICATE KEY UPDATE id=id'), timeseries)
+            self.insert_data(timeseries)
             trans.commit()
             return True
         except:
