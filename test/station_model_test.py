@@ -5,7 +5,7 @@ from db_adapter.constants import (
     )
 from db_adapter.constants import DIALECT_MYSQL, DRIVER_PYMYSQL
 
-from db_adapter.curw_fcst.station import StationEnum, get_station_by_id, get_station_id, delete_station, add_stations
+from db_adapter.curw_fcst_old.station import StationEnum, get_station_by_id, get_station_id, delete_station, add_stations
 
 stations = [
         {

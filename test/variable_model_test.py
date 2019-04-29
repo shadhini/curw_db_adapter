@@ -5,7 +5,7 @@ from db_adapter.constants import (
     )
 from db_adapter.constants import DIALECT_MYSQL, DRIVER_PYMYSQL
 
-from db_adapter.curw_fcst.variable import (
+from db_adapter.curw_fcst_old.variable import (
     get_variable_by_id, get_variable_id, add_variables, delete_variable_by_id,
     delete_variable,
     )

@@ -1,4 +1,4 @@
-from db_adapter.curw_fcst.models import Source
+from db_adapter.curw_fcst_old.models import Source
 from db_adapter.logger import logger
 import traceback
 

@@ -5,7 +5,7 @@ from db_adapter.constants import (
     )
 from db_adapter.constants import DIALECT_MYSQL, DRIVER_PYMYSQL
 
-from db_adapter.curw_fcst.unit import UnitType, get_unit_id, delete_unit_by_id, delete_unit
+from db_adapter.curw_fcst_old.unit import UnitType, get_unit_id, delete_unit_by_id, delete_unit
 
 
 units = [
