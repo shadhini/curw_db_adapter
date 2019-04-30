@@ -3,7 +3,7 @@ import pymysql
 
 def create_db_connection(host, user, password, database, port):
     # Open database connection
-    db = pymysql.connect(host, user, password, database, port)
+    db = pymysql.connect(host=host, user=user, password=password, database=database, port=port, autocommit=True)
     return db
 
 
