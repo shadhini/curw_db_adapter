@@ -1,7 +1,7 @@
-from db_adapter.base import get_engine, get_sessionmaker
-from db_adapter.constants import DIALECT_MYSQL, DRIVER_PYMYSQL
+from db_adapter.temp.base import get_engine, get_sessionmaker
+from db_adapter.temp.constants import DIALECT_MYSQL, DRIVER_PYMYSQL
 
-from db_adapter.curw_fcst.source import delete_source, add_sources
+from db_adapter.temp.curw_fcst import add_sources
 
 USERNAME = "root"
 PASSWORD = "password"

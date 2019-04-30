@@ -1,1 +1,1 @@
-from .exceptions import DbAdapterError, InconsistencyError, NoTimeseriesFound, DatabaseAdapterError
+from .exceptions import DataLayerError, InconsistencyError, NoTimeseriesFound

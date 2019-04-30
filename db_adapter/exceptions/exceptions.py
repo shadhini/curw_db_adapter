@@ -1,7 +1,7 @@
 from pprint import PrettyPrinter
 
 
-class DatabaseAdapterError(Exception):
+class AdapterError(Exception):
     """
     Curw Base class for data-layer errors.
     """
@@ -12,7 +12,7 @@ class DatabaseAdapterError(Exception):
     pass
 
 
-class InconsistencyError(DatabaseAdapterError):
+class InconsistencyError(AdapterError):
     def __init__(self, message, error_context):
         self.message = message
         self.error_context = error_context
@@ -21,7 +21,7 @@ class InconsistencyError(DatabaseAdapterError):
         return self.message + ", " + self.printer.pprint(self.error_context)
 
 
-class NoTimeseriesFound(DatabaseAdapterError):
+class NoTimeseriesFound(AdapterError):
     def __init__(self, message, error_context):
         self.message = message
         self.error_context = error_context
@@ -30,7 +30,7 @@ class NoTimeseriesFound(DatabaseAdapterError):
         return self.message + ", " + self.printer.pprint(self.error_context)
 
 
-class DatabaseAdapterError(DatabaseAdapterError):
+class DatabaseAdapterError(AdapterError):
     def __init__(self, message):
         self.message = message
 

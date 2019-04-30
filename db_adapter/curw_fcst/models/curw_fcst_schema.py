@@ -100,6 +100,7 @@ class Data(CurwFcstBase):
     id = Column(VARCHAR(64), ForeignKey(Run.id), nullable=False, primary_key=True)
     time = Column(DATETIME, nullable=False, primary_key=True)
     value = Column(DECIMAL(8, 3), nullable=False)
+    # fgt = Column(DATETIME, nullable=False)  # to be removed
 
     id_relationship = relationship('Run', foreign_keys='Data.id', back_populates="data_relationship")
 

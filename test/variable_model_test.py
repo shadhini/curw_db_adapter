@@ -1,11 +1,11 @@
-from db_adapter.base import get_engine, get_sessionmaker
-from db_adapter.constants import (
+from db_adapter.temp.base import get_engine, get_sessionmaker
+from db_adapter.temp.constants import (
     CURW_FCST_USERNAME, CURW_FCST_PASSWORD, CURW_FCST_HOST, CURW_FCST_PORT,
     CURW_FCST_DATABASE,
     )
-from db_adapter.constants import DIALECT_MYSQL, DRIVER_PYMYSQL
+from db_adapter.temp.constants import DIALECT_MYSQL, DRIVER_PYMYSQL
 
-from db_adapter.curw_fcst.variable import (
+from db_adapter.temp.curw_fcst import (
     get_variable_by_id, get_variable_id, add_variables, delete_variable_by_id,
     delete_variable,
     )
