@@ -1,13 +1,13 @@
 from db_adapter.base import get_engine, get_sessionmaker
 from db_adapter.constants import DIALECT_MYSQL, DRIVER_PYMYSQL
 
-from db_adapter.curw_fcst_old.source import delete_source, add_sources
+from db_adapter.curw_fcst.source import delete_source, add_sources
 
 USERNAME = "root"
 PASSWORD = "password"
 HOST = "127.0.0.1"
 PORT = 3306
-DATABASE = "curw_fcst_old"
+DATABASE = "curw_fcst"
 
 sources = [
         {

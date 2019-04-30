@@ -23,7 +23,7 @@ def get_sessionmaker(engine):
 
 
 # CurwFcstBase class for all the schema model classes of "curw-fcst" database
-logger.info("Declaring an orm mapping for curw_fcst_old database.")
+logger.info("Declaring an orm mapping for curw_fcst database.")
 CurwFcstBase = declarative_base()
 
 # CurwObsBase class for all the schema model classes of "curw-obs" database

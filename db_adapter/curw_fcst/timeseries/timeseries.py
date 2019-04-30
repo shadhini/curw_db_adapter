@@ -5,11 +5,11 @@ import traceback
 
 from datetime import datetime
 
-from db_adapter.curw_fcst_old.models import Data, Run
-from db_adapter.curw_fcst_old.station import get_station_id
-from db_adapter.curw_fcst_old.source import get_source_id
-from db_adapter.curw_fcst_old.variable import get_variable_id
-from db_adapter.curw_fcst_old.unit import get_unit_id
+from db_adapter.curw_fcst.models import Data, Run
+from db_adapter.curw_fcst.station import get_station_id
+from db_adapter.curw_fcst.source import get_source_id
+from db_adapter.curw_fcst.variable import get_variable_id
+from db_adapter.curw_fcst.unit import get_unit_id
 from db_adapter.logger import logger
 
 

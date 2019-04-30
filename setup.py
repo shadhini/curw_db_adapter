@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
         name='db_adapter',
-        version='2.0.1',
+        version='2.1.0',
         author="Shadhini Jayatilake",
         author_email="shadhini.jayatilake@gmail.com",
         license='MIT',
