@@ -14,8 +14,8 @@ from db_adapter.logger import logger
 
 
 class Timeseries:
-    def __init__(self, pool):
-        self.pool = pool
+    def __init__(self, session):
+        self.session = session
 
     @staticmethod
     def generate_timeseries_id(meta_data: object) -> object:
