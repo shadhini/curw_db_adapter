@@ -1,38 +1,41 @@
-import pymysql
+from pymysqlpool.pool import Pool
 
 
-def create_db_connection(host, user, password, database, port):
-    # Open database connection
-    db = pymysql.connect(host=host, user=user, password=password, database=database, port=port, autocommit=True)
-    return db
+def get_Pool(host, port, user, password, db):
+    # uses pymysql.cursors.DictCursor
+    pool = Pool(host=host, port=port, user=user, password=password, db=db, autocommit=False, max_size=5)
+    pool.init()
 
-
-def get_cursor(connection):
-    # prepare a cursor object using cursor() method
-    cursor = connection.cursor()
-
-# # execute SQL query using execute() method.
-# cursor.execute("SELECT VERSION()")
+# connection = pool.get_conn()
+# cur = connection.cursor()
+# cur.execute('SELECT * FROM `pet` WHERE `name`=%s', args=("Puffball", ))
+# print(cur.fetchone())
 #
-# # Drop table if it already exist using execute() method.
-# cursor.execute("DROP TABLE IF EXISTS EMPLOYEE")
+# pool.release(connection)
+
+# Connect to the database
+# connection = pymysql.connect(host='localhost',
+#                              user='user',
+#                              password='passwd',
+#                              db='db',
+#                              charset='utf8mb4',
+#                              cursorclass=pymysql.cursors.DictCursor)
 #
-# # Create table as per requirement
-# sql = """CREATE TABLE EMPLOYEE (
-#    FIRST_NAME  CHAR(20) NOT NULL,
-#    LAST_NAME  CHAR(20),
-#    AGE INT,
-#    SEX CHAR(1),
-#    INCOME FLOAT )"""
+# try:
+#     with connection.cursor() as cursor:
+#         # Create a new record
+#         sql = "INSERT INTO `users` (`email`, `password`) VALUES (%s, %s)"
+#         cursor.execute(sql, ('webmaster@python.org', 'very-secret'))
 #
-# cursor.execute(sql)
-
-
-# # Fetch a single row using fetchone() method.
-# data = cursor.fetchone()
-# print ("Database version : %s " % data)
-
-# disconnect from server
-
-def close_connection(connection):
-    connection.close()
+#     # connection is not autocommit by default. So you must commit to save
+#     # your changes.
+#     connection.commit()
+#
+#     with connection.cursor() as cursor:
+#         # Read a single record
+#         sql = "SELECT `id`, `password` FROM `users` WHERE `email`=%s"
+#         cursor.execute(sql, ('webmaster@python.org',))
+#         result = cursor.fetchone()
+#         print(result)
+# finally:
+#     connection.close()

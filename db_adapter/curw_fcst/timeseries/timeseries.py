@@ -11,11 +11,12 @@ from db_adapter.curw_fcst.source import get_source_id
 from db_adapter.curw_fcst.variable import get_variable_id
 from db_adapter.curw_fcst.unit import get_unit_id
 from db_adapter.logger import logger
+from db_adapter.exceptions import DatabaseAdapterError
 
 
 class Timeseries:
-    def __init__(self, session):
-        self.session = session
+    def __init__(self, pool):
+        self.pool = pool
 
     @staticmethod
     def generate_timeseries_id(meta_data: object) -> object:
@@ -56,21 +57,24 @@ class Timeseries:
         Check whether a timeseries id exists in the database for a given set of meta data
         :param meta_data: Dict with 'sim_tag', 'scheduled_date', 'latitude',
         'longitude', 'model', 'version', 'variable', 'unit', 'unit_type' keys
-        :return: timeseries id if exist else None
+        :return: timeseries id if exist else raise DatabaseAdapterError
         """
-
-        session = self.session
-
         event_id = self.generate_timeseries_id(meta_data)
+
+        connection = self.pool.get()
         try:
-            run_row = session.query(Run).filter_by(id=event_id).first()
-            return None if run_row is None else run_row.id
-        except Exception as e:
-            logger.error("Exception occurred while retrieving timeseries id for metadata={}".format(meta_data))
+            with connection.cursor() as cursor:
+                sql_statement = "SELECT 1 FROM `run` WHERE `id`=%s"
+                is_exist = cursor.execute(sql_statement, event_id).fetchone()
+            return None if is_exist is None else event_id
+        except Exception as ex:
+            error_message = "Retrieving timeseries id for metadata={} failed.".format(meta_data)
+            logger.error(error_message)
             traceback.print_exc()
-            return False
+            raise DatabaseAdapterError(error_message, ex)
         finally:
-            session.close()
+            if connection is not None:
+                self.pool.put(connection)
 
     def is_id_exists(self, id_):
         """
@@ -78,43 +82,122 @@ class Timeseries:
         :param id_:
         :return: True, if id is in the database, False otherwise
         """
-        session = self.session
-
+        connection = self.pool.get()
         try:
-            tms_entry = session.query(Run).filter_by(id=id_)
-            return False if tms_entry is None else True
-        except Exception as e:
-            logger.error("Exception occurred while checking whether timeseries id {} exists in the run table".format(id_))
+            with connection.cursor() as cursor:
+                sql_statement = "SELECT 1 FROM `run` WHERE `id`=%s"
+                is_exist = cursor.execute(sql_statement, id_).fetchone()
+            return False if is_exist is None else True
+        except Exception as ex:
+            error_message = "Check operation to find timeseries id {} in the run table failed.".format(id_)
+            logger.error(error_message)
             traceback.print_exc()
-            return False
+            raise DatabaseAdapterError(error_message, ex)
         finally:
-            session.close()
+            if connection is not None:
+                self.pool.put(connection)
 
-    def insert_data(self, tms_id, timeseries):
+    def insert_data(self, timeseries, upsert=False):
         """
         Insert timeseries to Data table in the database
         :param tms_id: hash value
-        :param timeseries: list of [time, value] lists
-        :return: timeseries id if insertion was successful, else False
+        :param timeseries: list of [tms_id, time, value] lists
+        :param boolean upsert: If True, upsert existing values ON DUPLICATE KEY. Default is False.
+        Ref: 1). https://stackoverflow.com/a/14383794/1461060
+             2). https://chartio.com/resources/tutorials/how-to-insert-if-row-does-not-exist-upsert-in-mysql/
+        :return: row count if insertion was successful, else False
         """
 
-        session = self.session
-
+        row_count = 0
+        connection = self.pool.get()
         try:
-            for item in range(len(timeseries)):
-                session.merge(Data(id=tms_id, time=timeseries[item][0], value=float(timeseries[item][1])))
-            # session.add_all(data_objects)
-            session.commit()
-            return tms_id
-        except Exception as e:
-            logger.error("Exception occurred while inserting data to data table for tms id {}".format(tms_id))
+            with connection.cursor() as cursor:
+
+                if upsert:
+                    sql_statement = "INSERT INTO `data` (`id`, `time`, `value`) VALUES (%s, %s, %s) " \
+                                    "ON DUPLICATE KEY UPDATE `value`=VALUES(`value`)"
+                else:
+                    sql_statement = "INSERT INTO `data` (`id`, `time`, `value`) VALUES (%s, %s, %s)"
+
+                row_count = cursor.executemany(sql_statement, timeseries)
+
+            return row_count
+
+        except Exception as ex:
+            error_message = "Data insertion to data table for tms id {}, upsert={} failed.".format(timeseries[0][0], upsert)
+            logger.error(error_message)
             traceback.print_exc()
-            return False
+            raise DatabaseAdapterError(error_message, ex)
         finally:
-            session.close()
+            if connection is not None:
+                self.pool.put(connection)
+
+
+    #     connection = self.pool.get()
+    #     try:
+    #         sql = [
+    #             "SELECT `id` as `station_id` FROM `station` WHERE `name`=%s",
+    #             "SELECT `id` as `variable_id` FROM `variable` WHERE `variable`=%s",
+    #             "SELECT `id` as `unit_id` FROM `unit` WHERE `unit`=%s",
+    #             "SELECT `id` as `type_id` FROM `type` WHERE `type`=%s",
+    #             "SELECT `id` as `source_id` FROM `source` WHERE `source`=%s"
+    #         ]
+    #
+    #         def check_foreign_key_reference(cursor_value, key_name, key_value):
+    #             if cursor_value is not None:
+    #                 return cursor_value[0]
+    #             else:
+    #                 raise DatabaseConstrainAdapterError("Could not find %s with value %s" % (key_name, key_value))
+    #
+    #         station_id = None
+    #         variable_id = None
+    #         unit_id = None
+    #         type_id = None
+    #         source_id = None
+    #         with connection.cursor() as cursor1:
+    #             cursor1.execute(sql[0], (meta_data['station']))
+    #             station_id = check_foreign_key_reference(cursor1.fetchone(), 'station', meta_data['station'])
+    #         with connection.cursor() as cursor2:
+    #             cursor2.execute(sql[1], (meta_data['variable']))
+    #             variable_id = check_foreign_key_reference(cursor2.fetchone(), 'variable', meta_data['variable'])
+    #         with connection.cursor() as cursor3:
+    #             cursor3.execute(sql[2], (meta_data['unit']))
+    #             unit_id = check_foreign_key_reference(cursor3.fetchone(), 'unit', meta_data['unit'])
+    #         with connection.cursor() as cursor4:
+    #             cursor4.execute(sql[3], (meta_data['type']))
+    #             type_id = check_foreign_key_reference(cursor4.fetchone(), 'type', meta_data['type'])
+    #         with connection.cursor() as cursor5:
+    #             cursor5.execute(sql[4], (meta_data['source']))
+    #             source_id = check_foreign_key_reference(cursor5.fetchone(), 'source', meta_data['source'])
+    #
+    #         with connection.cursor() as cursor6:
+    #             sql = "INSERT INTO `run` (`id`, `name`, `station`, `variable`, `unit`, `type`, `source`) VALUES (%s, %s, %s, %s, %s, %s, %s)"
+    #
+    #             sql_values = (
+    #                 event_id,
+    #                 meta_data['name'],
+    #                 station_id,
+    #                 variable_id,
+    #                 unit_id,
+    #                 type_id,
+    #                 source_id
+    #             )
+    #             cursor6.execute(sql, sql_values)
+    #             return event_id
+    #
+    #     except DatabaseConstrainAdapterError as ae:
+    #         #TODO logging and raising is considered as a cliche' and bad practice.
+    #         logging.error("Database Constraint Violation Error: %s" % ae.message)
+    #         raise ae
+    #     except Exception as ex:
+    #         raise DatabaseAdapterError("Error while creating event_id for meta_data: %s" % meta_data, ex)
+    #     finally:
+    #         if connection is not None:
+    #             self.pool.put(connection)
+    #
 
     def insert_timeseries(self, timeseries, sim_tag, scheduled_date, latitude, longitude,
-                          model, version, variable, unit, unit_type, fgt, start_date, end_date):
+                          model, version, variable, unit, unit_type, start_date, end_date, fgt=None):
         """
         Insert new timeseries into the Run table and Data table, this will generate the tieseries id from the given meta data
         :param timeseries: list of [time, value] lists
@@ -145,7 +228,7 @@ class Timeseries:
         tms_id = Timeseries.generate_timeseries_id(tms_meta)
 
         station_id = get_station_id(self, latitude, longitude)
-        source_id = get_source_id(self,model, version)
+        source_id = get_source_id(self, model, version)
         variable_id = get_variable_id(self, variable)
         unit_id = get_unit_id(self, unit, unit_type)
 
@@ -378,209 +461,8 @@ class Timeseries:
     #     """
     #     return self.station_struct
     #
-    # def get_event_id(self, meta_data):
-    #     """Get the event id for given meta data
-    #     NOTE: Only 'station', 'variable', 'unit', 'type', 'source', 'name' fields use for generate hash value
-    #
-    #     :param dict meta_data: Dict of Meta Data that use to create the hash
-    #     Meta Data should contains all required following keys s.t.
-    #     {
-    #         'station': 'Hanwella',
-    #         'variable': 'Discharge',
-    #         'unit': 'm3/s',
-    #         'type': 'Forecast',
-    #         'source': 'HEC-HMS',
-    #         'name': 'Cloud Continuous'
-    #     }
-    #
-    #     :return str: sha256 hash value in hex format (length of 64 characters). If does not exists, return None.
-    #     """
-    #     event_id = None
-    #     m = hashlib.sha256()
-    #
-    #     hash_data = dict(self.meta_struct)
-    #     for i, value in enumerate(self.meta_struct_keys):
-    #         hash_data[value] = meta_data[value]
-    #     logging.debug('hash Data:: %s', hash_data)
-    #
-    #     m.update(json.dumps(hash_data, sort_keys=True).encode("ascii"))
-    #     possible_id = m.hexdigest()
-    #     connection = self.pool.get()
-    #     try:
-    #         with connection.cursor() as cursor:
-    #             sql = "SELECT 1 FROM `run` WHERE `id`=%s"
-    #
-    #             cursor.execute(sql, possible_id)
-    #             is_exist = cursor.fetchone()
-    #             if is_exist is not None:
-    #                 event_id = possible_id
-    #         return event_id
-    #     except Exception as ex:
-    #         error_message = 'Error in retrieving event_id for meta data: %s.' % meta_data
-    #         #TODO logging and raising is .considered as a cliche' and bad practice.
-    #         logging.error(error_message)
-    #         raise DatabaseAdapterError(error_message, ex)
-    #     finally:
-    #         if connection is not None:
-    #             self.pool.put(connection)
-    #
-    # def create_event_id(self, meta_data):
-    #     """
-    #     Create a new event id for given meta data
-    #
-    #     :param dict meta_data: Dict of Meta Data that use to create the hash
-    #     Meta Data should contains all of following keys s.t.
-    #     {
-    #         'station': 'Hanwella',
-    #         'variable': 'Precipitation',
-    #         'unit': 'mm',
-    #         'type': 'Forecast',
-    #         'source': 'WRF',
-    #         'name': 'WRF 1st'
-    #     }
-    #     If end_date   is not set, use default date as "01 Jan 2050 00:00:00 GMT"
-    #
-    #     :return str: sha256 hash value in hex format (length of 64 characters)
-    #     """
-    #     hash_data = dict(self.meta_struct)
-    #     for i, value in enumerate(self.meta_struct_keys):
-    #         hash_data[value] = meta_data[value]
-    #
-    #     m = hashlib.sha256()
-    #
-    #     m.update(json.dumps(hash_data, sort_keys=True).encode("ascii"))
-    #     event_id = m.hexdigest()
-    #     connection = self.pool.get()
-    #     try:
-    #         sql = [
-    #             "SELECT `id` as `station_id` FROM `station` WHERE `name`=%s",
-    #             "SELECT `id` as `variable_id` FROM `variable` WHERE `variable`=%s",
-    #             "SELECT `id` as `unit_id` FROM `unit` WHERE `unit`=%s",
-    #             "SELECT `id` as `type_id` FROM `type` WHERE `type`=%s",
-    #             "SELECT `id` as `source_id` FROM `source` WHERE `source`=%s"
-    #         ]
-    #
-    #         def check_foreign_key_reference(cursor_value, key_name, key_value):
-    #             if cursor_value is not None:
-    #                 return cursor_value[0]
-    #             else:
-    #                 raise DatabaseConstrainAdapterError("Could not find %s with value %s" % (key_name, key_value))
-    #
-    #         station_id = None
-    #         variable_id = None
-    #         unit_id = None
-    #         type_id = None
-    #         source_id = None
-    #         with connection.cursor() as cursor1:
-    #             cursor1.execute(sql[0], (meta_data['station']))
-    #             station_id = check_foreign_key_reference(cursor1.fetchone(), 'station', meta_data['station'])
-    #         with connection.cursor() as cursor2:
-    #             cursor2.execute(sql[1], (meta_data['variable']))
-    #             variable_id = check_foreign_key_reference(cursor2.fetchone(), 'variable', meta_data['variable'])
-    #         with connection.cursor() as cursor3:
-    #             cursor3.execute(sql[2], (meta_data['unit']))
-    #             unit_id = check_foreign_key_reference(cursor3.fetchone(), 'unit', meta_data['unit'])
-    #         with connection.cursor() as cursor4:
-    #             cursor4.execute(sql[3], (meta_data['type']))
-    #             type_id = check_foreign_key_reference(cursor4.fetchone(), 'type', meta_data['type'])
-    #         with connection.cursor() as cursor5:
-    #             cursor5.execute(sql[4], (meta_data['source']))
-    #             source_id = check_foreign_key_reference(cursor5.fetchone(), 'source', meta_data['source'])
-    #
-    #         with connection.cursor() as cursor6:
-    #             sql = "INSERT INTO `run` (`id`, `name`, `station`, `variable`, `unit`, `type`, `source`) VALUES (%s, %s, %s, %s, %s, %s, %s)"
-    #
-    #             sql_values = (
-    #                 event_id,
-    #                 meta_data['name'],
-    #                 station_id,
-    #                 variable_id,
-    #                 unit_id,
-    #                 type_id,
-    #                 source_id
-    #             )
-    #             cursor6.execute(sql, sql_values)
-    #             return event_id
-    #
-    #     except DatabaseConstrainAdapterError as ae:
-    #         #TODO logging and raising is considered as a cliche' and bad practice.
-    #         logging.error("Database Constraint Violation Error: %s" % ae.message)
-    #         raise ae
-    #     except Exception as ex:
-    #         raise DatabaseAdapterError("Error while creating event_id for meta_data: %s" % meta_data, ex)
-    #     finally:
-    #         if connection is not None:
-    #             self.pool.put(connection)
-    #
-    # def insert_timeseries(self, event_id, timeseries, upsert=False, mode=Data.data):
-    #     """Insert timeseries into the db against given event_id
-    #
-    #     :param string event_id: Hex Hash value that need to store timeseries against.
-    #
-    #     :param list   timeseries: List of time series of time & value list ['2017-05-01 00:00:00', 1.08]
-    #     E.g. [ ['2017-05-01 00:00:00', 1.08], ['2017-05-01 01:00:00', 2.04], ... ]
-    #
-    #     :param boolean upsert: If True, upsert existing values ON DUPLICATE KEY. Default is False.
-    #     Ref: 1). https://stackoverflow.com/a/14383794/1461060
-    #          2). https://chartio.com/resources/tutorials/how-to-insert-if-row-does-not-exist-upsert-in-mysql/
-    #
-    #     :param dict opts: Options dict for insert timeseries s.t.
-    #     {
-    #         mode: 'data', 'processed_data', # Default is 'data'
-    #     }
-    #
-    #     :return int: Affected row count.
-    #     """
-    #     if not isinstance(mode, Data):
-    #         raise InvalidDataAdapterError("Provided Data type %s is invalid" % mode)
-    #
-    #     row_count = 0
-    #     connection = self.pool.get()
-    #     try:
-    #         with connection.cursor() as cursor1:
-    #             sql_table = "INSERT INTO `%s`" % mode.value
-    #             sql = sql_table + " (`id`, `time`, `value`) VALUES (%s, %s, %s)"
-    #
-    #             if upsert:
-    #                 sql = sql_table + \
-    #                       " (`id`, `time`, `value`) VALUES (%s, %s, %s) ON DUPLICATE KEY UPDATE `value`=VALUES(`value`)"
-    #
-    #             # Refer to performance in copy list : https://stackoverflow.com/a/2612990/1461060
-    #             timeseries_copy = []
-    #             for item in timeseries:
-    #                 timeseries_copy.append(item[:])
-    #
-    #             new_timeseries = []
-    #             for t in [i for i in timeseries_copy]:
-    #                 if len(t) > 1:
-    #                     # Format value into 3 decimal palaces
-    #                     t[1] = round(float(t[1]), 3)
-    #                     # Insert EventId in font of timestamp, value list
-    #                     t.insert(0, event_id)
-    #                     new_timeseries.append(t)
-    #                 else:
-    #                     logging.warning('Invalid timeseries data:: %s', t)
-    #
-    #             logging.debug(new_timeseries[:10])
-    #             row_count = cursor1.executemany(sql, new_timeseries)
-    #
-    #         with connection.cursor() as cursor2:
-    #             sql = "UPDATE `run` SET `start_date`=(SELECT MIN(time) from `data` WHERE id=%s), " +\
-    #                   "`end_date`=(SELECT MAX(time) from `data` WHERE id=%s) WHERE id=%s"
-    #             cursor2.execute(sql, (event_id, event_id, event_id))
-    #
-    #         return row_count
-    #
-    #     except Exception as ex:
-    #         error_message = 'Error in insterting timeseries: ' \
-    #                         '(event_id: %s, upsert: %s, mode: %s)' % (event_id, upsert, mode)
-    #         # TODO logging and raising is considered as a cliche' and bad practice.
-    #         logging.error(error_message)
-    #         raise DatabaseAdapterError(error_message, ex)
-    #     finally:
-    #         if connection is not None:
-    #             self.pool.put(connection)
-    #
+
+
     # def delete_timeseries(self, event_id):
     #     """Delete given timeseries from the database
     #
