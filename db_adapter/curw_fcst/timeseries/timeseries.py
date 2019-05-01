@@ -92,7 +92,7 @@ class Timeseries:
             error_message = "Check operation to find timeseries id {} in the run table failed.".format(id_)
             logger.error(error_message)
             traceback.print_exc()
-            raise DatabaseAdapterError(error_message, ex)
+            raise False
         finally:
             if connection is not None:
                 self.pool.release(connection)
@@ -105,7 +105,7 @@ class Timeseries:
         :param boolean upsert: If True, upsert existing values ON DUPLICATE KEY. Default is False.
         Ref: 1). https://stackoverflow.com/a/14383794/1461060
              2). https://chartio.com/resources/tutorials/how-to-insert-if-row-does-not-exist-upsert-in-mysql/
-        :return: row count if insertion was successful, else False
+        :return: row count if insertion was successful, else raise DatabaseAdapterError
         """
 
         row_count = 0
@@ -146,7 +146,7 @@ class Timeseries:
         :param unit:
         :param unit_type: str value
         :param fgt:
-        :return: str: timeseries id if insertion was successful, else False
+        :return: str: timeseries id if insertion was successful, else raise DatabaseAdapterError
         """
         tms_meta = {
                 'sim_tag'       : sim_tag,
@@ -234,7 +234,7 @@ class Timeseries:
         :param variable_id:
         :param unit_id: str value
         :param fgt:
-        :return: timeseries id if insertion was successful, else False
+        :return: timeseries id if insertion was successful, else raise DatabaseAdapterError
         """
 
         connection = self.pool.get_conn()
@@ -267,18 +267,17 @@ class Timeseries:
         """
         Update fgt for inserted timeseries
         :param scheduled_date:
-        :return:
+        :return: scheduled data if update is sccessfull, else raise DatabaseAdapterError
         """
 
         connection = self.pool.get_conn()
         try:
 
             with connection.cursor() as cursor:
-                sql_statement = "UPDATE `run` SET `fgt`=%s WHERE `id`=(SELECT `id` FROM `run` WHERE `scheduled_date`=%s)"\
-                    .format(fgt, scheduled_date)
-                cursor.execute(sql_statement, sql_values)
+                sql_statement="UPDATE `run` SET `fgt`=%s WHERE `id`=(SELECT `id` FROM `run` WHERE `scheduled_date`=%s)"
+                cursor.execute(sql_statement, (fgt, scheduled_date))
             connection.commit()
-            return tms_id
+            return
         except Exception as ex:
             connection.rollback()
             error_message = "Updating fgt for scheduled_date={} failed.".format(scheduled_date)
