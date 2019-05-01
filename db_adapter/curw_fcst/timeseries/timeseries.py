@@ -61,7 +61,7 @@ class Timeseries:
         """
         event_id = self.generate_timeseries_id(meta_data)
 
-        connection = self.pool.get()
+        connection = self.pool.get_conn()
         try:
             with connection.cursor() as cursor:
                 sql_statement = "SELECT 1 FROM `run` WHERE `id`=%s"
@@ -74,7 +74,7 @@ class Timeseries:
             raise DatabaseAdapterError(error_message, ex)
         finally:
             if connection is not None:
-                self.pool.put(connection)
+                self.pool.release(connection)
 
     def is_id_exists(self, id_):
         """
@@ -82,7 +82,7 @@ class Timeseries:
         :param id_:
         :return: True, if id is in the database, False otherwise
         """
-        connection = self.pool.get()
+        connection = self.pool.get_conn()
         try:
             with connection.cursor() as cursor:
                 sql_statement = "SELECT 1 FROM `run` WHERE `id`=%s"
@@ -95,7 +95,7 @@ class Timeseries:
             raise DatabaseAdapterError(error_message, ex)
         finally:
             if connection is not None:
-                self.pool.put(connection)
+                self.pool.release(connection)
 
     def insert_data(self, timeseries, upsert=False):
         """
@@ -109,92 +109,27 @@ class Timeseries:
         """
 
         row_count = 0
-        connection = self.pool.get()
+        connection = self.pool.get_conn()
         try:
             with connection.cursor() as cursor:
-
                 if upsert:
                     sql_statement = "INSERT INTO `data` (`id`, `time`, `value`) VALUES (%s, %s, %s) " \
                                     "ON DUPLICATE KEY UPDATE `value`=VALUES(`value`)"
                 else:
                     sql_statement = "INSERT INTO `data` (`id`, `time`, `value`) VALUES (%s, %s, %s)"
-
                 row_count = cursor.executemany(sql_statement, timeseries)
-
+            connection.commit()
             return row_count
-
         except Exception as ex:
+            connection.rollback()
             error_message = "Data insertion to data table for tms id {}, upsert={} failed.".format(timeseries[0][0], upsert)
             logger.error(error_message)
             traceback.print_exc()
             raise DatabaseAdapterError(error_message, ex)
+
         finally:
             if connection is not None:
-                self.pool.put(connection)
-
-
-    #     connection = self.pool.get()
-    #     try:
-    #         sql = [
-    #             "SELECT `id` as `station_id` FROM `station` WHERE `name`=%s",
-    #             "SELECT `id` as `variable_id` FROM `variable` WHERE `variable`=%s",
-    #             "SELECT `id` as `unit_id` FROM `unit` WHERE `unit`=%s",
-    #             "SELECT `id` as `type_id` FROM `type` WHERE `type`=%s",
-    #             "SELECT `id` as `source_id` FROM `source` WHERE `source`=%s"
-    #         ]
-    #
-    #         def check_foreign_key_reference(cursor_value, key_name, key_value):
-    #             if cursor_value is not None:
-    #                 return cursor_value[0]
-    #             else:
-    #                 raise DatabaseConstrainAdapterError("Could not find %s with value %s" % (key_name, key_value))
-    #
-    #         station_id = None
-    #         variable_id = None
-    #         unit_id = None
-    #         type_id = None
-    #         source_id = None
-    #         with connection.cursor() as cursor1:
-    #             cursor1.execute(sql[0], (meta_data['station']))
-    #             station_id = check_foreign_key_reference(cursor1.fetchone(), 'station', meta_data['station'])
-    #         with connection.cursor() as cursor2:
-    #             cursor2.execute(sql[1], (meta_data['variable']))
-    #             variable_id = check_foreign_key_reference(cursor2.fetchone(), 'variable', meta_data['variable'])
-    #         with connection.cursor() as cursor3:
-    #             cursor3.execute(sql[2], (meta_data['unit']))
-    #             unit_id = check_foreign_key_reference(cursor3.fetchone(), 'unit', meta_data['unit'])
-    #         with connection.cursor() as cursor4:
-    #             cursor4.execute(sql[3], (meta_data['type']))
-    #             type_id = check_foreign_key_reference(cursor4.fetchone(), 'type', meta_data['type'])
-    #         with connection.cursor() as cursor5:
-    #             cursor5.execute(sql[4], (meta_data['source']))
-    #             source_id = check_foreign_key_reference(cursor5.fetchone(), 'source', meta_data['source'])
-    #
-    #         with connection.cursor() as cursor6:
-    #             sql = "INSERT INTO `run` (`id`, `name`, `station`, `variable`, `unit`, `type`, `source`) VALUES (%s, %s, %s, %s, %s, %s, %s)"
-    #
-    #             sql_values = (
-    #                 event_id,
-    #                 meta_data['name'],
-    #                 station_id,
-    #                 variable_id,
-    #                 unit_id,
-    #                 type_id,
-    #                 source_id
-    #             )
-    #             cursor6.execute(sql, sql_values)
-    #             return event_id
-    #
-    #     except DatabaseConstrainAdapterError as ae:
-    #         #TODO logging and raising is considered as a cliche' and bad practice.
-    #         logging.error("Database Constraint Violation Error: %s" % ae.message)
-    #         raise ae
-    #     except Exception as ex:
-    #         raise DatabaseAdapterError("Error while creating event_id for meta_data: %s" % meta_data, ex)
-    #     finally:
-    #         if connection is not None:
-    #             self.pool.put(connection)
-    #
+                self.pool.release(connection)
 
     def insert_timeseries(self, timeseries, sim_tag, scheduled_date, latitude, longitude,
                           model, version, variable, unit, unit_type, start_date, end_date, fgt=None):
@@ -227,38 +162,63 @@ class Timeseries:
 
         tms_id = Timeseries.generate_timeseries_id(tms_meta)
 
-        station_id = get_station_id(self, latitude, longitude)
-        source_id = get_source_id(self, model, version)
-        variable_id = get_variable_id(self, variable)
-        unit_id = get_unit_id(self, unit, unit_type)
-
-        run = Run(
-                id=tms_id,
-                sim_tag=sim_tag,
-                start_date=start_date,
-                end_date=end_date,
-                station=station_id,
-                source=source_id,
-                variable=variable_id,
-                unit=unit_id,
-                fgt=fgt,
-                scheduled_date=scheduled_date
-                )
-
-        session = self.session
-
+        connection = self.pool.get_conn()
         try:
-            session.add(run)
-            session.commit()
-            return self.insert_data(tms_id, timeseries)
-        except Exception as e:
-            logger.error("Exception occurred while inserting timeseries for sim_tag={}, scheduled_date={}, latitude={}, "
-                         "longitude={}, model={}, version={}, variable={}, unit={}, unit_type={}, fgt={}"
-                .format(sim_tag, scheduled_date, latitude, longitude, model, version, variable, unit, unit_type, fgt))
+            sql_statements = [
+                "SELECT `id` as `source_id` FROM `source` WHERE `source`=%s",
+                "SELECT `id` FROM `source` WHERE `model`=%s and `version`=%s",
+                "SELECT `id` FROM `station` WHERE `latitude`=%s and `longitude`=%s",
+                "SELECT `id` FROM `unit` WHERE `unit`=%s and `type`=%s",
+                "SELECT `id` FROM `variable` WHERE `variable`=%s"
+            ]
+
+            station_id = None
+            source_id = None
+            variable_id = None
+            unit_id = None
+
+            with connection.cursor() as cursor1:
+                source_id = cursor1.execute(sql_statements[0], (model, version)).fetchone()
+            with connection.cursor() as cursor2:
+                station_id = cursor2.execute(sql_statements[1], (latitude, longitude)).fetchone()
+            with connection.cursor() as cursor3:
+                unit_id = cursor3.execute(sql_statements[2], (unit, unit_type)).fetchone()
+            with connection.cursor() as cursor4:
+                variable_id = cursor4.execute(sql_statements[3], variable).fetchone()
+
+            with connection.cursor() as cursor5:
+                sql_statement = "INSERT INTO `run` (`id`, `sim_tag`, `start_date`, `end_date`, `station`, `source`, " \
+                                "`variable`, `unit`, `fgt`, `scheduled_date`) " \
+                                "VALUES ( %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+                sql_values = (tms_id, sim_tag, start_date, end_date, station_id, source_id, variable_id, unit_id, fgt, scheduled_date)
+                cursor5.execute(sql_statement, sql_values)
+
+            new_timeseries = []
+            for t in [i for i in timeseries]:
+                if len(t) > 1:
+                    # Insert EventId in front of timestamp, value list
+                    t.insert(0, tms_id)
+                    new_timeseries.append(t)
+                else:
+                    logger.warning('Invalid timeseries data:: %s', t)
+
+            self.insert_data(new_timeseries, True)
+
+            connection.commit()
+            return tms_id
+
+
+        except Exception as ex:
+            connection.rollback()
+            error_message = "Insertion failed for timeseries with sim_tag={}, scheduled_date={}, " \
+                            "latitude={}, longitude={}, model={}, version={}, variable={}, unit={}, unit_type={}, fgt={}"\
+                .format(sim_tag, scheduled_date, latitude, longitude, model, version, variable, unit, unit_type, fgt)
+            logger.error(error_message)
             traceback.print_exc()
-            return False
+            raise DatabaseAdapterError(error_message, ex)
         finally:
-            session.close()
+            if connection is not None:
+                self.pool.release(connection)
 
     def insert_timeseries(self, tms_id, timeseries, sim_tag, scheduled_date, station_id, source_id, variable_id,
                           unit_id, fgt, start_date, end_date):
@@ -266,7 +226,7 @@ class Timeseries:
         """
         Insert new timeseries into the Run table and Data table, for given timeseries id
         :param tms_id:
-        :param timeseries: list of [time, value] lists
+        :param timeseries: list of [tms_id, time, value] lists
         :param sim_tag:
         :param scheduled_date:
         :param station_id:
@@ -276,33 +236,32 @@ class Timeseries:
         :param fgt:
         :return: timeseries id if insertion was successful, else False
         """
-        run = Run(
-                id=tms_id,
-                sim_tag=sim_tag,
-                start_date=start_date,
-                end_date=end_date,
-                station=station_id,
-                source=source_id,
-                variable=variable_id,
-                unit=unit_id,
-                fgt=fgt,
-                scheduled_date=scheduled_date
-                )
 
-        session = self.session
-
+        connection = self.pool.get_conn()
         try:
-            session.add(run)
-            session.commit()
-            return self.insert_data(tms_id, timeseries)
-        except Exception as e:
-            logger.error("Exception occurred while inserting timeseries for tms_id={}, sim_tag={}, scheduled_date={}, "
-                         "station_id={}, source_id={}, variable_id={}, unit_id={}, fgt={}"
-                    .format(tms_id, sim_tag, scheduled_date, station_id, source_id, variable_id, unit_id, fgt))
+
+            with connection.cursor() as cursor:
+                sql_statement = "INSERT INTO `run` (`id`, `sim_tag`, `start_date`, `end_date`, `station`, `source`, " \
+                                "`variable`, `unit`, `fgt`, `scheduled_date`) " \
+                                "VALUES ( %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+                sql_values = (tms_id, sim_tag, start_date, end_date, station_id, source_id, variable_id, unit_id, fgt,
+                              scheduled_date)
+                cursor.execute(sql_statement, sql_values)
+
+            self.insert_data(timeseries, True)
+            connection.commit()
+            return tms_id
+        except Exception as ex:
+            connection.rollback()
+            error_message = "Insertion failed for timeseries with tms_id={}, sim_tag={}, scheduled_date={}, " \
+                            "station_id={}, source_id={}, variable_id={}, unit_id={}, fgt={}"\
+                .format(tms_id, sim_tag, scheduled_date, station_id, source_id, variable_id, unit_id, fgt)
+            logger.error(error_message)
             traceback.print_exc()
-            return False
+            raise DatabaseAdapterError(error_message, ex)
         finally:
-            session.close()
+            if connection is not None:
+                self.pool.release(connection)
 
     def update_fgt(self, scheduled_date, fgt):
         """
@@ -310,21 +269,25 @@ class Timeseries:
         :param scheduled_date:
         :return:
         """
-        session = self.session
 
+        connection = self.pool.get_conn()
         try:
-            session.query(Run) \
-                .filter_by(scheduled_date=scheduled_date) \
-                .update({ Run.fgt: fgt }, synchronize_session=False)
-            session.commit()
-            return True
-        except Exception as e:
-            logger.error("Exception occurred while updating fgt for scheduled_date={}"
-                    .format(scheduled_date))
+
+            with connection.cursor() as cursor:
+                sql_statement = "UPDATE `run` SET `fgt`=%s WHERE `id`=(SELECT `id` FROM `run` WHERE `scheduled_date`=%s)"\
+                    .format(fgt, scheduled_date)
+                cursor.execute(sql_statement, sql_values)
+            connection.commit()
+            return tms_id
+        except Exception as ex:
+            connection.rollback()
+            error_message = "Updating fgt for scheduled_date={} failed.".format(scheduled_date)
+            logger.error(error_message)
             traceback.print_exc()
-            return False
+            raise DatabaseAdapterError(error_message, ex)
         finally:
-            session.close()
+            if connection is not None:
+                self.pool.release(connection)
 
 
 
@@ -335,85 +298,83 @@ class Timeseries:
 
 
 
-
-
-    def get_timeseries(self, timeseries_id, start_date, end_date):
-        """
-        Retrieves the timeseries corresponding to given id s.t.
-        time is in between given start_date (inclusive) and end_date (exclusive).
-
-        :param timeseries_id: string timeseries id
-        :param start_date: datetime object
-        :param end_date: datetime object
-        :return: array of [id, time, value]: pandas DataFrame
-        """
-
-        if not isinstance(start_date, datetime) or \
-                not isinstance(end_date, datetime):
-            raise ValueError(
-                    'start_date and/or end_date are not of datetime type.',
-                    start_date, end_date)
-
-        session = self.Session()
-        try:
-            result = session.query(Data).filter(
-                    Data.id==timeseries_id,
-                    Data.time >= start_date, Data.time < end_date
-                    ).all()
-            timeseries = [[data_obj.time, data_obj.value] for data_obj in result]
-            return pd.DataFrame(
-                    data=timeseries,
-                    columns=['time', 'value']) \
-                .set_index(keys='time')
-        finally:
-            session.close()
-
-    def update_timeseries(self, timeseries_id, timeseries, should_overwrite):
-
-        """
-        Add timeseries to the Data table / Update timeseries in the Data table
-        :param timeseries_id:
-        :param timeseries: pandas DataFrame, with 'time' as index
-        and 'value' as the column
-        :param should_overwrite:
-        :return:
-        """
-
-        if not isinstance(timeseries, pd.DataFrame):
-            raise ValueError(
-                    'The "timeseries" shoud be a pandas Dataframe '
-                    'containing (time, value) in rows')
-
-        session = self.Session()
-        try:
-            if should_overwrite:
-                # update on conflict duplicate key.
-                for index, row in timeseries.iterrows():
-                    session.merge(
-                            Data(id=timeseries_id, time=index.to_pydatetime(),
-                                    value=float(row['value'])))
-                session.commit()
-                return True
-
-            else:
-
-                # The bulk save feature allows for a lower-latency INSERT/UPDATE
-                # of rows at the expense of most other unit-of-work features.
-                # Features such as object management, relationship handling,
-                # and SQL clause support are silently omitted in favor of raw
-                # INSERT/UPDATES of records.
-                # raise IntegrityError on duplicate key.
-                data_obj_list = []
-                for index, row in timeseries.iterrows():
-                    data_obj_list.append(
-                            Data(id=timeseries_id, time=index.to_pydatetime(),
-                                    value=float(row['value'])))
-
-                session.bulk_save_objects(data_obj_list)
-                session.commit()
-                return True
-        finally:
-            session.close()
+    # def get_timeseries(self, timeseries_id, start_date, end_date):
+    #     """
+    #     Retrieves the timeseries corresponding to given id s.t.
+    #     time is in between given start_date (inclusive) and end_date (exclusive).
+    #
+    #     :param timeseries_id: string timeseries id
+    #     :param start_date: datetime object
+    #     :param end_date: datetime object
+    #     :return: array of [id, time, value]: pandas DataFrame
+    #     """
+    #
+    #     if not isinstance(start_date, datetime) or \
+    #             not isinstance(end_date, datetime):
+    #         raise ValueError(
+    #                 'start_date and/or end_date are not of datetime type.',
+    #                 start_date, end_date)
+    #
+    #     session = self.Session()
+    #     try:
+    #         result = session.query(Data).filter(
+    #                 Data.id==timeseries_id,
+    #                 Data.time >= start_date, Data.time < end_date
+    #                 ).all()
+    #         timeseries = [[data_obj.time, data_obj.value] for data_obj in result]
+    #         return pd.DataFrame(
+    #                 data=timeseries,
+    #                 columns=['time', 'value']) \
+    #             .set_index(keys='time')
+    #     finally:
+    #         session.close()
+    #
+    # def update_timeseries(self, timeseries_id, timeseries, should_overwrite):
+    #
+    #     """
+    #     Add timeseries to the Data table / Update timeseries in the Data table
+    #     :param timeseries_id:
+    #     :param timeseries: pandas DataFrame, with 'time' as index
+    #     and 'value' as the column
+    #     :param should_overwrite:
+    #     :return:
+    #     """
+    #
+    #     if not isinstance(timeseries, pd.DataFrame):
+    #         raise ValueError(
+    #                 'The "timeseries" shoud be a pandas Dataframe '
+    #                 'containing (time, value) in rows')
+    #
+    #     session = self.Session()
+    #     try:
+    #         if should_overwrite:
+    #             # update on conflict duplicate key.
+    #             for index, row in timeseries.iterrows():
+    #                 session.merge(
+    #                         Data(id=timeseries_id, time=index.to_pydatetime(),
+    #                                 value=float(row['value'])))
+    #             session.commit()
+    #             return True
+    #
+    #         else:
+    #
+    #             # The bulk save feature allows for a lower-latency INSERT/UPDATE
+    #             # of rows at the expense of most other unit-of-work features.
+    #             # Features such as object management, relationship handling,
+    #             # and SQL clause support are silently omitted in favor of raw
+    #             # INSERT/UPDATES of records.
+    #             # raise IntegrityError on duplicate key.
+    #             data_obj_list = []
+    #             for index, row in timeseries.iterrows():
+    #                 data_obj_list.append(
+    #                         Data(id=timeseries_id, time=index.to_pydatetime(),
+    #                                 value=float(row['value'])))
+    #
+    #             session.bulk_save_objects(data_obj_list)
+    #             session.commit()
+    #             return True
+    #     finally:
+    #         session.close()
 
 
 
