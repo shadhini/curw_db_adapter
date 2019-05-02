@@ -36,7 +36,11 @@ def get_source_by_id(pool, id_):
 
         with connection.cursor() as cursor:
             sql_statement = "SELECT * FROM `source` WHERE `id`=%s"
-            return cursor.execute(sql_statement, id_)
+            result = cursor.execute(sql_statement, id_)
+            if result > 0:
+                return result.fetchone()
+            else:
+                return None
     except Exception as ex:
         error_message = "Retrieving source with source_id {} failed".format(id_)
         logger.error(error_message)
@@ -61,7 +65,11 @@ def get_source_id(pool, model, version) -> str:
 
         with connection.cursor() as cursor:
             sql_statement = "SELECT `id` FROM `source` WHERE `model`=%s and `version`=%s"
-            return cursor.execute(sql_statement, (model, version))
+            result = cursor.execute(sql_statement, (model, version))
+            if result > 0:
+                return result.fetchone()
+            else:
+                return None
     except Exception as ex:
         error_message = "Retrieving source id: model={} and version={} failed.".format(model, version)
         logger.error(error_message)
