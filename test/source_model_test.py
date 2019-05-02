@@ -1,13 +1,12 @@
-from db_adapter.temp.base import get_engine, get_sessionmaker
-from db_adapter.temp.constants import DIALECT_MYSQL, DRIVER_PYMYSQL
+from db_adapter.base import get_Pool
 
-from db_adapter.temp.curw_fcst import add_sources
+from db_adapter.curw_fcst.source import add_sources, get_source_id, get_source_by_id, delete_source, delete_source_by_id
 
 USERNAME = "root"
 PASSWORD = "password"
 HOST = "127.0.0.1"
 PORT = 3306
-DATABASE = "curw_fcst"
+DATABASE = "test_schema"
 
 sources = [
         {
@@ -66,28 +65,26 @@ sources = [
                 }
         ]
 
-engine = get_engine(DIALECT_MYSQL, DRIVER_PYMYSQL, HOST, PORT, DATABASE,
-            USERNAME, PASSWORD)
-
-Session = get_sessionmaker(engine=engine)  # Session is a class
-session = Session()
-
+pool = get_Pool(host=HOST, port=PORT, user=USERNAME, password=PASSWORD, db=DATABASE)
 
 print("########### Add Sources #################################")
-print(add_sources(sources=sources, session=session))
+print(add_sources(sources=sources, pool=pool))
 
 
-# print("########### Get Sources by id ###########################")
-# print("Id 3:", get_source_by_id(session=session, id_="3"))
-#
-#
-# print("########## Retrieve source id ###########################")
-# print("'model': 'OBS_WATER_LEVEL', 'version': ''", get_source_id(session=session, model="OBS_WATER_LEVEL", version=""))
-#
-#
-# print("######### Delete source by id ###########################")
-# print("Id 3 deleted status: ", delete_source_by_id(session=session, id_=3))
-#
-# print("######### Delete source with given model, version #######")
-# print("model': 'wrfSE', 'version': 'v3' delete status :",
-#         delete_source(session=session, model="wrfSE", version="v3"))
+print("########### Get Sources by id ###########################")
+print("Id 24:", get_source_by_id(pool=pool, id_="24"))
+
+
+print("########## Retrieve source id ###########################")
+print("'model': 'OBS_WATER_LEVEL', 'version': ''", get_source_id(pool=pool, model="OBS_WATER_LEVEL", version=""))
+
+
+print("######### Delete source by id ###########################")
+print("Id 24 deleted status: ", delete_source_by_id(pool=pool, id_=24))
+
+print("######### Delete source with given model, version #######")
+print("model': 'wrfSE', 'version': 'v3' delete status :",
+        delete_source(pool=pool, model="wrfSE", version="v3"))
+
+pool.destroy()
+exit(0)

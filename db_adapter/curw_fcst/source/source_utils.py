@@ -1,7 +1,8 @@
-from db_adapter.exceptions import DatabaseAdapterError
-from db_adapter.logger import logger
+import json
 import traceback
 
+from db_adapter.exceptions import DatabaseAdapterError
+from db_adapter.logger import logger
 """
 Source JSON Object would looks like this 
 e.g.:
@@ -36,9 +37,9 @@ def get_source_by_id(pool, id_):
 
         with connection.cursor() as cursor:
             sql_statement = "SELECT * FROM `source` WHERE `id`=%s"
-            result = cursor.execute(sql_statement, id_)
-            if result > 0:
-                return result.fetchone()
+            row_count = cursor.execute(sql_statement, id_)
+            if row_count > 0:
+                return cursor.fetchone()
             else:
                 return None
     except Exception as ex:
@@ -65,9 +66,9 @@ def get_source_id(pool, model, version) -> str:
 
         with connection.cursor() as cursor:
             sql_statement = "SELECT `id` FROM `source` WHERE `model`=%s and `version`=%s"
-            result = cursor.execute(sql_statement, (model, version))
-            if result > 0:
-                return result.fetchone()
+            row_count = cursor.execute(sql_statement, (model, version))
+            if row_count > 0:
+                return cursor.fetchone()
             else:
                 return None
     except Exception as ex:
@@ -94,10 +95,14 @@ def add_source(pool, model, version, parameters=None):
     try:
 
         with connection.cursor() as cursor:
-            sql_statement = "INSERT INTO `source` (`model`, `version`, `parameters`) VALUES ( %s, %s, %s)"
-            row_count = cursor.execute(sql_statement, (model, version, parameters))
-            connection.commit()
-            return True if row_count > 0 else False
+            if get_source_id(pool=pool, model=model, version=version) is None:
+                sql_statement = "INSERT INTO `source` (`model`, `version`, `parameters`) VALUES ( %s, %s, %s)"
+                row_count = cursor.execute(sql_statement, (model, version, json.dumps(parameters)))
+                connection.commit()
+                return True if row_count > 0 else False
+            else:
+                logger.info("Source with model={} and version={} already exists in the database".format(model, version))
+                return False
     except Exception as ex:
         connection.rollback()
         error_message = "Insertion of source: model={}, version={} and parameters={} failed".format(model, version, parameters)
