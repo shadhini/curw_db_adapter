@@ -72,7 +72,7 @@ print(add_sources(sources=sources, pool=pool))
 
 
 print("########### Get Sources by id ###########################")
-print("Id 24:", get_source_by_id(pool=pool, id_="24"))
+print("Id 3:", get_source_by_id(pool=pool, id_="3"))
 
 
 print("########## Retrieve source id ###########################")
@@ -80,7 +80,7 @@ print("'model': 'OBS_WATER_LEVEL', 'version': ''", get_source_id(pool=pool, mode
 
 
 print("######### Delete source by id ###########################")
-print("Id 24 deleted status: ", delete_source_by_id(pool=pool, id_=24))
+print("Id 3 deleted status: ", delete_source_by_id(pool=pool, id_=3))
 
 print("######### Delete source with given model, version #######")
 print("model': 'wrfSE', 'version': 'v3' delete status :",

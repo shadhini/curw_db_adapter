@@ -1,11 +1,13 @@
-from db_adapter.temp.base import get_engine, get_sessionmaker
-from db_adapter.temp.constants import (
-    CURW_FCST_USERNAME, CURW_FCST_PASSWORD, CURW_FCST_HOST, CURW_FCST_PORT,
-    CURW_FCST_DATABASE,
-    )
-from db_adapter.temp.constants import DIALECT_MYSQL, DRIVER_PYMYSQL
+from db_adapter.base import get_Pool
 
-from db_adapter.temp.curw_fcst import StationEnum, get_station_by_id, get_station_id, delete_station, add_stations
+from db_adapter.curw_fcst.station import StationEnum, add_stations, get_station_id, get_station_by_id, \
+    delete_station_by_id, delete_station
+
+USERNAME = "root"
+PASSWORD = "password"
+HOST = "127.0.0.1"
+PORT = 3306
+DATABASE = "test_schema"
 
 stations = [
         {
@@ -52,29 +54,25 @@ stations = [
                 }
         ]
 
-engine = get_engine(DIALECT_MYSQL, DRIVER_PYMYSQL, CURW_FCST_HOST, CURW_FCST_PORT, CURW_FCST_DATABASE,
-            CURW_FCST_USERNAME, CURW_FCST_PASSWORD)
-
-Session = get_sessionmaker(engine=engine)  # Session is a class
-session = Session()
-
+pool = get_Pool(host=HOST, port=PORT, user=USERNAME, password=PASSWORD, db=DATABASE)
 
 print("########### Add Stations ########################")
-print(add_stations(stations=stations, session=session))
+print(add_stations(stations=stations, pool=pool))
 
 
 print("########### Get Stations by id ##################")
-print("Id 300001:", get_station_by_id(session=session, id_="300001"))
+print("Id 300001:", get_station_by_id(pool=pool, id_="300001"))
 
 
 print("########## Retrieve station id ##################")
-print("latitude=6.872778, longitude=80.564444, station_type=StationEnum.Government:", get_station_id(session=session,
-        latitude="6.872778", longitude="80.564444", station_type=StationEnum.Government))
-
+# print("latitude=6.872778, longitude=80.564444, station_type=StationEnum.Government:", get_station_id(pool=pool,
+#         latitude="6.872778", longitude="80.564444", station_type=StationEnum.Government))
+print("latitude=6.872778, longitude=80.564444, station_type=StationEnum.Government:", get_station_id(pool=pool,
+        latitude="5.72296905517578", longitude="79.6031494140625", station_type=StationEnum.WRF))
 
 print("######### Delete station by id #################")
-# print("Id 100001 deleted status: ", delete_station_by_id(session=session, id_=100001))
+print("Id 100001 deleted status: ", delete_station_by_id(pool=pool, id_=100001))
 
 print("######### Delete station with given latitude, longitude, station_type #######")
 print("latitude=6.871389, longitude=80.524444, station_type=StationEnum.Government :",
-        delete_station(session=session, latitude=6.871389, longitude=80.524444, station_type=StationEnum.Government))
+        delete_station(pool=pool, latitude=6.871389, longitude=80.524444, station_type=StationEnum.Government))
