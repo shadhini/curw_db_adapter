@@ -79,7 +79,7 @@ def add_source(pool, model, version, parameters=None):
     :param model: string
     :param version: string
     :param parameters: JSON
-    :return: True if the source has been added to the "Source' table of the database, else raise DatabaseAdapterError
+    :return: True if the source has been added to the "Source' table of the database, else False
     """
 
     connection = pool.get_conn()
@@ -87,12 +87,12 @@ def add_source(pool, model, version, parameters=None):
 
         with connection.cursor() as cursor:
             sql_statement = "INSERT INTO `source` (`model`, `version`, `parameters`) VALUES ( %s, %s, %s)"
-            cursor.execute(sql_statement, (model, version, parameters))
-        connection.commit()
-        return True
+            row_count = cursor.execute(sql_statement, (model, version, parameters))
+            connection.commit()
+            return True if row_count > 0 else False
     except Exception as ex:
         connection.rollback()
-        error_message = "Retrieving source id: model={} and version={} failed.".format(model, version)
+        error_message = "Insertion of source: model={}, version={} and parameters={} failed".format(model, version, parameters)
         logger.error(error_message)
         traceback.print_exc()
         raise DatabaseAdapterError(error_message, ex)
@@ -145,12 +145,17 @@ def delete_source(pool, model, version):
 
         with connection.cursor() as cursor:
             sql_statement = "DELETE FROM `source` WHERE `model`=%s and `version`=%s"
-            cursor.execute(sql_statement, (model, version))
-        connection.commit()
+            row_count = cursor.execute(sql_statement, (model, version))
+            connection.commit()
+            if row_count > 0:
+                return True
+            else:
+                logger.info("There's no record in the database with model={} and version={}".format(model, version))
+                return False
         return True
     except Exception as ex:
         connection.rollback()
-        error_message = "Retrieving source id: model={} and version={} failed.".format(model, version)
+        error_message = "Deleting source with model={} and version={} failed.".format(model, version)
         logger.error(error_message)
         traceback.print_exc()
         raise DatabaseAdapterError(error_message, ex)
@@ -164,7 +169,7 @@ def delete_source_by_id(pool, id_):
     Delete source from Source table by id
     :param pool: database connection pool
     :param id_:
-    :return: True if the deletion was successful
+    :return: True if the deletion was successful, else False
     """
 
     connection = pool.get_conn()
@@ -172,12 +177,16 @@ def delete_source_by_id(pool, id_):
 
         with connection.cursor() as cursor:
             sql_statement = "DELETE FROM `source` WHERE `id`=%s"
-            cursor.execute(sql_statement, id_)
-        connection.commit()
-        return True
+            row_count = cursor.execute(sql_statement, id_)
+            connection.commit()
+            if row_count > 0 :
+                return True
+            else:
+                logger.info("There's no record in the database with the source id {}".format(id_))
+                return False
     except Exception as ex:
         connection.rollback()
-        error_message = "Retrieving source id: model={} and version={} failed.".format(model, version)
+        error_message = "Deleting source with id {} failed.".format(id_)
         logger.error(error_message)
         traceback.print_exc()
         raise DatabaseAdapterError(error_message, ex)

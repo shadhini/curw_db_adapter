@@ -16,28 +16,28 @@ e.g.:
 """
 
 
-def get_station_by_id(session, id_):
+def get_station_by_id(pool, id_):
     """
     Retrieve station by id
-    :param session: session made by sessionmaker for the database engine
+    :param pool: database connection pool
     :param id_: station id
     :return: Station if the stations exists in the database, else None
     """
     try:
-        station_row = session.query(Station).get(id_)
+        station_row = pool.query(Station).get(id_)
         return None if station_row is None else station_row
     except Exception as e:
         logger.error("Exception occurred while retrieving station with id {}".format(id_))
         traceback.print_exc()
         return False
     finally:
-        session.close()
+        pool.close()
 
 
-def get_station_id(session, latitude, longitude, station_type) -> str:
+def get_station_id(pool, latitude, longitude, station_type) -> str:
     """
     Retrieve station id
-    :param session: session made by sessionmaker for the database engine
+    :param pool: database connection pool
     :param latitude:
     :param longitude:
     :param station_type: StationEnum: which defines the station type
@@ -52,7 +52,7 @@ def get_station_id(session, latitude, longitude, station_type) -> str:
             pattern = "{}_____".format(initial_value[0])
         elif len(initial_value)==7:
             pattern = "{}{}_____".format(initial_value[0], initial_value[1])
-        station_row = session.query(Station) \
+        station_row = pool.query(Station) \
             .filter(Station.id.like(pattern)) \
             .filter_by(latitude=latitude) \
             .filter_by(longitude=longitude) \
@@ -64,10 +64,10 @@ def get_station_id(session, latitude, longitude, station_type) -> str:
         traceback.print_exc()
         return False
     finally:
-        session.close()
+        pool.close()
 
 
-def add_station(session, name, latitude, longitude, description, station_type):
+def add_station(pool, name, latitude, longitude, description, station_type):
     """
     Insert sources into the database
 
@@ -83,7 +83,7 @@ def add_station(session, name, latitude, longitude, description, station_type):
     - 1 2xx xxx - FLO2D (stationId: [;<prefix>_]flo2d_<SOMETHING>)model
     - 1 3xx xxx - MIKE (stationId: [;<prefix>_]mike_<SOMETHING>)
 
-    :param session: session made by sessionmaker for the database engine
+    :param pool: database connection pool
     :param name: string
     :param latitude: double
     :param longitude: double
@@ -95,7 +95,7 @@ def add_station(session, name, latitude, longitude, description, station_type):
     initial_value = station_type.value
     range_ = StationEnum.getRange(station_type)
 
-    station = session.query(Station) \
+    station = pool.query(Station) \
         .filter(Station.id >= initial_value, Station.id <= initial_value + range_) \
         .order_by(Station.id.desc()) \
         .first()
@@ -114,8 +114,8 @@ def add_station(session, name, latitude, longitude, description, station_type):
                 description=description
                 )
 
-        session.add(station)
-        session.commit()
+        pool.add(station)
+        pool.commit()
         return True
     except Exception as e:
         logger.error("Exception occurred while adding station: name={}, latitude={}, longitude={}, description={}, "
@@ -123,10 +123,10 @@ def add_station(session, name, latitude, longitude, description, station_type):
         traceback.print_exc()
         return False
     finally:
-        session.close()
+        pool.close()
 
 
-def add_stations(stations, session):
+def add_stations(stations, pool):
     """
     Add stations into Station table
     :param stations: list of json objects that define station attributes
@@ -143,16 +143,16 @@ def add_stations(stations, session):
 
     for station in stations:
 
-        print(add_station(session=session, name=station.get('name'), latitude=station.get('latitude'),
+        print(add_station(pool=pool, name=station.get('name'), latitude=station.get('latitude'),
                 longitude=station.get('longitude'), station_type=station.get('station_type'),
                 description=station.get('description')))
         print(station.get('name'))
 
 
-def delete_station(session, latitude, longitude, station_type):
+def delete_station(pool, latitude, longitude, station_type):
     """
     Delete station from Station table
-    :param session: session made by sessionmaker for the database engine
+    :param pool: database connection pool
     :param latitude:
     :param longitude:
     :param station_type: StationEnum: which defines the station type
@@ -160,33 +160,33 @@ def delete_station(session, latitude, longitude, station_type):
     :return: True if the deletion was successful, else False
     """
 
-    id_ = get_station_id(session, latitude=latitude, longitude=longitude, station_type=station_type)
+    id_ = get_station_id(pool, latitude=latitude, longitude=longitude, station_type=station_type)
 
     try:
         if id_ is not None:
-            return delete_station_by_id(session, id_)
+            return delete_station_by_id(pool, id_)
         else:
             logger.info("There's no record in the database with the station id {}".format(id_))
             print("There's no record in the database with the station id ", id_)
             return False
     finally:
-        session.close()
+        pool.close()
 
 
-def delete_station_by_id(session, id_):
+def delete_station_by_id(pool, id_):
     """
     Delete station from Station table by id
-    :param session: session made by sessionmaker for the database engine
+    :param pool: database connection pool
     :param id_:
     :return: True if the deletion was successful, else False
     """
 
     try:
-        station = session.query(Station).get(id_)
+        station = pool.query(Station).get(id_)
         if station is not None:
-            session.delete(station)
-            session.commit()
-            status = session.query(Station).filter_by(id=id_).count()
+            pool.delete(station)
+            pool.commit()
+            status = pool.query(Station).filter_by(id=id_).count()
             return True if status==0 else False
         else:
             logger.info("There's no record in the database with the station id {}".format(id_))
@@ -197,4 +197,4 @@ def delete_station_by_id(session, id_):
         traceback.print_exc()
         return False
     finally:
-        session.close()
+        pool.close()
