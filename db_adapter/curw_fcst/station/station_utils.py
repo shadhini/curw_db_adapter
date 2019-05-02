@@ -199,7 +199,6 @@ def delete_station(pool, latitude, longitude, station_type):
                 logger.info("There's no record of station in the database with latitude={}, "
                             "longitude={}, and station_type{}".format(latitude, longitude, station_type))
                 return False
-        return True
     except Exception as ex:
         connection.rollback()
         error_message = "Deleting station with latitude={}, longitude={}, and station_type{} failed."\

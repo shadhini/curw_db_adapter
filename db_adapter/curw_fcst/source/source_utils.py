@@ -164,7 +164,6 @@ def delete_source(pool, model, version):
             else:
                 logger.info("There's no record of source in the database with model={} and version={}".format(model, version))
                 return False
-        return True
     except Exception as ex:
         connection.rollback()
         error_message = "Deleting source with model={} and version={} failed.".format(model, version)
