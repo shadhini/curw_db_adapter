@@ -93,16 +93,15 @@ def add_source(pool, model, version, parameters=None):
 
     connection = pool.get_conn()
     try:
-
-        with connection.cursor() as cursor:
-            if get_source_id(pool=pool, model=model, version=version) is None:
+        if get_source_id(pool=pool, model=model, version=version) is None:
+            with connection.cursor() as cursor:
                 sql_statement = "INSERT INTO `source` (`model`, `version`, `parameters`) VALUES ( %s, %s, %s)"
                 row_count = cursor.execute(sql_statement, (model, version, json.dumps(parameters)))
                 connection.commit()
                 return True if row_count > 0 else False
-            else:
-                logger.info("Source with model={} and version={} already exists in the database".format(model, version))
-                return False
+        else:
+            logger.info("Source with model={} and version={} already exists in the database".format(model, version))
+            return False
     except Exception as ex:
         connection.rollback()
         error_message = "Insertion of source: model={}, version={} and parameters={} failed".format(model, version, parameters)
@@ -163,7 +162,7 @@ def delete_source(pool, model, version):
             if row_count > 0:
                 return True
             else:
-                logger.info("There's no record in the database with model={} and version={}".format(model, version))
+                logger.info("There's no record of source in the database with model={} and version={}".format(model, version))
                 return False
         return True
     except Exception as ex:
@@ -195,7 +194,7 @@ def delete_source_by_id(pool, id_):
             if row_count > 0 :
                 return True
             else:
-                logger.info("There's no record in the database with the source id {}".format(id_))
+                logger.info("There's no record of source in the database with the source id {}".format(id_))
                 return False
     except Exception as ex:
         connection.rollback()
