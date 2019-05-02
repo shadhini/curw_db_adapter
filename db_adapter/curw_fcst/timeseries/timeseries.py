@@ -211,20 +211,15 @@ class Timeseries:
             if connection is not None:
                 self.pool.release(connection)
 
-    def insert_timeseries(self, tms_id, timeseries, sim_tag, scheduled_date, station_id, source_id, variable_id,
-                          unit_id, fgt, start_date, end_date):
+    def insert_timeseries(self, tms_id, timeseries, run_tuple):
 
         """
         Insert new timeseries into the Run table and Data table, for given timeseries id
         :param tms_id:
         :param timeseries: list of [tms_id, time, value] lists
-        :param sim_tag:
-        :param scheduled_date:
-        :param station_id:
-        :param source_id:
-        :param variable_id:
-        :param unit_id: str value
-        :param fgt:
+        :param run_tuple: tuples like
+        (tms_id[0], sim_tag[1], start_date[2], end_date[3], station_id[4], source_id[5], variable_id[6], unit_id[7],
+         fgt[8], scheduled_date[9])
         :return: timeseries id if insertion was successful, else raise DatabaseAdapterError
         """
 
@@ -235,8 +230,7 @@ class Timeseries:
                 sql_statement = "INSERT INTO `run` (`id`, `sim_tag`, `start_date`, `end_date`, `station`, `source`, " \
                                 "`variable`, `unit`, `fgt`, `scheduled_date`) " \
                                 "VALUES ( %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
-                sql_values = (tms_id, sim_tag, start_date, end_date, station_id, source_id, variable_id, unit_id, fgt,
-                              scheduled_date)
+                sql_values = run_tuple
                 cursor.execute(sql_statement, sql_values)
 
             self.insert_data(timeseries, True)
@@ -246,7 +240,8 @@ class Timeseries:
             connection.rollback()
             error_message = "Insertion failed for timeseries with tms_id={}, sim_tag={}, scheduled_date={}, " \
                             "station_id={}, source_id={}, variable_id={}, unit_id={}, fgt={}"\
-                .format(tms_id, sim_tag, scheduled_date, station_id, source_id, variable_id, unit_id, fgt)
+                .format(run_tuple[0], run_tuple[1], run_tuple[9], run_tuple[4], run_tuple[5], run_tuple[6],
+                    run_tuple[7], run_tuple[8])
             logger.error(error_message)
             traceback.print_exc()
             raise DatabaseAdapterError(error_message, ex)
