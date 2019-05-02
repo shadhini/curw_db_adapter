@@ -259,7 +259,7 @@ class Timeseries:
         try:
 
             with connection.cursor() as cursor:
-                sql_statement="UPDATE `run` SET `fgt`=%s WHERE `scheduled_date`=%s)"
+                sql_statement="UPDATE `run` SET `fgt`=%s WHERE `scheduled_date`=%s"
                 cursor.execute(sql_statement, (fgt, scheduled_date))
             connection.commit()
             return
