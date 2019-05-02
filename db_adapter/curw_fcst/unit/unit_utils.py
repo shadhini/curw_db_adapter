@@ -59,7 +59,7 @@ def get_unit_id(pool, unit, unit_type) -> str:
 
         with connection.cursor() as cursor:
             sql_statement = "SELECT `id` FROM `unit` WHERE `unit`=%s and `type`=%s"
-            row_count = cursor.execute(sql_statement, (unit, unit_type))
+            row_count = cursor.execute(sql_statement, (unit, unit_type.value))
             if row_count > 0:
                 return cursor.fetchone()
             else:
@@ -88,7 +88,7 @@ def add_unit(pool, unit, unit_type):
         if get_unit_id(pool=pool, unit=unit, unit_type=unit_type) is None:
             with connection.cursor() as cursor:
                 sql_statement = "INSERT INTO `unit` (`unit`, `type`) VALUES ( %s, %s)"
-                row_count = cursor.execute(sql_statement, (unit, unit_type))
+                row_count = cursor.execute(sql_statement, (unit, unit_type.value))
                 connection.commit()
                 return True if row_count > 0 else False
         else:
@@ -142,7 +142,7 @@ def delete_unit(pool, unit, unit_type):
 
         with connection.cursor() as cursor:
             sql_statement = "DELETE FROM `unit` WHERE `unit`=%s and `type`=%s"
-            row_count = cursor.execute(sql_statement, (unit, unit_type))
+            row_count = cursor.execute(sql_statement, (unit, unit_type.value))
             connection.commit()
             if row_count > 0:
                 return True

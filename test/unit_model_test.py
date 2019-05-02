@@ -1,11 +1,12 @@
-from db_adapter.temp.base import get_engine, get_sessionmaker
-from db_adapter.temp.constants import (
-    CURW_FCST_USERNAME, CURW_FCST_PASSWORD, CURW_FCST_HOST, CURW_FCST_PORT,
-    CURW_FCST_DATABASE,
-    )
-from db_adapter.temp.constants import DIALECT_MYSQL, DRIVER_PYMYSQL
+from db_adapter.base import get_Pool
 
-from db_adapter.temp.curw_fcst.unit import UnitType, get_unit_id, delete_unit_by_id, delete_unit
+from db_adapter.curw_fcst.unit import UnitType, add_units, get_unit_id, get_unit_by_id, delete_unit, delete_unit_by_id
+
+USERNAME = "root"
+PASSWORD = "password"
+HOST = "127.0.0.1"
+PORT = 3306
+DATABASE = "test_schema"
 
 
 units = [
@@ -31,28 +32,25 @@ units = [
                 }
         ]
 
-engine = get_engine(DIALECT_MYSQL, DRIVER_PYMYSQL, CURW_FCST_HOST, CURW_FCST_PORT, CURW_FCST_DATABASE,
-        CURW_FCST_USERNAME, CURW_FCST_PASSWORD)
+pool = get_Pool(host=HOST, port=PORT, user=USERNAME, password=PASSWORD, db=DATABASE)
 
-Session = get_sessionmaker(engine=engine)  # Session is a class
-session = Session()
 
 print("########### Add Units #################################")
-# print(add_units(units=units, session=session))
+print(add_units(units=units, pool=pool))
 
 
 print("########### Get Units by id ###########################")
-# print("Id 3:", get_unit_by_id(session=session, id_="3"))
+print("Id 6:", get_unit_by_id(pool=pool, id_="6"))
 
 
 print("########## Retrieve unit id ###########################")
 print("unit: count, unit_type: UnitType.Accumulative id:",
-        get_unit_id(session=session, unit="count", unit_type=UnitType.Accumulative))
+        get_unit_id(pool=pool, unit="m", unit_type=UnitType.Instantaneous))
 
 
 print("######### Delete unit by id ###########################")
-print("Id 3 deleted status: ", delete_unit_by_id(session=session, id_=3))
+print("Id 3 deleted status: ", delete_unit_by_id(pool=pool, id_=3))
 
 print("######### Delete unit with given unit, unit_type #######")
 print("unit: count, unit_type: UnitType.Accumulative   delete status :",
-        delete_unit(session=session, unit="count", unit_type=UnitType.Accumulative))
+        delete_unit(pool=pool, unit="count", unit_type=UnitType.Accumulative))
