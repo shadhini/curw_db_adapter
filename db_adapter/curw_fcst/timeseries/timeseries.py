@@ -233,8 +233,8 @@ class Timeseries:
                 sql_values = run_tuple
                 cursor.execute(sql_statement, sql_values)
 
-            self.insert_data(timeseries, True)
             connection.commit()
+            self.insert_data(timeseries, True)
             return run_tuple[0]
         except Exception as ex:
             connection.rollback()
