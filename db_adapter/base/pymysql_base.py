@@ -5,6 +5,7 @@ def get_Pool(host, port, user, password, db):
     # uses pymysql.cursors.DictCursor
     pool = Pool(host=host, port=port, user=user, password=password, db=db, autocommit=False, max_size=5)
     pool.init()
+    return pool
 
 # connection = pool.get_conn()
 # cur = connection.cursor()
