@@ -1,4 +1,4 @@
-from db_adapter.curw_fcst.models import Source
+from db_adapter.exceptions import DatabaseAdapterError
 from db_adapter.logger import logger
 import traceback
 
@@ -23,79 +23,85 @@ e.g.:
 """
 
 
-def get_source_by_id(session, id_):
+def get_source_by_id(pool, id_):
     """
     Retrieve source by id
-    :param session: session made by sessionmaker for the database engine
+    :param pool: database connection pool
     :param id_: source id
     :return: Source if source exists in the database, else None
     """
 
+    connection = pool.get_conn()
     try:
-        source_row = session.query(Source).get(id_)
-        return None if source_row is None else source_row
-    except Exception as e:
-        logger.error("Exception occurred while retrieving source with source_id {}".format(id_))
+
+        with connection.cursor() as cursor:
+            sql_statement = "SELECT * FROM `source` WHERE `id`=%s"
+            return cursor.execute(sql_statement, id_)
+    except Exception as ex:
+        error_message = "Retrieving source with source_id {} failed".format(id_)
+        logger.error(error_message)
         traceback.print_exc()
-        return False
+        raise DatabaseAdapterError(error_message, ex)
     finally:
-        session.close()
+        if connection is not None:
+            pool.release(connection)
 
 
-def get_source_id(session, model, version) -> str:
+def get_source_id(pool, model, version) -> str:
     """
     Retrieve Source id
-    :param session: session made by sessionmaker for the database engine
+    :param pool: database connection pool
     :param model:
     :param version:
     :return: str: source id if source exists in the database, else None
     """
 
+    connection = pool.get_conn()
     try:
-        source_row = session.query(Source) \
-            .filter_by(model=model) \
-            .filter_by(version=version) \
-            .first()
-        return None if source_row is None else source_row.id
-    except Exception as e:
-        logger.error("Exception occurred while retrieving source id: model={} and version={}".format(model, version))
+
+        with connection.cursor() as cursor:
+            sql_statement = "SELECT `id` FROM `source` WHERE `model`=%s and `version`=%s"
+            return cursor.execute(sql_statement, (model, version))
+    except Exception as ex:
+        error_message = "Retrieving source id: model={} and version={} failed.".format(model, version)
+        logger.error(error_message)
         traceback.print_exc()
-        return False
+        raise DatabaseAdapterError(error_message, ex)
     finally:
-        session.close()
+        if connection is not None:
+            pool.release(connection)
 
 
-def add_source(session, model, version, parameters):
+def add_source(pool, model, version, parameters=None):
     """
     Insert sources into the database
-    :param session: session made by sessionmaker for the database engine
+    :param pool: database connection pool
     :param model: string
     :param version: string
     :param parameters: JSON
-    :return: True if the source has been added to the "Source' table of the database, else False
+    :return: True if the source has been added to the "Source' table of the database, else raise DatabaseAdapterError
     """
 
+    connection = pool.get_conn()
     try:
-        source = Source(
-                model=model,
-                version=version,
-                parameters=parameters
-                )
 
-        session.add(source)
-        session.commit()
-
+        with connection.cursor() as cursor:
+            sql_statement = "INSERT INTO `source` (`model`, `version`, `parameters`) VALUES ( %s, %s, %s)"
+            cursor.execute(sql_statement, (model, version, parameters))
+        connection.commit()
         return True
-    except Exception as e:
-        logger.error("Exception occurred while adding source: model={}, version={} and parameters={}"
-            .format(model, version, parameters))
+    except Exception as ex:
+        connection.rollback()
+        error_message = "Retrieving source id: model={} and version={} failed.".format(model, version)
+        logger.error(error_message)
         traceback.print_exc()
-        return False
+        raise DatabaseAdapterError(error_message, ex)
     finally:
-        session.close()
+        if connection is not None:
+            pool.release(connection)
 
 
-def add_sources(sources, session):
+def add_sources(sources, pool):
     """
     Add sources into Source table
     :param sources: list of json objects that define source attributes
@@ -120,55 +126,61 @@ def add_sources(sources, session):
 
     for source in sources:
 
-        print(add_source(session=session, model=source.get('model'), version=source.get('version'),
+        print(add_source(pool=pool, model=source.get('model'), version=source.get('version'),
                 parameters=source.get('parameters')))
         print(source.get('model'))
 
 
-def delete_source(session, model, version):
+def delete_source(pool, model, version):
     """
     Delete source from Source table, given model and version
-    :param session: session made by sessionmaker for the database engine
+    :param pool: database connection pool
     :param model: str
     :param version: str
-    :return: True if the deletion was successful, else False
+    :return: True if the deletion was successful
     """
 
-    id_ = get_source_id(session=session, model=model, version=version)
-
+    connection = pool.get_conn()
     try:
-        if id_ is not None:
-            return delete_source_by_id(session, id_)
-        else:
-            print("There's no record in the database with the source id ", id_)
-            logger.info("There's no record in the database with the source id {}".format(id_))
-            return False
+
+        with connection.cursor() as cursor:
+            sql_statement = "DELETE FROM `source` WHERE `model`=%s and `version`=%s"
+            cursor.execute(sql_statement, (model, version))
+        connection.commit()
+        return True
+    except Exception as ex:
+        connection.rollback()
+        error_message = "Retrieving source id: model={} and version={} failed.".format(model, version)
+        logger.error(error_message)
+        traceback.print_exc()
+        raise DatabaseAdapterError(error_message, ex)
     finally:
-        session.close()
+        if connection is not None:
+            pool.release(connection)
 
 
-def delete_source_by_id(session, id_):
+def delete_source_by_id(pool, id_):
     """
     Delete source from Source table by id
-    :param session: session made by sessionmaker for the database engine
+    :param pool: database connection pool
     :param id_:
-    :return: True if the deletion was successful, else False
+    :return: True if the deletion was successful
     """
 
+    connection = pool.get_conn()
     try:
-        source = session.query(Source).get(id_)
-        if source is not None:
-            session.delete(source)
-            session.commit()
-            status = session.query(Source).filter_by(id=id_).count()
-            return True if status==0 else False
-        else:
-            print("There's no record in the database with the source id ", id_)
-            logger.info("There's no record in the database with the source id {}".format(id_))
-            return False
-    except Exception as e:
-        logger.error("Exception occurred while deleting source with it {}".format(id_))
+
+        with connection.cursor() as cursor:
+            sql_statement = "DELETE FROM `source` WHERE `id`=%s"
+            cursor.execute(sql_statement, id_)
+        connection.commit()
+        return True
+    except Exception as ex:
+        connection.rollback()
+        error_message = "Retrieving source id: model={} and version={} failed.".format(model, version)
+        logger.error(error_message)
         traceback.print_exc()
-        return False
+        raise DatabaseAdapterError(error_message, ex)
     finally:
-        session.close()
+        if connection is not None:
+            pool.release(connection)
