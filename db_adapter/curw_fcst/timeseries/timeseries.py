@@ -211,7 +211,7 @@ class Timeseries:
             if connection is not None:
                 self.pool.release(connection)
 
-    def insert_timeseries(self, tms_id, timeseries, run_tuple):
+    def insert_timeseries(self, timeseries, run_tuple):
 
         """
         Insert new timeseries into the Run table and Data table, for given timeseries id
@@ -235,7 +235,7 @@ class Timeseries:
 
             self.insert_data(timeseries, True)
             connection.commit()
-            return tms_id
+            return run_tuple[0]
         except Exception as ex:
             connection.rollback()
             error_message = "Insertion failed for timeseries with tms_id={}, sim_tag={}, scheduled_date={}, " \
