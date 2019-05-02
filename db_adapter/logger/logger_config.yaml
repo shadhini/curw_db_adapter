@@ -1,0 +1,29 @@
+version: 1
+formatters:
+  simple:
+    format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+handlers:
+  console:
+    class: logging.StreamHandler
+    level: DEBUG
+    formatter: simple
+    stream: ext://sys.stdout
+  h:
+    class: logging.StreamHandler
+    formatter: simple
+    level: INFO
+  fh:
+    class: logging.handlers.TimedRotatingFileHandler
+    formatter: simple
+    level: INFO
+    filename: db_adapter.log
+    when: D
+    interval: 1
+#loggers:
+#  sampleLogger:
+#    level: DEBUG
+#    handlers: [console]
+#    propagate: no
+root:
+  level: INFO
+  handlers: [h, fh]
