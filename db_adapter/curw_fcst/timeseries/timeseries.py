@@ -194,10 +194,9 @@ class Timeseries:
                     new_timeseries.append(t)
                 else:
                     logger.warning('Invalid timeseries data:: %s', t)
-
+            connection.commit()
             self.insert_data(new_timeseries, True)
 
-            connection.commit()
             return tms_id
         except Exception as ex:
             connection.rollback()
@@ -260,7 +259,7 @@ class Timeseries:
         try:
 
             with connection.cursor() as cursor:
-                sql_statement="UPDATE `run` SET `fgt`=%s WHERE `id`=(SELECT `id` FROM `run` WHERE `scheduled_date`=%s)"
+                sql_statement="UPDATE `run` SET `fgt`=%s WHERE `scheduled_date`=%s)"
                 cursor.execute(sql_statement, (fgt, scheduled_date))
             connection.commit()
             return
