@@ -87,4 +87,5 @@ print("model': 'wrfSE', 'version': 'v3' delete status :",
         delete_source(pool=pool, model="wrfSE", version="v3"))
 
 pool.destroy()
-exit()
+print("bdjhsvdhsvdjh")
+exit(0)
