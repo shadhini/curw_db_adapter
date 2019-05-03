@@ -57,22 +57,22 @@ stations = [
 pool = get_Pool(host=HOST, port=PORT, user=USERNAME, password=PASSWORD, db=DATABASE)
 
 print("########### Add Stations ########################")
-print(add_stations(stations=stations, pool=pool))
+# print(add_stations(stations=stations, pool=pool))
 
 
 print("########### Get Stations by id ##################")
-print("Id 300001:", get_station_by_id(pool=pool, id_="300001"))
+# print("Id 300001:", get_station_by_id(pool=pool, id_="300001"))
 
 
 print("########## Retrieve station id ##################")
 # print("latitude=6.872778, longitude=80.564444, station_type=StationEnum.Government:", get_station_id(pool=pool,
 #         latitude="6.872778", longitude="80.564444", station_type=StationEnum.Government))
-print("latitude=6.872778, longitude=80.564444, station_type=StationEnum.Government:", get_station_id(pool=pool,
+print("latitude=6.872778, longitude=80.564444, station_type=StationEnum.Government id:", get_station_id(pool=pool,
         latitude="5.72296905517578", longitude="79.6031494140625", station_type=StationEnum.WRF))
 
 print("######### Delete station by id #################")
-print("Id 100001 deleted status: ", delete_station_by_id(pool=pool, id_=100001))
+# print("Id 100001 deleted status: ", delete_station_by_id(pool=pool, id_=100001))
 
 print("######### Delete station with given latitude, longitude, station_type #######")
-print("latitude=6.871389, longitude=80.524444, station_type=StationEnum.Government :",
-        delete_station(pool=pool, latitude=6.871389, longitude=80.524444, station_type=StationEnum.Government))
+# print("latitude=6.871389, longitude=80.524444, station_type=StationEnum.Government :",
+        # delete_station(pool=pool, latitude=6.871389, longitude=80.524444, station_type=StationEnum.Government))
