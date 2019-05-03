@@ -1,5 +1,5 @@
 import traceback
-from db_adapter.curw_fcst.models import Unit
+
 from db_adapter.logger import logger
 from db_adapter.exceptions import DatabaseAdapterError
 

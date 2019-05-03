@@ -1,5 +1,7 @@
 import traceback
-from db_adapter.curw_fcst.models import Station
+import csv
+import pkg_resources
+
 from db_adapter.curw_fcst.station.station_enum import StationEnum
 from db_adapter.logger import logger
 from db_adapter.exceptions import DatabaseAdapterError
@@ -241,7 +243,7 @@ def delete_station_by_id(pool, id_):
             pool.release(connection)
 
 
-def add_wrfv3_stations(pool, wrf_stations_list):
+def add_wrfv3_stations(pool):
 
     """
     Add wrfv3 stations to the database
@@ -250,7 +252,13 @@ def add_wrfv3_stations(pool, wrf_stations_list):
     :return: True if the insertion is successful, else False
     """
 
+    resource_path = pkg_resources.resource_string(__name__, "db_adapter/curw_fcst/station/wrfv3_stations.csv")
+    with open(resource_path, 'r') as f:
+        data=[tuple(line) for line in csv.reader(f)][1:]
 
+    print(data[16037])
+
+    print(resource_path)
 
 
 def get_wrfv3_stations(pool):
