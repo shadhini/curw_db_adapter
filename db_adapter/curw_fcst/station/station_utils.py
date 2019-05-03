@@ -252,13 +252,36 @@ def add_wrfv3_stations(pool):
     :return: True if the insertion is successful, else False
     """
 
-    resource_path = pkg_resources.resource_string(__name__, "db_adapter/curw_fcst/station/wrfv3_stations.csv")
+    resource_path = pkg_resources.resource_string(__name__, "wrfv3_stations.csv")
     with open(resource_path, 'r') as f:
         data=[tuple(line) for line in csv.reader(f)][1:]
 
     print(data[16037])
 
     print(resource_path)
+
+    # row_count = 0
+    # connection = self.pool.get_conn()
+    # try:
+    #     with connection.cursor() as cursor:
+    #         if upsert:
+    #             sql_statement = "INSERT INTO `data` (`id`, `time`, `value`) VALUES (%s, %s, %s) " \
+    #                             "ON DUPLICATE KEY UPDATE `value`=VALUES(`value`)"
+    #         else:
+    #             sql_statement = "INSERT INTO `data` (`id`, `time`, `value`) VALUES (%s, %s, %s)"
+    #         row_count = cursor.executemany(sql_statement, timeseries)
+    #     connection.commit()
+    #     return row_count
+    # except Exception as ex:
+    #     connection.rollback()
+    #     error_message = "Data insertion to data table for tms id {}, upsert={} failed.".format(timeseries[0][0], upsert)
+    #     logger.error(error_message)
+    #     traceback.print_exc()
+    #     raise DatabaseAdapterError(error_message, ex)
+    #
+    # finally:
+    #     if connection is not None:
+    #         self.pool.release(connection)
 
 
 def get_wrfv3_stations(pool):
