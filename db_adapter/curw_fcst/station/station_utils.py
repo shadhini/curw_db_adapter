@@ -239,3 +239,24 @@ def delete_station_by_id(pool, id_):
     finally:
         if connection is not None:
             pool.release(connection)
+
+
+def add_wrfv3_stations(pool, wrf_stations_list):
+
+    """
+    Add wrfv3 stations to the database
+    :param pool:  database connection pool
+    :param wrf_stations_list: tuple that contains values for (id, name, latitude, longitude, description)
+    :return: True if the insertion is successful, else False
+    """
+
+
+
+
+def get_wrfv3_stations(pool):
+
+    """
+    Retrieve ids of wrf_v3 stations, for each station name
+    :param pool: database connection pool
+    :return: dictionary with keys of type "<latitude>_<longitude>" and corresponding id as the value
+    """
