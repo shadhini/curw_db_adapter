@@ -68,7 +68,7 @@ def get_source_id(pool, model, version) -> str:
             sql_statement = "SELECT `id` FROM `source` WHERE `model`=%s and `version`=%s"
             row_count = cursor.execute(sql_statement, (model, version))
             if row_count > 0:
-                return cursor.fetchone()
+                return cursor.fetchone()['id']
             else:
                 return None
     except Exception as ex:

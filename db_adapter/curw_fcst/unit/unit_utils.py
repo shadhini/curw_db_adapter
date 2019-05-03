@@ -61,7 +61,7 @@ def get_unit_id(pool, unit, unit_type) -> str:
             sql_statement = "SELECT `id` FROM `unit` WHERE `unit`=%s and `type`=%s"
             row_count = cursor.execute(sql_statement, (unit, unit_type.value))
             if row_count > 0:
-                return cursor.fetchone()
+                return cursor.fetchone()['id']
             else:
                 return None
     except Exception as ex:

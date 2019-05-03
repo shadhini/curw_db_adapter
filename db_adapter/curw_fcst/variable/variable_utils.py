@@ -55,7 +55,7 @@ def get_variable_id(pool, variable) -> str:
             sql_statement = "SELECT `id` FROM `variable` WHERE `variable`=%s"
             row_count = cursor.execute(sql_statement, variable)
             if row_count > 0:
-                return cursor.fetchone()
+                return cursor.fetchone()['id']
             else:
                 return None
     except Exception as ex:

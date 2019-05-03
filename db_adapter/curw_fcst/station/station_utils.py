@@ -70,7 +70,7 @@ def get_station_id(pool, latitude, longitude, station_type) -> str:
             sql_statement = "SELECT `id` FROM `station` WHERE `id` like %s and `latitude`=%s and `longitude`=%s"
             row_count = cursor.execute(sql_statement, (pattern, latitude, longitude))
             if row_count > 0:
-                return cursor.fetchone()
+                return cursor.fetchone()['id']
             else:
                 return None
     except Exception as ex:
