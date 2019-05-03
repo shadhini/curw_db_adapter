@@ -1,15 +1,12 @@
-from db_adapter.temp.base import get_engine, get_sessionmaker
-from db_adapter.temp.constants import (
-    CURW_FCST_USERNAME, CURW_FCST_PASSWORD, CURW_FCST_HOST, CURW_FCST_PORT,
-    CURW_FCST_DATABASE,
-    )
-from db_adapter.temp.constants import DIALECT_MYSQL, DRIVER_PYMYSQL
+from db_adapter.base import get_Pool
 
-from db_adapter.temp.curw_fcst import (
-    get_variable_by_id, get_variable_id, add_variables, delete_variable_by_id,
-    delete_variable,
-    )
+from db_adapter.curw_fcst.variable import add_variables, get_variable_id, get_variable_by_id, delete_variable_by_id, delete_variable
 
+USERNAME = "root"
+PASSWORD = "password"
+HOST = "127.0.0.1"
+PORT = 3306
+DATABASE = "test_schema"
 
 variables = [
         {
@@ -29,27 +26,28 @@ variables = [
                 }
         ]
 
-engine = get_engine(DIALECT_MYSQL, DRIVER_PYMYSQL, CURW_FCST_HOST, CURW_FCST_PORT, CURW_FCST_DATABASE,
-        CURW_FCST_USERNAME, CURW_FCST_PASSWORD)
+pool = get_Pool(host=HOST, port=PORT, user=USERNAME, password=PASSWORD, db=DATABASE)
 
-Session = get_sessionmaker(engine=engine)  # Session is a class
-session = Session()
 
 print("########### Add Variables #################################")
-print(add_variables(variables=variables, session=session))
+print(add_variables(variables=variables, pool=pool))
 
 
 print("########### Get Variables by id ###########################")
-print("Id 3:", get_variable_by_id(session=session, id_="3"))
+print("Id 3:", get_variable_by_id(pool=pool, id_="3"))
 
 
 print("########## Retrieve variable id ###########################")
 print("variable: Precipitation,   id:",
-        get_variable_id(session=session, variable="Precipitation"))
+        get_variable_id(pool=pool, variable="Precipitation"))
 
 print("######### Delete variable by id ###########################")
-print("Id 3 deleted status: ", delete_variable_by_id(session=session, id_=3))
+print("Id 3 deleted status: ", delete_variable_by_id(pool=pool, id_=3))
 
 print("######### Delete variable with given variable name #######")
 print("variable: Precipitation,   delete status :",
-        delete_variable(session=session, variable="Precipitation"))
+        delete_variable(pool=pool, variable="Precipitation"))
+
+pool.destroy()
+print("bdjhsvdhsvdjh")
+exit(0)
