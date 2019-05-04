@@ -256,10 +256,6 @@ def add_wrfv3_stations(pool):
     with open(resource_path, 'r') as f:
         data=[tuple(line) for line in csv.reader(f)][1:]
 
-    print(data[16037])
-
-    print(resource_path)
-
     row_count = 0
     connection = pool.get_conn()
     try:
@@ -267,11 +263,13 @@ def add_wrfv3_stations(pool):
             sql_statement = "INSERT INTO `station` (`id`, `name`, `latitude`, `longitude`, `description`) " \
                                 "VALUES ( %s, %s, %s, %s, %s)"
             row_count = cursor.executemany(sql_statement, data)
+            print("row count :", row_count)
         connection.commit()
         return row_count
     except Exception as ex:
         connection.rollback()
         error_message = "Insertion of wrf_v3 stations failed."
+        print(error_message)
         logger.error(error_message)
         traceback.print_exc()
         raise DatabaseAdapterError(error_message, ex)
