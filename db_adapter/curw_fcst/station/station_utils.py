@@ -260,28 +260,24 @@ def add_wrfv3_stations(pool):
 
     print(resource_path)
 
-    # row_count = 0
-    # connection = self.pool.get_conn()
-    # try:
-    #     with connection.cursor() as cursor:
-    #         if upsert:
-    #             sql_statement = "INSERT INTO `data` (`id`, `time`, `value`) VALUES (%s, %s, %s) " \
-    #                             "ON DUPLICATE KEY UPDATE `value`=VALUES(`value`)"
-    #         else:
-    #             sql_statement = "INSERT INTO `data` (`id`, `time`, `value`) VALUES (%s, %s, %s)"
-    #         row_count = cursor.executemany(sql_statement, timeseries)
-    #     connection.commit()
-    #     return row_count
-    # except Exception as ex:
-    #     connection.rollback()
-    #     error_message = "Data insertion to data table for tms id {}, upsert={} failed.".format(timeseries[0][0], upsert)
-    #     logger.error(error_message)
-    #     traceback.print_exc()
-    #     raise DatabaseAdapterError(error_message, ex)
-    #
-    # finally:
-    #     if connection is not None:
-    #         self.pool.release(connection)
+    row_count = 0
+    connection = pool.get_conn()
+    try:
+        with connection.cursor() as cursor:
+            sql_statement = "INSERT INTO `station` (`id`, `name`, `latitude`, `longitude`, `description`) " \
+                                "VALUES ( %s, %s, %s, %s, %s)"
+            row_count = cursor.executemany(sql_statement, data)
+        connection.commit()
+        return row_count
+    except Exception as ex:
+        connection.rollback()
+        error_message = "Insertion of wrf_v3 stations failed."
+        logger.error(error_message)
+        traceback.print_exc()
+        raise DatabaseAdapterError(error_message, ex)
+    finally:
+        if connection is not None:
+            pool.release(connection)
 
 
 def get_wrfv3_stations(pool):
@@ -291,3 +287,26 @@ def get_wrfv3_stations(pool):
     :param pool: database connection pool
     :return: dictionary with keys of type "<latitude>_<longitude>" and corresponding id as the value
     """
+
+    wrfv3_stations = {}
+
+    connection = pool.get_conn()
+    try:
+        with connection.cursor() as cursor:
+            sql_statement = "SELECT `id`, `name` FROM `station` WHERE `id` like %s"
+            row_count = cursor.execute(sql_statement, "11_____")
+            if row_count > 0:
+                results = cursor.fetchall()
+                for dict in results:
+                    wrfv3_stations[dict.get("name")] = dict.get("id")
+                return len(wrfv3_stations)
+            else:
+                return None
+    except Exception as ex:
+        error_message = "Retrieving wrf v3 stations failed"
+        logger.error(error_message)
+        traceback.print_exc()
+        raise DatabaseAdapterError(error_message, ex)
+    finally:
+        if connection is not None:
+            pool.release(connection)
