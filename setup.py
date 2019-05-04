@@ -25,6 +25,6 @@ setuptools.setup(
                           'pandas',
                           'numpy',
                           'PyYAML'],
-        zip_safe=False,
-        include_package_data=True # to add non-code files specified in "MANIFEST.in" file
+        zip_safe=False
+        # include_package_data=True # to add non-code files specified in "MANIFEST.in" file
         )

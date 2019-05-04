@@ -252,9 +252,8 @@ def add_wrfv3_stations(pool):
     :return: True if the insertion is successful, else False
     """
 
-    resource_path = pkg_resources.resource_string(__name__, "wrfv3_stations.csv")
-    data=[]
-    with open(resource_path, 'r') as f:
+    # resource_path = pkg_resources.resource_string(__name__, "wrfv3_stations.csv")
+    with open('wrfv3_stations.csv', 'r') as f:
         data=[tuple(line) for line in csv.reader(f)][1:]
 
     connection = pool.get_conn()
