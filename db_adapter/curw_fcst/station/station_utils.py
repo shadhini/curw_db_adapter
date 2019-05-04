@@ -253,12 +253,13 @@ def add_wrfv3_stations(pool):
     """
 
     resource_path = pkg_resources.resource_string(__name__, "wrfv3_stations.csv")
+    data=[]
     with open(resource_path, 'r') as f:
         data=[tuple(line) for line in csv.reader(f)][1:]
 
-    row_count = 0
     connection = pool.get_conn()
     try:
+        print("inside")
         with connection.cursor() as cursor:
             sql_statement = "INSERT INTO `station` (`id`, `name`, `latitude`, `longitude`, `description`) " \
                                 "VALUES ( %s, %s, %s, %s, %s)"
