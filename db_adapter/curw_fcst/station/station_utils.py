@@ -258,18 +258,15 @@ def add_wrfv3_stations(pool):
 
     connection = pool.get_conn()
     try:
-        print("inside")
         with connection.cursor() as cursor:
             sql_statement = "INSERT INTO `station` (`id`, `name`, `latitude`, `longitude`, `description`) " \
                                 "VALUES ( %s, %s, %s, %s, %s)"
             row_count = cursor.executemany(sql_statement, data)
-            print("row count :", row_count)
         connection.commit()
         return row_count
     except Exception as ex:
         connection.rollback()
         error_message = "Insertion of wrf_v3 stations failed."
-        print(error_message)
         logger.error(error_message)
         traceback.print_exc()
         raise DatabaseAdapterError(error_message, ex)
@@ -297,7 +294,7 @@ def get_wrfv3_stations(pool):
                 results = cursor.fetchall()
                 for dict in results:
                     wrfv3_stations[dict.get("name")] = dict.get("id")
-                return len(wrfv3_stations)
+                return wrfv3_stations
             else:
                 return None
     except Exception as ex:
