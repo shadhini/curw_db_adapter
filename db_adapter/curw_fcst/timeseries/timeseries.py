@@ -159,10 +159,9 @@ class Timeseries:
         try:
             sql_statements = [
                 "SELECT `id` as `source_id` FROM `source` WHERE `source`=%s",
-                "SELECT `id` FROM `source` WHERE `model`=%s and `version`=%s",
-                "SELECT `id` FROM `station` WHERE `latitude`=%s and `longitude`=%s",
-                "SELECT `id` FROM `unit` WHERE `unit`=%s and `type`=%s",
-                "SELECT `id` FROM `variable` WHERE `variable`=%s"
+                "SELECT `id` as `station_id` FROM `station` WHERE `latitude`=%s and `longitude`=%s",
+                "SELECT `id` as `unit_id` FROM `unit` WHERE `unit`=%s and `type`=%s",
+                "SELECT `id` as `variable_id` FROM `variable` WHERE `variable`=%s"
             ]
 
             station_id = None
