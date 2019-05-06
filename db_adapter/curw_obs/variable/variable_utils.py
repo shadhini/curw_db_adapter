@@ -1,6 +1,7 @@
 import traceback
-from db_adapter.curw_obs.models import Variable
+
 from db_adapter.logger import logger
+from db_adapter.exceptions import DatabaseAdapterError
 
 """
 Variable JSON Object would looks like this
@@ -11,72 +12,93 @@ e.g.:
 """
 
 
-def get_variable_by_id(session, id_):
+def get_variable_by_id(pool, id_):
     """
     Retrieve variable by id
-    :param session: session made by sessionmaker for the database engine
+    :param pool: database connection pool
     :param id_: variable id
     :return: Variable if variable exists in the db, else None
     """
 
+    connection = pool.get_conn()
     try:
-        variable_row = session.query(Variable).get(id_)
-        return None if variable_row is None else variable_row
-    except Exception as e:
-        logger.error("Exception occurred while retrieving variable with id {}".format(id_))
+
+        with connection.cursor() as cursor:
+            sql_statement = "SELECT * FROM `variable` WHERE `id`=%s"
+            row_count = cursor.execute(sql_statement, id_)
+            if row_count > 0:
+                return cursor.fetchone()
+            else:
+                return None
+    except Exception as ex:
+        error_message = "Retrieving variable with variable_id {} failed".format(id_)
+        logger.error(error_message)
         traceback.print_exc()
-        return False
+        raise DatabaseAdapterError(error_message, ex)
     finally:
-        session.close()
+        if connection is not None:
+            pool.release(connection)
 
 
-def get_variable_id(session, variable) -> str:
+def get_variable_id(pool, variable) -> str:
     """
     Retrieve Variable id
-    :param session: session made by sessionmaker for the database engine
+    :param pool: database connection pool
     :param variable:
     :return: str: variable id if variable exists in the db, else None
     """
 
+    connection = pool.get_conn()
     try:
-        variable_row = session.query(Variable) \
-            .filter_by(variable=variable) \
-            .first()
-        return None if variable_row is None else variable_row.id
-    except Exception as e:
-        logger.error("Exception occurred while retrieving variable id: variable={}".format(variable))
+
+        with connection.cursor() as cursor:
+            sql_statement = "SELECT `id` FROM `variable` WHERE `variable`=%s"
+            row_count = cursor.execute(sql_statement, variable)
+            if row_count > 0:
+                return cursor.fetchone()['id']
+            else:
+                return None
+    except Exception as ex:
+        error_message = "Retrieving variable id: variable={} failed.".format(variable)
+        logger.error(error_message)
         traceback.print_exc()
-        return False
+        raise DatabaseAdapterError(error_message, ex)
     finally:
-        session.close()
+        if connection is not None:
+            pool.release(connection)
 
 
-def add_variable(session, variable):
+def add_variable(pool, variable):
     """
     Insert variables into the database
-    :param session: session made by sessionmaker for the database engine
+    :param pool: database connection pool
     :param variable: string
     :return: True if the variable has been added to the "Variable" table of the database, else False
     """
 
+    connection = pool.get_conn()
     try:
-        variable = Variable(
-                variable=variable,
-                )
-
-        session.add(variable)
-        session.commit()
-
-        return True
-    except Exception as e:
-        logger.error("Exception occurred while adding variable: variable={}".format(variable))
+        if get_variable_id(pool=pool, variable=variable) is None:
+            with connection.cursor() as cursor:
+                sql_statement = "INSERT INTO `variable` (`variable`) VALUES ( %s)"
+                row_count = cursor.execute(sql_statement, variable)
+                connection.commit()
+                return True if row_count > 0 else False
+        else:
+            logger.info("Variable with variable={} already exists in the database".format(variable))
+            return False
+    except Exception as ex:
+        connection.rollback()
+        error_message = "Insertion of variable: variable={} failed".format(variable)
+        logger.error(error_message)
         traceback.print_exc()
-        return False
+        raise DatabaseAdapterError(error_message, ex)
     finally:
-        session.close()
+        if connection is not None:
+            pool.release(connection)
 
 
-def add_variables(variables, session):
+def add_variables(variables, pool):
     """
     Add variables into Variable table
     :param variables: list of json objects that define variable attributes
@@ -84,59 +106,73 @@ def add_variables(variables, session):
     {
         'variable'     : 'mm',
     }
-    :param session: session made by sessionmaker for the database engine
+    :param pool: database connection pool
     :return:
     """
 
     for variable in variables:
 
-        print(add_variable(session=session, variable=variable.get('variable')))
+        print(add_variable(pool=pool, variable=variable.get('variable')))
         print(variable.get('variable'))
 
 
-def delete_variable(session, variable):
+def delete_variable(pool, variable):
     """
     Delete variable from Variable table, given variable name
-    :param session: session made by sessionmaker for the database engine
+    :param pool: database connection pool
     :param variable: string
     :return: True if the deletion was successful, else False
     """
 
-    id_ = get_variable_id(session=session, variable=variable)
-
+    connection = pool.get_conn()
     try:
-        if id_ is not None:
-            return delete_variable_by_id(session, id_)
-        else:
-            logger.info("There's no record in the database with the variable id {}".format(id_))
-            print("There's no record in the database with the variable id ", id_)
-            return False
+
+        with connection.cursor() as cursor:
+            sql_statement = "DELETE FROM `variable` WHERE `variable`=%s"
+            row_count = cursor.execute(sql_statement, variable)
+            connection.commit()
+            if row_count > 0:
+                return True
+            else:
+                logger.info("There's no record of variable in the database with variable={}".format(variable))
+                return False
+    except Exception as ex:
+        connection.rollback()
+        error_message = "Deleting variable with variable={} failed.".format(variable)
+        logger.error(error_message)
+        traceback.print_exc()
+        raise DatabaseAdapterError(error_message, ex)
     finally:
-        session.close()
+        if connection is not None:
+            pool.release(connection)
 
 
-def delete_variable_by_id(session, id_):
+def delete_variable_by_id(pool, id_):
     """
     Delete variable from Variable table by id
-    :param session: session made by sessionmaker for the database engine
+    :param pool: database connection pool
     :param id_:
     :return: True if the deletion was successful, else False
     """
 
+    connection = pool.get_conn()
     try:
-        variable = session.query(Variable).get(id_)
-        if variable is not None:
-            session.delete(variable)
-            session.commit()
-            status = session.query(Variable).filter_by(id=id_).count()
-            return True if status==0 else False
-        else:
-            logger.info("There's no record in the database with the variable id {}".format(id_))
-            print("There's no record in the database with the variable id ", id_)
-            return False
-    except Exception as e:
-        logger.error("Exception occurred while deleting variable with id {}".format(id_))
+
+        with connection.cursor() as cursor:
+            sql_statement = "DELETE FROM `variable` WHERE `id`=%s"
+            row_count = cursor.execute(sql_statement, id_)
+            connection.commit()
+            if row_count > 0:
+                return True
+            else:
+                logger.info("There's no record of variable in the database with the variable id {}".format(id_))
+                return False
+    except Exception as ex:
+        connection.rollback()
+        error_message = "Deleting variable with id {} failed.".format(id_)
+        logger.error(error_message)
         traceback.print_exc()
-        return False
+        raise DatabaseAdapterError(error_message, ex)
     finally:
-        session.close()
+        if connection is not None:
+            pool.release(connection)

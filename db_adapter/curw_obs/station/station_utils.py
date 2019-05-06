@@ -1,7 +1,10 @@
 import traceback
-from db_adapter.curw_obs.models import Station
-from db_adapter.curw_obs.station.station_enum import StationEnum
+import csv
+import pkg_resources
+
+from db_adapter.curw_fcst.station.station_enum import StationEnum
 from db_adapter.logger import logger
+from db_adapter.exceptions import DatabaseAdapterError
 
 """
 Station JSON Object would looks like this 
@@ -11,33 +14,43 @@ e.g.:
         'latitude'    : '6.535172',
         'longitude'   : '79.875435',
         'description' : '',
-        'station_type': StationEnum.Government
+        'station_type': StationEnum.WRF
     }
 """
 
 
-def get_station_by_id(session, id_):
+def get_station_by_id(pool, id_):
     """
     Retrieve station by id
-    :param session: session made by sessionmaker for the database engine
+    :param pool: database connection pool
     :param id_: station id
     :return: Station if the stations exists in the database, else None
     """
+
+    connection = pool.get_conn()
     try:
-        station_row = session.query(Station).get(id_)
-        return None if station_row is None else station_row
-    except Exception as e:
-        logger.error("Exception occurred while retrieving station with id {}".format(id_))
+
+        with connection.cursor() as cursor:
+            sql_statement = "SELECT * FROM `station` WHERE `id`=%s"
+            row_count = cursor.execute(sql_statement, id_)
+            if row_count > 0:
+                return cursor.fetchone()
+            else:
+                return None
+    except Exception as ex:
+        error_message = "Retrieving station with station_id {} failed".format(id_)
+        logger.error(error_message)
         traceback.print_exc()
-        return False
+        raise DatabaseAdapterError(error_message, ex)
     finally:
-        session.close()
+        if connection is not None:
+            pool.release(connection)
 
 
-def get_station_id(session, latitude, longitude, station_type) -> str:
+def get_station_id(pool, latitude, longitude, station_type) -> str:
     """
     Retrieve station id
-    :param session: session made by sessionmaker for the database engine
+    :param pool: database connection pool
     :param latitude:
     :param longitude:
     :param station_type: StationEnum: which defines the station type
@@ -45,29 +58,35 @@ def get_station_id(session, latitude, longitude, station_type) -> str:
     :return: str: station id, if station exists in the db, else None
     """
 
-    initial_value = str(station_type.value)
-
+    connection = pool.get_conn()
     try:
+
+        initial_value = str(station_type.value)
+
         if len(initial_value)==6:
             pattern = "{}_____".format(initial_value[0])
         elif len(initial_value)==7:
             pattern = "{}{}_____".format(initial_value[0], initial_value[1])
-        station_row = session.query(Station) \
-            .filter(Station.id.like(pattern)) \
-            .filter_by(latitude=latitude) \
-            .filter_by(longitude=longitude) \
-            .first()
-        return None if station_row is None else station_row.id
-    except Exception as e:
-        logger.error("Exception occurred while retrieving station id: latitude={}, longitude={}, "
-                     "and station_type{}".format(latitude,longitude, station_type))
+
+        with connection.cursor() as cursor:
+            sql_statement = "SELECT `id` FROM `station` WHERE `id` like %s and `latitude`=%s and `longitude`=%s"
+            row_count = cursor.execute(sql_statement, (pattern, latitude, longitude))
+            if row_count > 0:
+                return cursor.fetchone()['id']
+            else:
+                return None
+    except Exception as ex:
+        error_message = "Retrieving station id: latitude={}, longitude={}, and station_type{} failed."\
+            .format(latitude, longitude, station_type)
+        logger.error(error_message)
         traceback.print_exc()
-        return False
+        raise DatabaseAdapterError(error_message, ex)
     finally:
-        session.close()
+        if connection is not None:
+            pool.release(connection)
 
 
-def add_station(session, name, latitude, longitude, description, station_type):
+def add_station(pool, name, latitude, longitude, description, station_type):
     """
     Insert sources into the database
 
@@ -83,7 +102,7 @@ def add_station(session, name, latitude, longitude, description, station_type):
     - 1 2xx xxx - FLO2D (stationId: [;<prefix>_]flo2d_<SOMETHING>)model
     - 1 3xx xxx - MIKE (stationId: [;<prefix>_]mike_<SOMETHING>)
 
-    :param session: session made by sessionmaker for the database engine
+    :param pool: database connection pool
     :param name: string
     :param latitude: double
     :param longitude: double
@@ -95,38 +114,41 @@ def add_station(session, name, latitude, longitude, description, station_type):
     initial_value = station_type.value
     range_ = StationEnum.getRange(station_type)
 
-    station = session.query(Station) \
-        .filter(Station.id >= initial_value, Station.id <= initial_value + range_) \
-        .order_by(Station.id.desc()) \
-        .first()
-
-    if station is not None:
-        station_id = station.id + 1
-    else:
-        station_id = initial_value
-
+    connection = pool.get_conn()
     try:
-        station = Station(
-                id=station_id,
-                name=name,
-                latitude=latitude,
-                longitude=longitude,
-                description=description
-                )
+        if get_station_id(pool=pool, latitude=latitude, longitude=longitude, station_type=station_type) is None:
 
-        session.add(station)
-        session.commit()
-        return True
-    except Exception as e:
-        logger.error("Exception occurred while adding station: name={}, latitude={}, longitude={}, description={}, "
-                     "and station_type={}".format(name, latitude, longitude, description, station_type))
+            with connection.cursor() as cursor1:
+                sql_statement = "SELECT `id` FROM `station` WHERE `id` BETWEEN %s and %s ORDER BY `id` DESC"
+                row_count = cursor1.execute(sql_statement, (initial_value, initial_value + range_))
+                if row_count > 0:
+                    station_id = cursor1.fetchone()['id'] + 1
+                else:
+                    station_id = initial_value
+
+            with connection.cursor() as cursor2:
+                sql_statement = "INSERT INTO `station` (`id`, `name`, `latitude`, `longitude`, `description`) " \
+                                "VALUES ( %s, %s, %s, %s, %s)"
+                row_count = cursor2.execute(sql_statement, (station_id, name, latitude, longitude, description))
+                connection.commit()
+                return True if row_count > 0 else False
+        else:
+            logger.info("Station with latitude={} longitude={} and station_type={} already exists in the database"
+                .format(latitude, longitude, station_type))
+            return False
+    except Exception as ex:
+        connection.rollback()
+        error_message = "Insertion of station: name={}, latitude={}, longitude={}, description={}, " \
+                        "and station_type={} failed.".format(name, latitude, longitude, description, station_type)
+        logger.error(error_message)
         traceback.print_exc()
-        return False
+        raise DatabaseAdapterError(error_message, ex)
     finally:
-        session.close()
+        if connection is not None:
+            pool.release(connection)
 
 
-def add_stations(stations, session):
+def add_stations(stations, pool):
     """
     Add stations into Station table
     :param stations: list of json objects that define station attributes
@@ -143,16 +165,16 @@ def add_stations(stations, session):
 
     for station in stations:
 
-        print(add_station(session=session, name=station.get('name'), latitude=station.get('latitude'),
+        print(add_station(pool=pool, name=station.get('name'), latitude=station.get('latitude'),
                 longitude=station.get('longitude'), station_type=station.get('station_type'),
                 description=station.get('description')))
         print(station.get('name'))
 
 
-def delete_station(session, latitude, longitude, station_type):
+def delete_station(pool, latitude, longitude, station_type):
     """
     Delete station from Station table
-    :param session: session made by sessionmaker for the database engine
+    :param pool: database connection pool
     :param latitude:
     :param longitude:
     :param station_type: StationEnum: which defines the station type
@@ -160,41 +182,126 @@ def delete_station(session, latitude, longitude, station_type):
     :return: True if the deletion was successful, else False
     """
 
-    id_ = get_station_id(session, latitude=latitude, longitude=longitude, station_type=station_type)
-
+    connection = pool.get_conn()
     try:
-        if id_ is not None:
-            return delete_station_by_id(session, id_)
-        else:
-            logger.info("There's no record in the database with the station id {}".format(id_))
-            print("There's no record in the database with the station id ", id_)
-            return False
+        initial_value = str(station_type.value)
+
+        if len(initial_value)==6:
+            pattern = "{}_____".format(initial_value[0])
+        elif len(initial_value)==7:
+            pattern = "{}{}_____".format(initial_value[0], initial_value[1])
+
+        with connection.cursor() as cursor:
+            sql_statement = "DELETE FROM `station` WHERE `id` like %s and `latitude`=%s and `longitude`=%s"
+            row_count = cursor.execute(sql_statement, (pattern, latitude, longitude))
+            connection.commit()
+            if row_count > 0:
+                return True
+            else:
+                logger.info("There's no record of station in the database with latitude={}, "
+                            "longitude={}, and station_type{}".format(latitude, longitude, station_type))
+                return False
+    except Exception as ex:
+        connection.rollback()
+        error_message = "Deleting station with latitude={}, longitude={}, and station_type{} failed."\
+            .format(latitude, longitude, station_type)
+        logger.error(error_message)
+        traceback.print_exc()
+        raise DatabaseAdapterError(error_message, ex)
     finally:
-        session.close()
+        if connection is not None:
+            pool.release(connection)
 
 
-def delete_station_by_id(session, id_):
+def delete_station_by_id(pool, id_):
     """
     Delete station from Station table by id
-    :param session: session made by sessionmaker for the database engine
+    :param pool: database connection pool
     :param id_:
     :return: True if the deletion was successful, else False
     """
 
+    connection = pool.get_conn()
     try:
-        station = session.query(Station).get(id_)
-        if station is not None:
-            session.delete(station)
-            session.commit()
-            status = session.query(Station).filter_by(id=id_).count()
-            return True if status==0 else False
-        else:
-            logger.info("There's no record in the database with the station id {}".format(id_))
-            print("There's no record in the database with the station id ", id_)
-            return False
-    except Exception as e:
-        logger.error("Exception occurred while deleting station with id {}".format(id_))
+        with connection.cursor() as cursor:
+            sql_statement = "DELETE FROM `station` WHERE `id`=%s"
+            row_count = cursor.execute(sql_statement, id_)
+            connection.commit()
+            if row_count > 0:
+                return True
+            else:
+                logger.info("There's no record of station in the database with the station id {}".format(id_))
+                return False
+    except Exception as ex:
+        connection.rollback()
+        error_message = "Deleting station with id {} failed.".format(id_)
+        logger.error(error_message)
         traceback.print_exc()
-        return False
+        raise DatabaseAdapterError(error_message, ex)
     finally:
-        session.close()
+        if connection is not None:
+            pool.release(connection)
+
+
+def add_wrfv3_stations(pool):
+
+    """
+    Add wrfv3 stations to the database
+    :param pool:  database connection pool
+    :param wrf_stations_list: tuple that contains values for (id, name, latitude, longitude, description)
+    :return: True if the insertion is successful, else False
+    """
+
+    # resource_path = pkg_resources.resource_string(__name__, "wrfv3_stations.csv")
+    with open('wrfv3_stations.csv', 'r') as f:
+        data=[tuple(line) for line in csv.reader(f)][1:]
+
+    connection = pool.get_conn()
+    try:
+        with connection.cursor() as cursor:
+            sql_statement = "INSERT INTO `station` (`id`, `name`, `latitude`, `longitude`, `description`) " \
+                                "VALUES ( %s, %s, %s, %s, %s)"
+            row_count = cursor.executemany(sql_statement, data)
+        connection.commit()
+        return row_count
+    except Exception as ex:
+        connection.rollback()
+        error_message = "Insertion of wrf_v3 stations failed."
+        logger.error(error_message)
+        traceback.print_exc()
+        raise DatabaseAdapterError(error_message, ex)
+    finally:
+        if connection is not None:
+            pool.release(connection)
+
+
+def get_wrfv3_stations(pool):
+
+    """
+    Retrieve ids of wrf_v3 stations, for each station name
+    :param pool: database connection pool
+    :return: dictionary with keys of type "<latitude>_<longitude>" and corresponding id as the value
+    """
+
+    wrfv3_stations = {}
+
+    connection = pool.get_conn()
+    try:
+        with connection.cursor() as cursor:
+            sql_statement = "SELECT `id`, `name` FROM `station` WHERE `id` like %s"
+            row_count = cursor.execute(sql_statement, "11_____")
+            if row_count > 0:
+                results = cursor.fetchall()
+                for dict in results:
+                    wrfv3_stations[dict.get("name")] = dict.get("id")
+                return wrfv3_stations
+            else:
+                return None
+    except Exception as ex:
+        error_message = "Retrieving wrf v3 stations failed"
+        logger.error(error_message)
+        traceback.print_exc()
+        raise DatabaseAdapterError(error_message, ex)
+    finally:
+        if connection is not None:
+            pool.release(connection)
