@@ -237,7 +237,7 @@ class Timeseries:
             return run_tuple[0]
         except IntegrityError as ie:
             if ie.args[0] == 1062:
-                logger.log("Timeseries id {} already exists in the database".format(run_tuple[0]))
+                logger.info("Timeseries id {} already exists in the database".format(run_tuple[0]))
                 pass
             else:
                 connection.rollback()
