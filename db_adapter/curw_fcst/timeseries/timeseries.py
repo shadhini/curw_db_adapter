@@ -2,6 +2,7 @@ import pandas as pd
 import hashlib
 import json
 import traceback
+from pymysql import IntegrityError
 
 from db_adapter.logger import logger
 from db_adapter.exceptions import DatabaseAdapterError
@@ -234,6 +235,19 @@ class Timeseries:
             connection.commit()
             self.insert_data(timeseries, True)
             return run_tuple[0]
+        except IntegrityError as ie:
+            if ie.args[0] == 1062:
+                logger.log("Timeseries id {} already exists in the database".format(run_tuple[0]))
+                pass
+            else:
+                connection.rollback()
+                error_message = "Insertion failed for timeseries with tms_id={}, sim_tag={}, scheduled_date={}, " \
+                                "station_id={}, source_id={}, variable_id={}, unit_id={}, fgt={}" \
+                    .format(run_tuple[0], run_tuple[1], run_tuple[9], run_tuple[4], run_tuple[5], run_tuple[6],
+                        run_tuple[7], run_tuple[8])
+                logger.error(error_message)
+                traceback.print_exc()
+                raise DatabaseAdapterError(error_message)
         except Exception as ex:
             connection.rollback()
             error_message = "Insertion failed for timeseries with tms_id={}, sim_tag={}, scheduled_date={}, " \
