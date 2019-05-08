@@ -236,11 +236,11 @@ class Timeseries:
             self.insert_data(timeseries, True)
             return run_tuple[0]
         except IntegrityError as ie:
+            connection.rollback()
             if ie.args[0] == 1062:
                 logger.info("Timeseries id {} already exists in the database".format(run_tuple[0]))
                 pass
             else:
-                connection.rollback()
                 error_message = "Insertion failed for timeseries with tms_id={}, sim_tag={}, scheduled_date={}, " \
                                 "station_id={}, source_id={}, variable_id={}, unit_id={}, fgt={}" \
                     .format(run_tuple[0], run_tuple[1], run_tuple[9], run_tuple[4], run_tuple[5], run_tuple[6],
