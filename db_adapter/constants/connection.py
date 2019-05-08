@@ -15,6 +15,13 @@ CURW_OBS_HOST = "35.230.102.148"
 CURW_OBS_PORT = 3306
 CURW_OBS_DATABASE = "curw_obs"
 
+# ---------- CUrW Obs Database --------------
+CURW_SIM_USERNAME = "root"
+CURW_SIM_PASSWORD = "cfcwm07"
+CURW_SIM_HOST = "35.230.102.148"
+CURW_SIM_PORT = 3306
+CURW_SIM_DATABASE = "curw_sim"
+
 # ----------- Test Database -----------------
 USERNAME = "root"
 PASSWORD = "password"
