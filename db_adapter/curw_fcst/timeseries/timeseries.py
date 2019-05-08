@@ -247,7 +247,7 @@ class Timeseries:
                         run_tuple[7], run_tuple[8])
                 logger.error(error_message)
                 traceback.print_exc()
-                raise DatabaseAdapterError(error_message)
+                raise DatabaseAdapterError(error_message,ie)
         except Exception as ex:
             connection.rollback()
             error_message = "Insertion failed for timeseries with tms_id={}, sim_tag={}, scheduled_date={}, " \
