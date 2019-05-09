@@ -77,8 +77,8 @@ class Run(CurwFcstBase):
     source = Column(INTEGER(11), ForeignKey(Source.id), nullable=False)
     variable = Column(INTEGER(11), ForeignKey(Variable.id), nullable=False)
     unit = Column(INTEGER(11), ForeignKey(Unit.id), nullable=False)
-    fgt = Column(DATETIME, nullable=True)
-    scheduled_date = Column(DATETIME, nullable=False)
+    # fgt = Column(DATETIME, nullable=True)
+    # scheduled_date = Column(DATETIME, nullable=False)
 
     station_relationship = relationship('Station', foreign_keys='Run.station', back_populates="run_relationship")
     source_relationship = relationship('Source', foreign_keys='Run.source', back_populates="run_relationship")
@@ -89,9 +89,8 @@ class Run(CurwFcstBase):
 
     def __repr__(self):
         return "<Run(id='%s', sim_tag='%s', station='%d', source='%d', " \
-               "variable='%d', unit='%d', fgt='%r', scheduled_date='%r')>" \
-               % (self.id, self.sim_tag, self.station, self.source,
-                  self.variable, self.unit, self.fgt, self.scheduled_date)
+               "variable='%d', unit='%d')>" \
+               % (self.id, self.sim_tag, self.station, self.source, self.variable, self.unit)
 
 
 class Data(CurwFcstBase):
@@ -99,13 +98,13 @@ class Data(CurwFcstBase):
 
     id = Column(VARCHAR(64), ForeignKey(Run.id), nullable=False, primary_key=True)
     time = Column(DATETIME, nullable=False, primary_key=True)
+    fgt = Column(DATETIME, nullable=False, primary_key=True)
     value = Column(DECIMAL(8, 3), nullable=False)
-    # fgt = Column(DATETIME, nullable=False)  # to be removed
 
     id_relationship = relationship('Run', foreign_keys='Data.id', back_populates="data_relationship")
 
     def __repr__(self):
-        return "<Date(id='%s', time='%s', value='%r')>" \
-               % (self.id, self.time, self.value)
+        return "<Date(id='%s', time='%s', fgt='%r', value='%r')>" \
+               % (self.id, self.time, self.fgt, self.value)
 
 

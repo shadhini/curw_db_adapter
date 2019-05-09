@@ -16,8 +16,7 @@ class Timeseries:
     def generate_timeseries_id(meta_data: object) -> object:
         """
         Generate the event id for given metadata
-        Only 'sim_tag', 'scheduled_date', 'latitude', 'longitude', 'model',
-        'version', 'variable', 'unit', 'unit_type'
+        Only 'sim_tag', 'latitude', 'longitude', 'model', 'version', 'variable', 'unit', 'unit_type'
         are used to generate the id (i.e. hash value)
 
         :param meta_data: Dict with 'sim_tag', 'scheduled_date', 'latitude',
@@ -28,7 +27,6 @@ class Timeseries:
         sha256 = hashlib.sha256()
         hash_data = {
                 'sim_tag'       : '',
-                'scheduled_date': '',
                 'latitude'      : '',
                 'longitude'     : '',
                 'model'         : '',
@@ -107,10 +105,10 @@ class Timeseries:
         try:
             with connection.cursor() as cursor:
                 if upsert:
-                    sql_statement = "INSERT INTO `data` (`id`, `time`, `value`) VALUES (%s, %s, %s) " \
+                    sql_statement = "INSERT INTO `data` (`id`, `time`, `fgt`, `value`) VALUES (%s, %s, %s, %s) " \
                                     "ON DUPLICATE KEY UPDATE `value`=VALUES(`value`)"
                 else:
-                    sql_statement = "INSERT INTO `data` (`id`, `time`, `value`) VALUES (%s, %s, %s)"
+                    sql_statement = "INSERT INTO `data` (`id`, `time`, `fgt`, `value`) VALUES (%s, %s, %s, %s)"
                 row_count = cursor.executemany(sql_statement, timeseries)
             connection.commit()
             return row_count
@@ -125,13 +123,12 @@ class Timeseries:
             if connection is not None:
                 self.pool.release(connection)
 
-    def insert_timeseries(self, timeseries, sim_tag, scheduled_date, latitude, longitude,
-                          model, version, variable, unit, unit_type, start_date, end_date, fgt=None):
+    def insert_timeseries(self, timeseries, sim_tag, latitude, longitude,
+                          model, version, variable, unit, unit_type, start_date, end_date, fgt):
         """
         Insert new timeseries into the Run table and Data table, this will generate the tieseries id from the given meta data
         :param timeseries: list of [time, value] lists
         :param sim_tag:
-        :param scheduled_date:
         :param latitude:
         :param longitude:
         :param model:
@@ -144,7 +141,6 @@ class Timeseries:
         """
         tms_meta = {
                 'sim_tag'       : sim_tag,
-                'scheduled_date': scheduled_date,
                 'latitude'      : latitude,
                 'longitude'     : longitude,
                 'model'         : model,
@@ -181,9 +177,9 @@ class Timeseries:
 
             with connection.cursor() as cursor5:
                 sql_statement = "INSERT INTO `run` (`id`, `sim_tag`, `start_date`, `end_date`, `station`, `source`, " \
-                                "`variable`, `unit`, `fgt`, `scheduled_date`) " \
-                                "VALUES ( %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
-                sql_values = (tms_id, sim_tag, start_date, end_date, station_id, source_id, variable_id, unit_id, fgt, scheduled_date)
+                                "`variable`, `unit`) " \
+                                "VALUES ( %s, %s, %s, %s, %s, %s, %s, %s)"
+                sql_values = (tms_id, sim_tag, start_date, end_date, station_id, source_id, variable_id, unit_id)
                 cursor5.execute(sql_statement, sql_values)
 
             new_timeseries = []
@@ -191,6 +187,7 @@ class Timeseries:
                 if len(t) > 1:
                     # Insert EventId in front of timestamp, value list
                     t.insert(0, tms_id)
+                    t.insert(2, fgt)
                     new_timeseries.append(t)
                 else:
                     logger.warning('Invalid timeseries data:: %s', t)
@@ -200,9 +197,9 @@ class Timeseries:
             return tms_id
         except Exception as ex:
             connection.rollback()
-            error_message = "Insertion failed for timeseries with sim_tag={}, scheduled_date={}, " \
-                            "latitude={}, longitude={}, model={}, version={}, variable={}, unit={}, unit_type={}, fgt={}"\
-                .format(sim_tag, scheduled_date, latitude, longitude, model, version, variable, unit, unit_type, fgt)
+            error_message = "Insertion failed for timeseries with sim_tag={}, latitude={}, longitude={}," \
+                            " model={}, version={}, variable={}, unit={}, unit_type={}, fgt={}"\
+                .format(sim_tag, latitude, longitude, model, version, variable, unit, unit_type, fgt)
             logger.error(error_message)
             traceback.print_exc()
             raise DatabaseAdapterError(error_message, ex)
@@ -215,7 +212,7 @@ class Timeseries:
         """
         Insert new timeseries into the Run table and Data table, for given timeseries id
         :param tms_id:
-        :param timeseries: list of [tms_id, time, value] lists
+        :param timeseries: list of [tms_id, time, fgt, value] lists
         :param run_tuple: tuples like
         (tms_id[0], sim_tag[1], start_date[2], end_date[3], station_id[4], source_id[5], variable_id[6], unit_id[7],
          fgt[8], scheduled_date[9])
@@ -227,8 +224,8 @@ class Timeseries:
 
             with connection.cursor() as cursor:
                 sql_statement = "INSERT INTO `run` (`id`, `sim_tag`, `start_date`, `end_date`, `station`, `source`, " \
-                                "`variable`, `unit`, `fgt`, `scheduled_date`) " \
-                                "VALUES ( %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+                                "`variable`, `unit`) " \
+                                "VALUES ( %s, %s, %s, %s, %s, %s, %s, %s)"
                 sql_values = run_tuple
                 cursor.execute(sql_statement, sql_values)
 
@@ -238,9 +235,10 @@ class Timeseries:
         # except IntegrityError as ie:
         #     connection.rollback()
         #     if ie.args[0] == 1062:
+        #         error_message = "Timeseries id {} already exists in the database".format(run_tuple[0])
         #         logger.info("Timeseries id {} already exists in the database".format(run_tuple[0]))
         #         print("Timeseries id {} already exists in the database".format(run_tuple[0]))
-        #         pass
+        #         raise DuplicateEntryError(error_message, ie)
         #     else:
         #         error_message = "Insertion failed for timeseries with tms_id={}, sim_tag={}, scheduled_date={}, " \
         #                         "station_id={}, source_id={}, variable_id={}, unit_id={}, fgt={}" \
@@ -248,22 +246,7 @@ class Timeseries:
         #                 run_tuple[7], run_tuple[8])
         #         logger.error(error_message)
         #         traceback.print_exc()
-        #         raise DatabaseAdapterError(error_message,ie)
-        except IntegrityError as ie:
-            connection.rollback()
-            if ie.args[0] == 1062:
-                error_message = "Timeseries id {} already exists in the database".format(run_tuple[0])
-                logger.info("Timeseries id {} already exists in the database".format(run_tuple[0]))
-                print("Timeseries id {} already exists in the database".format(run_tuple[0]))
-                raise DuplicateEntryError(error_message, ie)
-            else:
-                error_message = "Insertion failed for timeseries with tms_id={}, sim_tag={}, scheduled_date={}, " \
-                                "station_id={}, source_id={}, variable_id={}, unit_id={}, fgt={}" \
-                    .format(run_tuple[0], run_tuple[1], run_tuple[9], run_tuple[4], run_tuple[5], run_tuple[6],
-                        run_tuple[7], run_tuple[8])
-                logger.error(error_message)
-                traceback.print_exc()
-                raise DatabaseAdapterError(error_message, ie)
+        #         raise DatabaseAdapterError(error_message, ie)
         except Exception as ex:
             connection.rollback()
             error_message = "Insertion failed for timeseries with tms_id={}, sim_tag={}, scheduled_date={}, " \

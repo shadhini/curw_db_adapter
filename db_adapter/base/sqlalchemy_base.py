@@ -31,5 +31,5 @@ logger.info("Declaring an orm mapping for curw_obs database.")
 CurwObsBase = declarative_base()
 
 # CurwSimBase class for all the schema model classes of "curw-sim" database
-logger.info("Declaring an orm mapping for curw_obs database.")
+logger.info("Declaring an orm mapping for curw_sim database.")
 CurwSimBase = declarative_base()
