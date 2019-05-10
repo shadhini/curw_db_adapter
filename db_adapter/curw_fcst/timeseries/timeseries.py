@@ -93,7 +93,7 @@ class Timeseries:
         """
         Insert timeseries to Data table in the database
         :param tms_id: hash value
-        :param timeseries: list of [tms_id, time, value] lists
+        :param timeseries: list of [tms_id, time, fgt, value] lists
         :param boolean upsert: If True, upsert existing values ON DUPLICATE KEY. Default is False.
         Ref: 1). https://stackoverflow.com/a/14383794/1461060
              2). https://chartio.com/resources/tutorials/how-to-insert-if-row-does-not-exist-upsert-in-mysql/
@@ -214,8 +214,7 @@ class Timeseries:
         :param tms_id:
         :param timeseries: list of [tms_id, time, fgt, value] lists
         :param run_tuple: tuples like
-        (tms_id[0], sim_tag[1], start_date[2], end_date[3], station_id[4], source_id[5], variable_id[6], unit_id[7],
-         fgt[8], scheduled_date[9])
+        (tms_id[0], sim_tag[1], start_date[2], end_date[3], station_id[4], source_id[5], variable_id[6], unit_id[7])
         :return: timeseries id if insertion was successful, else raise DatabaseAdapterError
         """
 
@@ -249,10 +248,9 @@ class Timeseries:
         #         raise DatabaseAdapterError(error_message, ie)
         except Exception as ex:
             connection.rollback()
-            error_message = "Insertion failed for timeseries with tms_id={}, sim_tag={}, scheduled_date={}, " \
-                            "station_id={}, source_id={}, variable_id={}, unit_id={}, fgt={}"\
-                .format(run_tuple[0], run_tuple[1], run_tuple[9], run_tuple[4], run_tuple[5], run_tuple[6],
-                    run_tuple[7], run_tuple[8])
+            error_message = "Insertion failed for timeseries with tms_id={}, sim_tag={}, station_id={}, source_id={}," \
+                            " variable_id={}, unit_id={}"\
+                .format(run_tuple[0], run_tuple[1], run_tuple[4], run_tuple[5], run_tuple[6], run_tuple[7])
             logger.error(error_message)
             traceback.print_exc()
             raise DatabaseAdapterError(error_message, ex)
@@ -260,30 +258,30 @@ class Timeseries:
             if connection is not None:
                 self.pool.release(connection)
 
-    def update_fgt(self, scheduled_date, fgt):
-        """
-        Update fgt for inserted timeseries
-        :param scheduled_date:
-        :return: scheduled data if update is sccessfull, else raise DatabaseAdapterError
-        """
-
-        connection = self.pool.get_conn()
-        try:
-
-            with connection.cursor() as cursor:
-                sql_statement="UPDATE `run` SET `fgt`=%s WHERE `scheduled_date`=%s"
-                cursor.execute(sql_statement, (fgt, scheduled_date))
-            connection.commit()
-            return
-        except Exception as ex:
-            connection.rollback()
-            error_message = "Updating fgt for scheduled_date={} failed.".format(scheduled_date)
-            logger.error(error_message)
-            traceback.print_exc()
-            raise DatabaseAdapterError(error_message, ex)
-        finally:
-            if connection is not None:
-                self.pool.release(connection)
+    # def update_fgt(self, scheduled_date, fgt):
+    #     """
+    #     Update fgt for inserted timeseries
+    #     :param scheduled_date:
+    #     :return: scheduled data if update is sccessfull, else raise DatabaseAdapterError
+    #     """
+    #
+    #     connection = self.pool.get_conn()
+    #     try:
+    #
+    #         with connection.cursor() as cursor:
+    #             sql_statement="UPDATE `run` SET `fgt`=%s WHERE `scheduled_date`=%s"
+    #             cursor.execute(sql_statement, (fgt, scheduled_date))
+    #         connection.commit()
+    #         return
+    #     except Exception as ex:
+    #         connection.rollback()
+    #         error_message = "Updating fgt for scheduled_date={} failed.".format(scheduled_date)
+    #         logger.error(error_message)
+    #         traceback.print_exc()
+    #         raise DatabaseAdapterError(error_message, ex)
+    #     finally:
+    #         if connection is not None:
+    #             self.pool.release(connection)
 
 
 
