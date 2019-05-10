@@ -19,8 +19,8 @@ class Timeseries:
         Only 'sim_tag', 'latitude', 'longitude', 'model', 'version', 'variable', 'unit', 'unit_type'
         are used to generate the id (i.e. hash value)
 
-        :param meta_data: Dict with 'sim_tag', 'scheduled_date', 'latitude',
-        'longitude', 'model', 'version', 'variable', 'unit', 'unit_type' keys
+        :param meta_data: Dict with 'sim_tag', 'latitude', 'longitude', 'model', 'version', 'variable',
+        'unit', 'unit_type' keys
         :return: str: sha256 hash value in hex format (length of 64 characters)
         """
 
@@ -47,8 +47,8 @@ class Timeseries:
 
         """
         Check whether a timeseries id exists in the database for a given set of meta data
-        :param meta_data: Dict with 'sim_tag', 'scheduled_date', 'latitude',
-        'longitude', 'model', 'version', 'variable', 'unit', 'unit_type' keys
+        :param meta_data: Dict with 'sim_tag', 'latitude', 'longitude', 'model', 'version', 'variable',
+        'unit', 'unit_type' keys
         :return: timeseries id if exist else raise DatabaseAdapterError
         """
         event_id = self.generate_timeseries_id(meta_data)
@@ -58,7 +58,7 @@ class Timeseries:
             with connection.cursor() as cursor:
                 sql_statement = "SELECT 1 FROM `run` WHERE `id`=%s"
                 is_exist = cursor.execute(sql_statement, event_id)
-            return event_id if is_exist else None
+            return event_id if is_exist > 0 else None
         except Exception as ex:
             error_message = "Retrieving timeseries id for metadata={} failed.".format(meta_data)
             logger.error(error_message)
@@ -78,8 +78,8 @@ class Timeseries:
         try:
             with connection.cursor() as cursor:
                 sql_statement = "SELECT 1 FROM `run` WHERE `id`=%s"
-                is_exist = cursor.execute(sql_statement, id_).fetchone()
-            return False if is_exist is None else True
+                is_exist = cursor.execute(sql_statement, id_)
+            return False if is_exist > 0 is None else True
         except Exception as ex:
             error_message = "Check operation to find timeseries id {} in the run table failed.".format(id_)
             logger.error(error_message)

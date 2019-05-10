@@ -25,12 +25,12 @@ class Timeseries:
 
         sha256 = hashlib.sha256()
         hash_data = {
-                'latitude'      : '',
-                'longitude'     : '',
-                'source'         : '',
-                'variable'      : '',
-                'unit'          : '',
-                'unit_type'     : ''
+                'latitude' : '',
+                'longitude': '',
+                'source'   : '',
+                'variable' : '',
+                'unit'     : '',
+                'unit_type': ''
                 }
 
         for key in hash_data.keys():
@@ -54,7 +54,7 @@ class Timeseries:
             with connection.cursor() as cursor:
                 sql_statement = "SELECT 1 FROM `run` WHERE `id`=%s"
                 is_exist = cursor.execute(sql_statement, event_id)
-            return event_id if is_exist else None
+            return event_id if is_exist > 0 else None
         except Exception as ex:
             error_message = "Retrieving timeseries id for metadata={} failed.".format(meta_data)
             logger.error(error_message)
@@ -74,8 +74,8 @@ class Timeseries:
         try:
             with connection.cursor() as cursor:
                 sql_statement = "SELECT 1 FROM `run` WHERE `id`=%s"
-                is_exist = cursor.execute(sql_statement, id_).fetchone()
-            return False if is_exist is None else True
+                is_exist = cursor.execute(sql_statement, id_)
+            return False if is_exist > 0 is None else True
         except Exception as ex:
             error_message = "Check operation to find timeseries id {} in the run table failed.".format(id_)
             logger.error(error_message)
@@ -110,7 +110,8 @@ class Timeseries:
             return row_count
         except Exception as ex:
             connection.rollback()
-            error_message = "Data insertion to data table for tms id {}, upsert={} failed.".format(timeseries[0][0], upsert)
+            error_message = "Data insertion to data table for tms id {}, upsert={} failed.".format(timeseries[0][0],
+                    upsert)
             logger.error(error_message)
             traceback.print_exc()
             raise DatabaseAdapterError(error_message, ex)
@@ -132,12 +133,12 @@ class Timeseries:
         :return: str: timeseries id if insertion was successful, else raise DatabaseAdapterError
         """
         tms_meta = {
-                'latitude'      : latitude,
-                'longitude'     : longitude,
-                'source'         : source,
-                'variable'      : variable,
-                'unit'          : unit,
-                'unit_type'     : unit_type
+                'latitude' : latitude,
+                'longitude': longitude,
+                'source'   : source,
+                'variable' : variable,
+                'unit'     : unit,
+                'unit_type': unit_type
                 }
 
         tms_id = Timeseries.generate_timeseries_id(tms_meta)
@@ -145,11 +146,11 @@ class Timeseries:
         connection = self.pool.get_conn()
         try:
             sql_statements = [
-                "SELECT `id` as `source_id` FROM `source` WHERE `source`=%s",
-                "SELECT `id` as `station_id` FROM `station` WHERE `latitude`=%s and `longitude`=%s",
-                "SELECT `id` as `unit_id` FROM `unit` WHERE `unit`=%s and `type`=%s",
-                "SELECT `id` as `variable_id` FROM `variable` WHERE `variable`=%s"
-            ]
+                    "SELECT `id` as `source_id` FROM `source` WHERE `source`=%s",
+                    "SELECT `id` as `station_id` FROM `station` WHERE `latitude`=%s and `longitude`=%s",
+                    "SELECT `id` as `unit_id` FROM `unit` WHERE `unit`=%s and `type`=%s",
+                    "SELECT `id` as `variable_id` FROM `variable` WHERE `variable`=%s"
+                    ]
 
             station_id = None
             source_id = None
@@ -186,8 +187,8 @@ class Timeseries:
         except Exception as ex:
             connection.rollback()
             error_message = "Insertion failed for timeseries with latitude={}, longitude={}, source={}, variable={}, " \
-                            "unit={}, unit_type={}"\
-                .format( latitude, longitude, source, variable, unit, unit_type)
+                            "unit={}, unit_type={}" \
+                .format(latitude, longitude, source, variable, unit, unit_type)
             logger.error(error_message)
             traceback.print_exc()
             raise DatabaseAdapterError(error_message, ex)
@@ -221,7 +222,7 @@ class Timeseries:
         except Exception as ex:
             connection.rollback()
             error_message = "Insertion failed for timeseries with tms_id={}, station_id={}, source_id={}, " \
-                            "variable_id={}, unit_id={}"\
+                            "variable_id={}, unit_id={}" \
                 .format(run_tuple[0], run_tuple[1], run_tuple[2], run_tuple[3], run_tuple[4])
             logger.error(error_message)
             traceback.print_exc()

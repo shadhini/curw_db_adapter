@@ -52,7 +52,7 @@ class Timeseries:
             with connection.cursor() as cursor:
                 sql_statement = "SELECT 1 FROM `run` WHERE `id`=%s"
                 is_exist = cursor.execute(sql_statement, event_id)
-            return event_id if is_exist else None
+            return event_id if is_exist > 0 else None
         except Exception as ex:
             error_message = "Retrieving timeseries id for metadata={} failed.".format(meta_data)
             logger.error(error_message)
@@ -72,8 +72,8 @@ class Timeseries:
         try:
             with connection.cursor() as cursor:
                 sql_statement = "SELECT 1 FROM `run` WHERE `id`=%s"
-                is_exist = cursor.execute(sql_statement, id_).fetchone()
-            return False if is_exist is None else True
+                is_exist = cursor.execute(sql_statement, id_)
+            return False if is_exist > 0 is None else True
         except Exception as ex:
             error_message = "Check operation to find timeseries id {} in the run table failed.".format(id_)
             logger.error(error_message)
