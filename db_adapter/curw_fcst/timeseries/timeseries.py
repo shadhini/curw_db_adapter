@@ -323,7 +323,7 @@ class Timeseries:
             return
         except Exception as ex:
             connection.rollback()
-            error_message = "Updating fgt for scheduled_date={} failed.".format(scheduled_date)
+            error_message = "Updating fgt for id={} failed.".format(id_)
             logger.error(error_message)
             traceback.print_exc()
             raise DatabaseAdapterError(error_message, ex)
