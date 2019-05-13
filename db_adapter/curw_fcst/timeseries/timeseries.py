@@ -275,6 +275,38 @@ class Timeseries:
             if connection is not None:
                 self.pool.release(connection)
 
+    def insert_run(self, run_tuple):
+        """
+        Insert new run entry
+        :param run_tuple: tuple like
+        (tms_id[0], sim_tag[1], start_date[2], end_date[3], station_id[4], source_id[5], variable_id[6], unit_id[7])
+        :return: timeseries id if insertion was successful, else raise DatabaseAdapterError
+        """
+
+        connection = self.pool.get_conn()
+        try:
+
+            with connection.cursor() as cursor:
+                sql_statement = "INSERT INTO `run` (`id`, `sim_tag`, `start_date`, `end_date`, `station`, `source`, " \
+                                "`variable`, `unit`) " \
+                                "VALUES ( %s, %s, %s, %s, %s, %s, %s, %s)"
+                cursor.execute(sql_statement, run_tuple)
+
+            connection.commit()
+            return run_tuple[0]
+        except Exception as ex:
+            connection.rollback()
+            error_message = "Insertion failed for run enty with tms_id={}, sim_tag={}, station_id={}, source_id={}," \
+                            " variable_id={}, unit_id={}" \
+                .format(run_tuple[0], run_tuple[1], run_tuple[4], run_tuple[5], run_tuple[6], run_tuple[7])
+            logger.error(error_message)
+            traceback.print_exc()
+            raise DatabaseAdapterError(error_message, ex)
+        finally:
+            if connection is not None:
+                self.pool.release(connection)
+
+
     # def update_fgt(self, scheduled_date, fgt):
     #     """
     #     Update fgt for inserted timeseries
