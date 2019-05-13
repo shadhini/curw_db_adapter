@@ -79,7 +79,7 @@ class Timeseries:
             with connection.cursor() as cursor:
                 sql_statement = "SELECT 1 FROM `run` WHERE `id`=%s"
                 is_exist = cursor.execute(sql_statement, id_)
-            return False if is_exist > 0 is None else True
+            return True if is_exist > 0 else False
         except Exception as ex:
             error_message = "Check operation to find timeseries id {} in the run table failed.".format(id_)
             logger.error(error_message)
@@ -150,38 +150,56 @@ class Timeseries:
                 'unit_type'     : unit_type
                 }
 
-        tms_id = Timeseries.generate_timeseries_id(tms_meta)
+        tms_id = Timeseries.get_timeseries_id_if_exists(tms_meta)
 
         connection = self.pool.get_conn()
+
+        if tms_id is None:
+
+            try:
+                sql_statements = [
+                    "SELECT `id` as `source_id` FROM `source` WHERE `source`=%s",
+                    "SELECT `id` as `station_id` FROM `station` WHERE `latitude`=%s and `longitude`=%s",
+                    "SELECT `id` as `unit_id` FROM `unit` WHERE `unit`=%s and `type`=%s",
+                    "SELECT `id` as `variable_id` FROM `variable` WHERE `variable`=%s"
+                ]
+
+                station_id = None
+                source_id = None
+                variable_id = None
+                unit_id = None
+
+                with connection.cursor() as cursor1:
+                    source_id = cursor1.execute(sql_statements[0], (model, version)).fetchone()
+                with connection.cursor() as cursor2:
+                    station_id = cursor2.execute(sql_statements[1], (latitude, longitude)).fetchone()
+                with connection.cursor() as cursor3:
+                    unit_id = cursor3.execute(sql_statements[2], (unit, unit_type)).fetchone()
+                with connection.cursor() as cursor4:
+                    variable_id = cursor4.execute(sql_statements[3], variable).fetchone()
+
+                with connection.cursor() as cursor5:
+                    sql_statement = "INSERT INTO `run` (`id`, `sim_tag`, `start_date`, `end_date`, `station`, `source`, " \
+                                    "`variable`, `unit`) " \
+                                    "VALUES ( %s, %s, %s, %s, %s, %s, %s, %s)"
+                    sql_values = (tms_id, sim_tag, start_date, end_date, station_id, source_id, variable_id, unit_id)
+                    cursor5.execute(sql_statement, sql_values)
+
+                connection.commit()
+
+            except Exception as ex:
+                connection.rollback()
+                error_message = "Insertion to run table failed for timeseries with sim_tag={}, latitude={}, longitude={}," \
+                                " model={}, version={}, variable={}, unit={}, unit_type={}, fgt={}" \
+                    .format(sim_tag, latitude, longitude, model, version, variable, unit, unit_type, fgt)
+                logger.error(error_message)
+                traceback.print_exc()
+                raise DatabaseAdapterError(error_message, ex)
+            finally:
+                if connection is not None:
+                    self.pool.release(connection)
+
         try:
-            sql_statements = [
-                "SELECT `id` as `source_id` FROM `source` WHERE `source`=%s",
-                "SELECT `id` as `station_id` FROM `station` WHERE `latitude`=%s and `longitude`=%s",
-                "SELECT `id` as `unit_id` FROM `unit` WHERE `unit`=%s and `type`=%s",
-                "SELECT `id` as `variable_id` FROM `variable` WHERE `variable`=%s"
-            ]
-
-            station_id = None
-            source_id = None
-            variable_id = None
-            unit_id = None
-
-            with connection.cursor() as cursor1:
-                source_id = cursor1.execute(sql_statements[0], (model, version)).fetchone()
-            with connection.cursor() as cursor2:
-                station_id = cursor2.execute(sql_statements[1], (latitude, longitude)).fetchone()
-            with connection.cursor() as cursor3:
-                unit_id = cursor3.execute(sql_statements[2], (unit, unit_type)).fetchone()
-            with connection.cursor() as cursor4:
-                variable_id = cursor4.execute(sql_statements[3], variable).fetchone()
-
-            with connection.cursor() as cursor5:
-                sql_statement = "INSERT INTO `run` (`id`, `sim_tag`, `start_date`, `end_date`, `station`, `source`, " \
-                                "`variable`, `unit`) " \
-                                "VALUES ( %s, %s, %s, %s, %s, %s, %s, %s)"
-                sql_values = (tms_id, sim_tag, start_date, end_date, station_id, source_id, variable_id, unit_id)
-                cursor5.execute(sql_statement, sql_values)
-
             new_timeseries = []
             for t in [i for i in timeseries]:
                 if len(t) > 1:
@@ -191,13 +209,12 @@ class Timeseries:
                     new_timeseries.append(t)
                 else:
                     logger.warning('Invalid timeseries data:: %s', t)
-            connection.commit()
             self.insert_data(new_timeseries, True)
 
             return tms_id
         except Exception as ex:
             connection.rollback()
-            error_message = "Insertion failed for timeseries with sim_tag={}, latitude={}, longitude={}," \
+            error_message = "Insertion to data table failed for timeseries with sim_tag={}, latitude={}, longitude={}," \
                             " model={}, version={}, variable={}, unit={}, unit_type={}, fgt={}"\
                 .format(sim_tag, latitude, longitude, model, version, variable, unit, unit_type, fgt)
             logger.error(error_message)
