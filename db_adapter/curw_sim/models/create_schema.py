@@ -4,6 +4,7 @@ from db_adapter.constants import (
     CURW_SIM_DATABASE,
     )
 from db_adapter.constants import DIALECT_MYSQL, DRIVER_PYMYSQL
+from db_adapter.curw_sim.models import Run, Data
 
 from db_adapter.logger import logger
 
