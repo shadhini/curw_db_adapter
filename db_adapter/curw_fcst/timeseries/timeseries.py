@@ -26,14 +26,14 @@ class Timeseries:
 
         sha256 = hashlib.sha256()
         hash_data = {
-                'sim_tag'       : '',
-                'latitude'      : '',
-                'longitude'     : '',
-                'model'         : '',
-                'version'       : '',
-                'variable'      : '',
-                'unit'          : '',
-                'unit_type'     : ''
+                'sim_tag'  : '',
+                'latitude' : '',
+                'longitude': '',
+                'model'    : '',
+                'version'  : '',
+                'variable' : '',
+                'unit'     : '',
+                'unit_type': ''
                 }
 
         for key in hash_data.keys():
@@ -114,7 +114,8 @@ class Timeseries:
             return row_count
         except Exception as ex:
             connection.rollback()
-            error_message = "Data insertion to data table for tms id {}, upsert={} failed.".format(timeseries[0][0], upsert)
+            error_message = "Data insertion to data table for tms id {}, upsert={} failed.".format(timeseries[0][0],
+                    upsert)
             logger.error(error_message)
             traceback.print_exc()
             raise DatabaseAdapterError(error_message, ex)
@@ -140,14 +141,14 @@ class Timeseries:
         :return: str: timeseries id if insertion was successful, else raise DatabaseAdapterError
         """
         tms_meta = {
-                'sim_tag'       : sim_tag,
-                'latitude'      : latitude,
-                'longitude'     : longitude,
-                'model'         : model,
-                'version'       : version,
-                'variable'      : variable,
-                'unit'          : unit,
-                'unit_type'     : unit_type
+                'sim_tag'  : sim_tag,
+                'latitude' : latitude,
+                'longitude': longitude,
+                'model'    : model,
+                'version'  : version,
+                'variable' : variable,
+                'unit'     : unit,
+                'unit_type': unit_type
                 }
 
         tms_id = Timeseries.get_timeseries_id_if_exists(tms_meta)
@@ -158,11 +159,11 @@ class Timeseries:
 
             try:
                 sql_statements = [
-                    "SELECT `id` as `source_id` FROM `source` WHERE `source`=%s",
-                    "SELECT `id` as `station_id` FROM `station` WHERE `latitude`=%s and `longitude`=%s",
-                    "SELECT `id` as `unit_id` FROM `unit` WHERE `unit`=%s and `type`=%s",
-                    "SELECT `id` as `variable_id` FROM `variable` WHERE `variable`=%s"
-                ]
+                        "SELECT `id` as `source_id` FROM `source` WHERE `source`=%s",
+                        "SELECT `id` as `station_id` FROM `station` WHERE `latitude`=%s and `longitude`=%s",
+                        "SELECT `id` as `unit_id` FROM `unit` WHERE `unit`=%s and `type`=%s",
+                        "SELECT `id` as `variable_id` FROM `variable` WHERE `variable`=%s"
+                        ]
 
                 station_id = None
                 source_id = None
@@ -215,7 +216,7 @@ class Timeseries:
         except Exception as ex:
             connection.rollback()
             error_message = "Insertion to data table failed for timeseries with sim_tag={}, latitude={}, longitude={}," \
-                            " model={}, version={}, variable={}, unit={}, unit_type={}, fgt={}"\
+                            " model={}, version={}, variable={}, unit={}, unit_type={}, fgt={}" \
                 .format(sim_tag, latitude, longitude, model, version, variable, unit, unit_type, fgt)
             logger.error(error_message)
             traceback.print_exc()
@@ -266,7 +267,7 @@ class Timeseries:
         except Exception as ex:
             connection.rollback()
             error_message = "Insertion failed for timeseries with tms_id={}, sim_tag={}, station_id={}, source_id={}," \
-                            " variable_id={}, unit_id={}"\
+                            " variable_id={}, unit_id={}" \
                 .format(run_tuple[0], run_tuple[1], run_tuple[4], run_tuple[5], run_tuple[6], run_tuple[7])
             logger.error(error_message)
             traceback.print_exc()
@@ -317,7 +318,7 @@ class Timeseries:
         try:
 
             with connection.cursor() as cursor:
-                sql_statement="UPDATE `run` SET `end_date`=%s WHERE `id`=%s"
+                sql_statement = "UPDATE `run` SET `end_date`=%s WHERE `id`=%s"
                 cursor.execute(sql_statement, (fgt, id_))
             connection.commit()
             return
@@ -331,13 +332,30 @@ class Timeseries:
             if connection is not None:
                 self.pool.release(connection)
 
+    def update_start_date(self, id_, start_date):
+        """
+            Update (very first fgt) start_date for inserted timeseries
+            :param id_: timeseries id
+            :return: scheduled data if update is sccessfull, else raise DatabaseAdapterError
+        """
 
+        connection = self.pool.get_conn()
+        try:
 
-
-
-
-
-
+            with connection.cursor() as cursor:
+                sql_statement = "UPDATE `run` SET `start_date`=%s WHERE `id`=%s"
+                cursor.execute(sql_statement, (start_date, id_))
+            connection.commit()
+            return
+        except Exception as ex:
+            connection.rollback()
+            error_message = "Updating start_date for id={} failed.".format(id_)
+            logger.error(error_message)
+            traceback.print_exc()
+            raise DatabaseAdapterError(error_message, ex)
+        finally:
+            if connection is not None:
+                self.pool.release(connection)
 
 
     # def get_timeseries(self, timeseries_id, start_date, end_date):
@@ -417,8 +435,6 @@ class Timeseries:
     #             return True
     #     finally:
     #         session.close()
-
-
 
 
     #
@@ -927,5 +943,3 @@ class Timeseries:
     #         if connection is not None:
     #             self.pool.put(connection)
     #
-
-
