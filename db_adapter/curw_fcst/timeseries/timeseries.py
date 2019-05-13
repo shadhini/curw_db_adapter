@@ -306,31 +306,30 @@ class Timeseries:
             if connection is not None:
                 self.pool.release(connection)
 
+    def update_latest_fgt(self, id_, fgt):
+        """
+        Update fgt for inserted timeseries
+        :param id_: timeseries id
+        :return: scheduled data if update is sccessfull, else raise DatabaseAdapterError
+        """
 
-    # def update_fgt(self, scheduled_date, fgt):
-    #     """
-    #     Update fgt for inserted timeseries
-    #     :param scheduled_date:
-    #     :return: scheduled data if update is sccessfull, else raise DatabaseAdapterError
-    #     """
-    #
-    #     connection = self.pool.get_conn()
-    #     try:
-    #
-    #         with connection.cursor() as cursor:
-    #             sql_statement="UPDATE `run` SET `fgt`=%s WHERE `scheduled_date`=%s"
-    #             cursor.execute(sql_statement, (fgt, scheduled_date))
-    #         connection.commit()
-    #         return
-    #     except Exception as ex:
-    #         connection.rollback()
-    #         error_message = "Updating fgt for scheduled_date={} failed.".format(scheduled_date)
-    #         logger.error(error_message)
-    #         traceback.print_exc()
-    #         raise DatabaseAdapterError(error_message, ex)
-    #     finally:
-    #         if connection is not None:
-    #             self.pool.release(connection)
+        connection = self.pool.get_conn()
+        try:
+
+            with connection.cursor() as cursor:
+                sql_statement="UPDATE `run` SET `end_date`=%s WHERE `id`=%s"
+                cursor.execute(sql_statement, (fgt, id_))
+            connection.commit()
+            return
+        except Exception as ex:
+            connection.rollback()
+            error_message = "Updating fgt for scheduled_date={} failed.".format(scheduled_date)
+            logger.error(error_message)
+            traceback.print_exc()
+            raise DatabaseAdapterError(error_message, ex)
+        finally:
+            if connection is not None:
+                self.pool.release(connection)
 
 
 
