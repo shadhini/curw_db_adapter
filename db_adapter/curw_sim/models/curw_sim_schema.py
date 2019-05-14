@@ -14,7 +14,6 @@ class Run(CurwSimBase):
     longitude = Column(DOUBLE, nullable=False)
     model = Column(VARCHAR(25), nullable=False)
     method = Column(VARCHAR(100), nullable=False)
-    # fgt = Column(DATETIME, nullable=True)
 
     data_relationship = relationship("Data", back_populates="id_relationship", cascade="all, delete, delete-orphan")
 
