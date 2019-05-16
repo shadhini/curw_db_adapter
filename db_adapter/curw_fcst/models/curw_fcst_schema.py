@@ -27,8 +27,8 @@ class Station(CurwFcstBase):
 
     id = Column(INTEGER(11), nullable=False, primary_key=True, autoincrement=False)
     name = Column(VARCHAR(45), nullable=False)
-    latitude = Column(DOUBLE, nullable=False)
-    longitude = Column(DOUBLE, nullable=False)
+    latitude = Column(DOUBLE, nullable=False, index=True)
+    longitude = Column(DOUBLE, nullable=False, index=True)
 
     description = Column(VARCHAR(255))
 
