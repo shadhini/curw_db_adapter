@@ -2,7 +2,6 @@ from enum import Enum
 
 
 class StationEnum(Enum):
-
     """
     StationEnum ids ranged as below;
 
@@ -28,8 +27,10 @@ class StationEnum(Enum):
     Sat = 800000
 
     WRF = 1100000
-    FLO2D = 1200000
-    MIKE11 = 1300000
+    FLO2D_250 = 1200000
+    FLO2D_150 = 1300000
+    FLO2D_30 = 1400000
+    MIKE11 = 1800000
 
     Other = 2000000
 
@@ -43,7 +44,9 @@ class StationEnum(Enum):
             Sat       : 200000,
 
             WRF       : 100000,
-            FLO2D     : 100000,
+            FLO2D_250 : 100000,
+            FLO2D_150 : 100000,
+            FLO2D_30  : 200000,
             MIKE11    : 100000,
 
             Other     : 1000000
@@ -61,7 +64,9 @@ class StationEnum(Enum):
                 StationEnum.Sat       : 200000,
 
                 StationEnum.WRF       : 100000,
-                StationEnum.FLO2D     : 100000,
+                StationEnum.FLO2D_250 : 100000,
+                StationEnum.FLO2D_150 : 100000,
+                StationEnum.FLO2D_30  : 200000,
                 StationEnum.MIKE11    : 100000,
 
                 StationEnum.Other     : 1000000
@@ -80,7 +85,9 @@ class StationEnum(Enum):
                 'Sat'       : StationEnum.Sat,
 
                 'WRF'       : StationEnum.WRF,
-                'FLO2D'     : StationEnum.FLO2D,
+                'FLO2D_250' : StationEnum.FLO2D_250,
+                'FLO2D_150' : StationEnum.FLO2D_150,
+                'FLO2D_30'  : StationEnum.FLO2D_30,
                 'MIKE11'    : StationEnum.MIKE11,
 
                 'Other'     : StationEnum.Other
