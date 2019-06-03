@@ -66,7 +66,7 @@ class Run_Min(CurwSimBase):
 class Data(CurwSimBase):
     __tablename__='data'
 
-    id = Column(VARCHAR(64), ForeignKey(Run.id), nullable=False, primary_key=True)
+    id = Column(VARCHAR(64), ForeignKey(Run_Mean.id, Run_Max.id, Run_Min.id), nullable=False, primary_key=True)
     time = Column(DATETIME, nullable=False, primary_key=True)
     value = Column(DECIMAL(8, 3), nullable=False)
 
