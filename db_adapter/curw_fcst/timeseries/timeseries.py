@@ -212,6 +212,8 @@ class Timeseries:
                     logger.warning('Invalid timeseries data:: %s', t)
             self.insert_data(new_timeseries, True)
 
+            self.update_latest_fgt(id_=tms_id, fgt=fgt)
+
             return tms_id
         except Exception as ex:
             connection.rollback()
@@ -240,7 +242,7 @@ class Timeseries:
         try:
 
             with connection.cursor() as cursor:
-                sql_statement = "INSERT INTO `run` (`id`, `sim_tag`, `start_date`, `end_date`, `station`, `source`, " \
+                sql_statement = "INSERT INTO `run` (`id`, `sim_tag`, `start_dfgtate`, `end_date`, `station`, `source`, " \
                                 "`variable`, `unit`) " \
                                 "VALUES ( %s, %s, %s, %s, %s, %s, %s, %s)"
                 sql_values = run_tuple
