@@ -10,9 +10,9 @@ class RunEnum(Enum):
     @staticmethod
     def getType(name):
         _nameToType = {
-                'Run_Mean': RunEnum.Accumulative,
-                'Run_Max' : RunEnum.Instantaneous,
-                'Run_Min' : RunEnum.Mean,
+                'Run_Mean': RunEnum.RunMean,
+                'Run_Max' : RunEnum.RunMax,
+                'Run_Min' : RunEnum.RunMin,
                 'Other'   : RunEnum.Other
                 }
 
