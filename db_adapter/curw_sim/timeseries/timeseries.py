@@ -118,6 +118,63 @@ class Timeseries:
             if connection is not None:
                 self.pool.release(connection)
 
+    def insert_run(self, run_tuple):
+        """
+        Insert new run entry
+        :param run_tuple: tuples like
+        (tms_id[0], latitude[1], longitude[2], model[3], method[4], grid_id[5], obs_end[6])
+        :return: timeseries id if insertion was successful, else raise DatabaseAdapterError
+        """
+
+        connection = self.pool.get_conn()
+        try:
+
+            with connection.cursor() as cursor:
+                sql_statement = "INSERT INTO `run` (`id`, `latitude`, `longitude`, `model`, `method`, " \
+                                "`grid_id`, `obs_end`) " \
+                                "VALUES ( %s, %s, %s, %s, %s, %s, %s)"
+                cursor.execute(sql_statement, run_tuple)
+
+            connection.commit()
+            return run_tuple[0]
+        except Exception as ex:
+            connection.rollback()
+            error_message = "Insertion failed for timeseries with tms_id={}, latitude={}, longitude={}, model={}," \
+                            " method={}, grid_id={}, obs_end= {}" \
+                .format(run_tuple[0], run_tuple[1], run_tuple[2], run_tuple[3], run_tuple[4], run_tuple[5], run_tuple[6])
+            logger.error(error_message)
+            traceback.print_exc()
+            raise DatabaseAdapterError(error_message, ex)
+        finally:
+            if connection is not None:
+                self.pool.release(connection)
+
+    def update_latest_obs(self, id_, obs_end):
+        """
+        Update obs_end for inserted timeseries
+        :param id_: timeseries id
+        :param obs_end: end time of observations
+        :return: scheduled data if update is successful, else raise DatabaseAdapterError
+        """
+
+        connection = self.pool.get_conn()
+        try:
+
+            with connection.cursor() as cursor:
+                sql_statement = "UPDATE `run` SET `obs_end`=%s WHERE `id`=%s"
+                cursor.execute(sql_statement, (obs_end, id_))
+            connection.commit()
+            return
+        except Exception as ex:
+            connection.rollback()
+            error_message = "Updating obs_end for id={} failed.".format(id_)
+            logger.error(error_message)
+            traceback.print_exc()
+            raise DatabaseAdapterError(error_message, ex)
+        finally:
+            if connection is not None:
+                self.pool.release(connection)
+
     def insert_timeseries(self, timeseries, latitude, longitude, model, method):
         """
         Insert new timeseries into the Run table and Data table, this will generate the tieseries id from the given meta data
@@ -192,18 +249,6 @@ class Timeseries:
             connection.commit()
             self.insert_data(timeseries, True)
             return run_tuple[0]
-        # except IntegrityError as ie:
-        #     connection.rollback()
-        #     if ie.args[0]==1062:
-        #         logger.info("Timeseries id {} already exists in the database".format(run_tuple[0]))
-        #         print("Timeseries id {} already exists in the database".format(run_tuple[0]))
-        #         pass
-        #     else:
-        #         error_message = "Insertion failed for timeseries with tms_id={}, latitude={}, longitude={}, model={}, method={}" \
-        #             .format(run_tuple[0], run_tuple[1], run_tuple[2], run_tuple[3], run_tuple[4])
-        #         logger.error(error_message)
-        #         traceback.print_exc()
-        #         raise DatabaseAdapterError(error_message, ie)
         except Exception as ex:
             connection.rollback()
             error_message = "Insertion failed for timeseries with tms_id={}, latitude={}, longitude={}, model={}, method={}" \
@@ -214,6 +259,7 @@ class Timeseries:
         finally:
             if connection is not None:
                 self.pool.release(connection)
+
 
 
     #
