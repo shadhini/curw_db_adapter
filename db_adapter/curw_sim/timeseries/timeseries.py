@@ -175,14 +175,16 @@ class Timeseries:
             if connection is not None:
                 self.pool.release(connection)
 
-    def insert_timeseries(self, timeseries, latitude, longitude, model, method):
+    def insert_timeseries(self, timeseries, latitude, longitude, model, method, grid_id, obs_end):
         """
         Insert new timeseries into the Run table and Data table, this will generate the tieseries id from the given meta data
         :param timeseries: list of [time, value] lists
-        :param latitude:
-        :param longitude:
+        :param latitude: DECIMAL(8,6)
+        :param longitude: DECIMAL(8,6)
         :param model:
         :param method:
+        :param grid_id:
+        :param obs_end:
         :return: str: timeseries id if insertion was successful, else raise DatabaseAdapterError
         """
         tms_meta = {
@@ -192,7 +194,10 @@ class Timeseries:
                 'method'   : method
                 }
 
-        tms_id = Timeseries.generate_timeseries_id(tms_meta)
+        tms_id = Timeseries.get_timeseries_id_if_exists(tms_meta)
+
+        if tms_id is None:
+            Timeseries.insert_run(run_tuple=(tms_id, latitude, longitude, model, method, grid_id, obs_end))
 
         connection = self.pool.get_conn()
         try:
@@ -226,39 +231,39 @@ class Timeseries:
             if connection is not None:
                 self.pool.release(connection)
 
-    def insert_timeseries(self, timeseries, run_tuple):
-
-        """
-        Insert new timeseries into the Run table and Data table, for given timeseries id
-        :param tms_id:
-        :param timeseries: list of [tms_id, time, value] lists
-        :param run_tuple: tuples like
-        (tms_id[0], latitude[1], longitude[2], model[3], method[4])
-        :return: timeseries id if insertion was successful, else raise DatabaseAdapterError
-        """
-
-        connection = self.pool.get_conn()
-        try:
-
-            with connection.cursor() as cursor:
-                sql_statement = "INSERT INTO `run` (`id`, `latitude`, `longitude`, `model`, `method`) " \
-                                "VALUES ( %s, %s, %s, %s, %s)"
-                sql_values = run_tuple
-                cursor.execute(sql_statement, sql_values)
-
-            connection.commit()
-            self.insert_data(timeseries, True)
-            return run_tuple[0]
-        except Exception as ex:
-            connection.rollback()
-            error_message = "Insertion failed for timeseries with tms_id={}, latitude={}, longitude={}, model={}, method={}" \
-                .format(run_tuple[0], run_tuple[1], run_tuple[2], run_tuple[3], run_tuple[4])
-            logger.error(error_message)
-            traceback.print_exc()
-            raise DatabaseAdapterError(error_message, ex)
-        finally:
-            if connection is not None:
-                self.pool.release(connection)
+    # def insert_timeseries(self, timeseries, run_tuple):
+    #
+    #     """
+    #     Insert new timeseries into the Run table and Data table, for given timeseries id
+    #     :param tms_id:
+    #     :param timeseries: list of [tms_id, time, value] lists
+    #     :param run_tuple: tuples like
+    #     (tms_id[0], latitude[1], longitude[2], model[3], method[4])
+    #     :return: timeseries id if insertion was successful, else raise DatabaseAdapterError
+    #     """
+    #
+    #     connection = self.pool.get_conn()
+    #     try:
+    #
+    #         with connection.cursor() as cursor:
+    #             sql_statement = "INSERT INTO `run` (`id`, `latitude`, `longitude`, `model`, `method`) " \
+    #                             "VALUES ( %s, %s, %s, %s, %s)"
+    #             sql_values = run_tuple
+    #             cursor.execute(sql_statement, sql_values)
+    #
+    #         connection.commit()
+    #         self.insert_data(timeseries, True)
+    #         return run_tuple[0]
+    #     except Exception as ex:
+    #         connection.rollback()
+    #         error_message = "Insertion failed for timeseries with tms_id={}, latitude={}, longitude={}, model={}, method={}" \
+    #             .format(run_tuple[0], run_tuple[1], run_tuple[2], run_tuple[3], run_tuple[4])
+    #         logger.error(error_message)
+    #         traceback.print_exc()
+    #         raise DatabaseAdapterError(error_message, ex)
+    #     finally:
+    #         if connection is not None:
+    #             self.pool.release(connection)
 
 
 

@@ -29,8 +29,8 @@ class Run(CurwSimBase):
     __tablename__ = 'run'
 
     id = Column(VARCHAR(64), nullable=False, primary_key=True, unique=True)
-    latitude = Column(DOUBLE, nullable=False)
-    longitude = Column(DOUBLE, nullable=False)
+    latitude = Column(DECIMAL(8, 6), nullable=False)
+    longitude = Column(DECIMAL(8, 6), nullable=False)
     model = Column(VARCHAR(25), nullable=False)
     method = Column(VARCHAR(100), nullable=False)
     obs_end = Column(DATETIME, nullable=False)

@@ -243,7 +243,7 @@ def delete_station_by_id(pool, id_):
             pool.release(connection)
 
 
-def add_wrfv3_stations(pool):
+def add_wrf_stations(pool):
 
     """
     Add wrfv3 stations to the database
@@ -253,7 +253,7 @@ def add_wrfv3_stations(pool):
     """
 
     # resource_path = pkg_resources.resource_string(__name__, "wrfv3_stations.csv")
-    with open('wrfv3_stations.csv', 'r') as f:
+    with open('wrf_stations.csv', 'r') as f:
         data=[tuple(line) for line in csv.reader(f)][1:]
 
     connection = pool.get_conn()
@@ -275,7 +275,7 @@ def add_wrfv3_stations(pool):
             pool.release(connection)
 
 
-def get_wrfv3_stations(pool):
+def get_wrf_stations(pool):
 
     """
     Retrieve ids of wrf_v3 stations, for each station name
