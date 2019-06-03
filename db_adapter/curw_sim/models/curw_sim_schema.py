@@ -10,7 +10,7 @@ from db_adapter.base import CurwSimBase
 class GridMap(CurwSimBase):
     __tablename__ = 'grid_map'
 
-    grid_id = Column(VARCHAR(45), nullable=False, primary_key=True, autoincrement=False)
+    grid_id = Column(VARCHAR(45), nullable=False, primary_key=True, unique=True, autoincrement=False)
     obs1 = Column(INTEGER(11), nullable=False)
     obs2 = Column(INTEGER(11), nullable=False)
     obs3 = Column(INTEGER(11), nullable=False)
