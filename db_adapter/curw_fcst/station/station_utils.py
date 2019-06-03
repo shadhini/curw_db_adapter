@@ -266,7 +266,7 @@ def add_wrf_stations(pool):
         return row_count
     except Exception as ex:
         connection.rollback()
-        error_message = "Insertion of wrf_v3 stations failed."
+        error_message = "Insertion of wrf stations failed."
         logger.error(error_message)
         traceback.print_exc()
         raise DatabaseAdapterError(error_message, ex)
@@ -298,7 +298,7 @@ def get_wrf_stations(pool):
             else:
                 return None
     except Exception as ex:
-        error_message = "Retrieving wrf v3 stations failed"
+        error_message = "Retrieving wrf stations failed"
         logger.error(error_message)
         traceback.print_exc()
         raise DatabaseAdapterError(error_message, ex)
