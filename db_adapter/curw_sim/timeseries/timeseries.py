@@ -62,6 +62,32 @@ class Timeseries:
             if connection is not None:
                 self.pool.release(connection)
 
+    def get_timeseries_by_grid_id(self, grid_id):
+
+        """
+        Check whether a timeseries id exists in the database run table for a given grid_id
+        :param grid_id: grid id (e.g.: flo2d_250_954)
+        :return: timeseries id if exist else raise DatabaseAdapterError
+        """
+
+        connection = self.pool.get_conn()
+        try:
+            with connection.cursor() as cursor:
+                sql_statement = "SELECT `id` FROM `run` WHERE `grid_id`=%s"
+                result = cursor.execute(sql_statement, grid_id)
+                if result > 0:
+                    return cursor.fetchone()['id']
+                else:
+                    return None
+        except Exception as ex:
+            error_message = "Retrieving timeseries id for grid_id={} failed.".format(grid_id)
+            logger.error(error_message)
+            traceback.print_exc()
+            raise DatabaseAdapterError(error_message, ex)
+        finally:
+            if connection is not None:
+                self.pool.release(connection)
+
     def is_id_exists(self, id_):
         """
         Check whether a given timeseries id exists in the database
