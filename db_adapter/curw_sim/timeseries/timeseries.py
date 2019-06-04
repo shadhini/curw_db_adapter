@@ -144,21 +144,49 @@ class Timeseries:
             if connection is not None:
                 self.pool.release(connection)
 
-    def insert_run(self, run_tuple):
+    def insert_run(self, meta_data):
         """
         Insert new run entry
-        :param run_tuple: tuples like
-        (tms_id[0], latitude[1], longitude[2], model[3], method[4], grid_id[5], obs_end[6])
+        :param meta_data: dictionary like
+        meta_data = {
+                'id'       : '',
+                'latitude' : '',
+                'longitude': '',
+                'model'    : '',
+                'method'   : '',
+                'grid_id'  : '',
+                'obs_end'  : ''
+                }
+           grid_id and obs_end keys are optional
         :return: timeseries id if insertion was successful, else raise DatabaseAdapterError
         """
 
+        if 'grid_id' in meta_data.keys() and 'obs_end' in meta_data.keys():
+            sql_statement = "INSERT INTO `run` (`id`, `latitude`, `longitude`, `model`, `method`, " \
+                            "`grid_id`, `obs_end` " \
+                            "VALUES ( %s, %s, %s, %s, %s, %s, %s)"
+            run_tuple = (meta_data['id'], meta_data['latitude'], meta_data['longitude'], meta_data['model'],
+                         meta_data['method'], meta_data['grid_id'], meta_data['obs_end'])
+
+        elif 'grid_id' in meta_data.keys():
+            sql_statement = "INSERT INTO `run` (`id`, `latitude`, `longitude`, `model`, `method`, `grid_id` " \
+                            "VALUES ( %s, %s, %s, %s, %s, %s)"
+            run_tuple = (meta_data['id'], meta_data['latitude'], meta_data['longitude'], meta_data['model'],
+                         meta_data['method'], meta_data['grid_id'])
+        elif 'obs_end' in meta_data.keys():
+            sql_statement = "INSERT INTO `run` (`id`, `latitude`, `longitude`, `model`, `method`, `obs_end` " \
+                            "VALUES ( %s, %s, %s, %s, %s, %s)"
+            run_tuple = (meta_data['id'], meta_data['latitude'], meta_data['longitude'], meta_data['model'],
+                         meta_data['method'], meta_data['obs_end'])
+        else:
+            sql_statement = "INSERT INTO `run` (`id`, `latitude`, `longitude`, `model`, `method` " \
+                            "VALUES ( %s, %s, %s, %s, %s)"
+            run_tuple = (meta_data['id'], meta_data['latitude'], meta_data['longitude'], meta_data['model'],
+                         meta_data['method'])
+
         connection = self.pool.get_conn()
         try:
-
             with connection.cursor() as cursor:
-                sql_statement = "INSERT INTO `run` (`id`, `latitude`, `longitude`, `model`, `method`, " \
-                                "`grid_id`, `obs_end`) " \
-                                "VALUES ( %s, %s, %s, %s, %s, %s, %s)"
                 cursor.execute(sql_statement, run_tuple)
 
             connection.commit()
@@ -166,8 +194,8 @@ class Timeseries:
         except Exception as ex:
             connection.rollback()
             error_message = "Insertion failed for timeseries with tms_id={}, latitude={}, longitude={}, model={}," \
-                            " method={}, grid_id={}, obs_end= {}" \
-                .format(run_tuple[0], run_tuple[1], run_tuple[2], run_tuple[3], run_tuple[4], run_tuple[5], run_tuple[6])
+                            " method={}" \
+                .format(run_tuple[0], run_tuple[1], run_tuple[2], run_tuple[3], run_tuple[4])
             logger.error(error_message)
             traceback.print_exc()
             raise DatabaseAdapterError(error_message, ex)
@@ -201,61 +229,6 @@ class Timeseries:
             if connection is not None:
                 self.pool.release(connection)
 
-    def insert_timeseries(self, timeseries, latitude, longitude, model, method, grid_id, obs_end):
-        """
-        Insert new timeseries into the Run table and Data table, this will generate the tieseries id from the given meta data
-        :param timeseries: list of [time, value] lists
-        :param latitude: DECIMAL(8,6)
-        :param longitude: DECIMAL(8,6)
-        :param model:
-        :param method:
-        :param grid_id:
-        :param obs_end:
-        :return: str: timeseries id if insertion was successful, else raise DatabaseAdapterError
-        """
-        tms_meta = {
-                'latitude' : latitude,
-                'longitude': longitude,
-                'model'    : model,
-                'method'   : method
-                }
-
-        tms_id = Timeseries.get_timeseries_id_if_exists(tms_meta)
-
-        if tms_id is None:
-            Timeseries.insert_run(run_tuple=(tms_id, latitude, longitude, model, method, grid_id, obs_end))
-
-        connection = self.pool.get_conn()
-        try:
-
-            with connection.cursor() as cursor:
-                sql_statement = "INSERT INTO `run` (`id`, `latitude`, `longitude`, `model`, `method`) " \
-                                "VALUES ( %s, %s, %s, %s, %s)"
-                sql_values = (tms_id, latitude, longitude, model, method)
-                cursor.execute(sql_statement, sql_values)
-
-            new_timeseries = []
-            for t in [i for i in timeseries]:
-                if len(t) > 1:
-                    # Insert EventId in front of timestamp, value list
-                    t.insert(0, tms_id)
-                    new_timeseries.append(t)
-                else:
-                    logger.warning('Invalid timeseries data:: %s', t)
-            connection.commit()
-            self.insert_data(new_timeseries, True)
-
-            return tms_id
-        except Exception as ex:
-            connection.rollback()
-            error_message = "Insertion failed for timeseries with latitude={}, longitude={}, model={}, method={}" \
-                .format(latitude, longitude, model, method)
-            logger.error(error_message)
-            traceback.print_exc()
-            raise DatabaseAdapterError(error_message, ex)
-        finally:
-            if connection is not None:
-                self.pool.release(connection)
 
     # def insert_timeseries(self, timeseries, run_tuple):
     #
