@@ -51,13 +51,13 @@ def add_flo2d_grid_mappings(pool, flo2d_model):
             pool.release(connection)
 
 
-def get_flo2d_grid_mappings(pool, flo2d_model):
+def get_flo2d_to_obs_grid_mappings(pool, flo2d_model):
 
     """
-    Retrieve ids of wrf_v3 stations, for each station name
+    Retrieve flo2d to obs grid mappings
     :param pool: database connection pool
     :param flo2d_model: string: flo2d model (e.g. FLO2D_250, FLO2D_150, FLO2D_30)
-    :return: dictionary with grid ids as keys and corresponding obs1, obs2, obs3, wrf station ids as a list
+    :return: dictionary with grid ids as keys and corresponding obs1, obs2, obs3 station ids as a list
     """
 
     flo2d_grid_mappings = {}
@@ -70,13 +70,12 @@ def get_flo2d_grid_mappings(pool, flo2d_model):
             if row_count > 0:
                 results = cursor.fetchall()
                 for dict in results:
-                    flo2d_grid_mappings[dict.get("grid_id")] = [dict.get("obs1"), dict.get("obs2"),
-                                                                dict.get("obs3"), dict.get("fcst")]
+                    flo2d_grid_mappings[dict.get("grid_id")] = [dict.get("obs1"), dict.get("obs2"), dict.get("obs3")]
                 return flo2d_grid_mappings
             else:
                 return None
     except Exception as ex:
-        error_message = "Retrieving flo2d grid mappings failed"
+        error_message = "Retrieving flo2d to obs grid mappings failed"
         logger.error(error_message)
         traceback.print_exc()
         raise DatabaseAdapterError(error_message, ex)
@@ -84,6 +83,38 @@ def get_flo2d_grid_mappings(pool, flo2d_model):
         if connection is not None:
             pool.release(connection)
 
+
+def get_flo2d_to_wrf_grid_mappings(pool, flo2d_model):
+
+    """
+    Retrieve flo2d to wrf stations mappings
+    :param pool: database connection pool
+    :param flo2d_model: string: flo2d model (e.g. FLO2D_250, FLO2D_150, FLO2D_30)
+    :return: dictionary with grid ids as keys and corresponding wrf station ids as values
+    """
+
+    flo2d_grid_mappings = {}
+
+    connection = pool.get_conn()
+    try:
+        with connection.cursor() as cursor:
+            sql_statement = "SELECT `grid_id`, `fcst` FROM `grid_map` WHERE `grid_id` like %s ESCAPE '$'"
+            row_count = cursor.execute(sql_statement, "flo2d$_{}%".format(flo2d_model.split('_')[1]))
+            if row_count > 0:
+                results = cursor.fetchall()
+                for dict in results:
+                    flo2d_grid_mappings[dict.get("grid_id")] = dict.get("fcst")
+                return flo2d_grid_mappings
+            else:
+                return None
+    except Exception as ex:
+        error_message = "Retrieving flo2d to obs grid mappings failed"
+        logger.error(error_message)
+        traceback.print_exc()
+        raise DatabaseAdapterError(error_message, ex)
+    finally:
+        if connection is not None:
+            pool.release(connection)
 
 # def update_flo2d_d03_mappings(pool, flo2d_model):
 #
