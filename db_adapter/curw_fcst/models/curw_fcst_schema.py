@@ -27,8 +27,8 @@ class Station(CurwFcstBase):
 
     id = Column(INTEGER(11), nullable=False, primary_key=True, autoincrement=False)
     name = Column(VARCHAR(45), nullable=False)
-    latitude = Column(DOUBLE, nullable=False, index=True)
-    longitude = Column(DOUBLE, nullable=False, index=True)
+    latitude = Column(DECIMAL(9, 6), nullable=False, index=True)
+    longitude = Column(DECIMAL(9, 6), nullable=False, index=True)
 
     description = Column(VARCHAR(255))
 
@@ -108,3 +108,4 @@ class Data(CurwFcstBase):
                % (self.id, self.time, self.fgt, self.value)
 
 
+# cascade on update delete of foreign key is not included
