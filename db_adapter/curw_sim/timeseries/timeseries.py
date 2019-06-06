@@ -213,7 +213,7 @@ class Timeseries:
         Update obs_end for inserted timeseries
         :param id_: timeseries id
         :param obs_end: end time of observations
-        :return: scheduled data if update is successful, else raise DatabaseAdapterError
+        :return: True if update is successful, else raise DatabaseAdapterError
         """
 
         connection = self.pool.get_conn()
@@ -223,10 +223,36 @@ class Timeseries:
                 sql_statement = "UPDATE `run` SET `obs_end`=%s WHERE `id`=%s"
                 cursor.execute(sql_statement, (obs_end, id_))
             connection.commit()
-            return
+            return True
         except Exception as ex:
             connection.rollback()
             error_message = "Updating obs_end for id={} failed.".format(id_)
+            logger.error(error_message)
+            traceback.print_exc()
+            raise DatabaseAdapterError(error_message, ex)
+        finally:
+            if connection is not None:
+                self.pool.release(connection)
+
+    def get_obs_end(self, id_):
+        """
+        Retrieve obs_end for a given hash id
+        :param id_:
+        :return:
+        """
+
+        connection = self.pool.get_conn()
+        try:
+
+            with connection.cursor() as cursor:
+                sql_statement = "SELECT `obs_end` FROM `run` WHERE `id`=%s"
+                result = cursor.execute(sql_statement, id_)
+                if result > 0:
+                    return cursor.fetchone()['id']
+                else:
+                    return None
+        except Exception as ex:
+            error_message = "Retrieving obs_end for id={} failed.".format(id_)
             logger.error(error_message)
             traceback.print_exc()
             raise DatabaseAdapterError(error_message, ex)
