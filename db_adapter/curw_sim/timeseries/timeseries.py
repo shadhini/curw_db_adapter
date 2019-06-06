@@ -6,7 +6,7 @@ from pymysql import IntegrityError
 
 from db_adapter.logger import logger
 from db_adapter.exceptions import DatabaseAdapterError
-from db_adapter.curw_sim.grids import GridInterpolationMethodEnum
+from db_adapter.curw_sim.grids import GridInterpolationEnum
 
 
 class Timeseries:

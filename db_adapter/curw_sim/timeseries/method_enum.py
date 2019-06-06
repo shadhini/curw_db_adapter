@@ -14,3 +14,12 @@ class MethodEnum(Enum):
                 }
 
         return _nameToType.get(name, MethodEnum.Other)
+
+    @staticmethod
+    def getAbbreviation(name):
+        _nameToAbbr = {
+                MethodEnum.MME  : 'MME',
+                MethodEnum.Other: 'Other'
+                }
+
+        return _nameToAbbr.get(name, 'Other')
