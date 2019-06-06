@@ -13,7 +13,7 @@ class DataEnum(Enum):
                 'Data_Mean': DataEnum.DataMean,
                 'Data_Max' : DataEnum.DataMax,
                 'Data_Min' : DataEnum.DataMin,
-                'Other'   : DataEnum.Other
+                'Other'    : DataEnum.Other
                 }
 
         return _nameToType.get(name, DataEnum.Other)

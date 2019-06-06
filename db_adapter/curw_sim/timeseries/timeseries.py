@@ -6,7 +6,7 @@ from pymysql import IntegrityError
 
 from db_adapter.logger import logger
 from db_adapter.exceptions import DatabaseAdapterError
-from db_adapter.curw_sim.grids import InterpolationMethodEnum
+from db_adapter.curw_sim.grids import GridInterpolationMethodEnum
 
 
 class Timeseries:
@@ -175,27 +175,23 @@ class Timeseries:
             sql_statement = "INSERT INTO `run` (`id`, `latitude`, `longitude`, `model`, `method`, " \
                             "`grid_id`, `obs_end` " \
                             "VALUES ( %s, %s, %s, %s, %s, %s, %s)"
-            run_tuple = (meta_data['id'], meta_data['latitude'], meta_data['longitude'],
-                         InterpolationMethodEnum.getType(meta_data['model']).value,
+            run_tuple = (meta_data['id'], meta_data['latitude'], meta_data['longitude'], meta_data['model'],
                          meta_data['method'], meta_data['grid_id'], meta_data['obs_end'])
 
         elif 'grid_id' in meta_data.keys():
             sql_statement = "INSERT INTO `run` (`id`, `latitude`, `longitude`, `model`, `method`, `grid_id` " \
                             "VALUES ( %s, %s, %s, %s, %s, %s)"
-            run_tuple = (meta_data['id'], meta_data['latitude'], meta_data['longitude'],
-                         InterpolationMethodEnum.getType(meta_data['model']).value,
+            run_tuple = (meta_data['id'], meta_data['latitude'], meta_data['longitude'], meta_data['model'],
                          meta_data['method'], meta_data['grid_id'])
         elif 'obs_end' in meta_data.keys():
             sql_statement = "INSERT INTO `run` (`id`, `latitude`, `longitude`, `model`, `method`, `obs_end` " \
                             "VALUES ( %s, %s, %s, %s, %s, %s)"
-            run_tuple = (meta_data['id'], meta_data['latitude'], meta_data['longitude'],
-                         InterpolationMethodEnum.getType(meta_data['model']).value,
+            run_tuple = (meta_data['id'], meta_data['latitude'], meta_data['longitude'], meta_data['model'],
                          meta_data['method'], meta_data['obs_end'])
         else:
             sql_statement = "INSERT INTO `run` (`id`, `latitude`, `longitude`, `model`, `method` " \
                             "VALUES ( %s, %s, %s, %s, %s)"
-            run_tuple = (meta_data['id'], meta_data['latitude'], meta_data['longitude'],
-                         InterpolationMethodEnum.getType(meta_data['model']).value,
+            run_tuple = (meta_data['id'], meta_data['latitude'], meta_data['longitude'], meta_data['model'],
                          meta_data['method'])
 
         connection = self.pool.get_conn()
