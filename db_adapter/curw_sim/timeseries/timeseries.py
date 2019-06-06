@@ -248,7 +248,7 @@ class Timeseries:
                 sql_statement = "SELECT `obs_end` FROM `run` WHERE `id`=%s"
                 result = cursor.execute(sql_statement, id_)
                 if result > 0:
-                    return cursor.fetchone()['id']
+                    return cursor.fetchone()['obs_end']
                 else:
                     return None
         except Exception as ex:
