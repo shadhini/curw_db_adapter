@@ -110,7 +110,7 @@ class Timeseries:
             if connection is not None:
                 self.pool.release(connection)
 
-    def insert_data(self, timeseries, upsert=False):
+    def insert_data(self, timeseries, tms_id, upsert=False):
         """
         Insert timeseries to Data table in the database
         :param tms_id: hash value
@@ -120,6 +120,15 @@ class Timeseries:
              2). https://chartio.com/resources/tutorials/how-to-insert-if-row-does-not-exist-upsert-in-mysql/
         :return: row count if insertion was successful, else raise DatabaseAdapterError
         """
+
+        new_timeseries = []
+        for t in [i for i in timeseries]:
+            if len(t) > 1:
+                # Insert EventId in front of timestamp, value list
+                t.insert(0, tms_id)
+                new_timeseries.append(t)
+            else:
+                logger.warning('Invalid timeseries data:: %s', t)
 
         row_count = 0
         connection = self.pool.get_conn()

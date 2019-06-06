@@ -242,7 +242,7 @@ class Timeseries:
         try:
 
             with connection.cursor() as cursor:
-                sql_statement = "INSERT INTO `run` (`id`, `sim_tag`, `start_dfgtate`, `end_date`, `station`, `source`, " \
+                sql_statement = "INSERT INTO `run` (`id`, `sim_tag`, `start_date`, `end_date`, `station`, `source`, " \
                                 "`variable`, `unit`) " \
                                 "VALUES ( %s, %s, %s, %s, %s, %s, %s, %s)"
                 sql_values = run_tuple
