@@ -359,7 +359,7 @@ class Timeseries:
             if connection is not None:
                 self.pool.release(connection)
 
-    def get_latest_timeseries(self, sim_tag, station_id, source_id, variable_id, unit_id):
+    def get_latest_timeseries(self, sim_tag, station_id, source_id, variable_id, unit_id, start):
 
         """
         Retrieve the latest fcst timeseries available for the given parameters
@@ -368,6 +368,7 @@ class Timeseries:
         :param source_id:
         :param variable_id:
         :param unit_id:
+        :param start: expected beginning of the timeseries
         :return: return list of lists with time, value pairs [[time, value], [time1, value2]]
         """
 
@@ -384,8 +385,8 @@ class Timeseries:
                 else:
                     return None
             with connection.cursor() as cursor2:
-                sql_statement = "SELECT `time`, `value` FROM `data` WHERE `id`=%s AND `fgt`=%s;"
-                rows = cursor2.execute(sql_statement, (meta_data.get('id'), meta_data.get('end_date')))
+                sql_statement = "SELECT `time`, `value` FROM `data` WHERE `id`=%s AND `fgt`=%s AND `time` > %s;"
+                rows = cursor2.execute(sql_statement, (meta_data.get('id'), meta_data.get('end_date'), start))
                 if rows > 0:
                     results = cursor2.fetchall()
                     for result in results:
