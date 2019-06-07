@@ -359,7 +359,7 @@ class Timeseries:
             if connection is not None:
                 self.pool.release(connection)
 
-    def get_latest_timeseries(self, sim_tag, station_id, source_id, variable_id, unit_id, start):
+    def get_latest_timeseries(self, sim_tag, station_id, source_id, variable_id, unit_id, start="2019-01-01 00:00:00"):
 
         """
         Retrieve the latest fcst timeseries available for the given parameters
