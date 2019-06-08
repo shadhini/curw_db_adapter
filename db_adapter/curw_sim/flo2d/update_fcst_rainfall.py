@@ -1,67 +1,31 @@
 import traceback
-import pymysql
 from datetime import datetime, timedelta
-import csv
-import json
+from db_adapter.csv_utils import read_csv
 
 from db_adapter.base import get_Pool
 from db_adapter.constants import CURW_SIM_DATABASE, CURW_SIM_PASSWORD, CURW_SIM_USERNAME, CURW_SIM_PORT, CURW_SIM_HOST
 from db_adapter.constants import CURW_FCST_DATABASE, CURW_FCST_PASSWORD, CURW_FCST_USERNAME, CURW_FCST_PORT, CURW_FCST_HOST
-from db_adapter.curw_sim.grids import get_flo2d_to_wrf_grid_mappings, GridInterpolationEnum, \
-    FLO2D_250, FLO2D_150, FLO2D_30
-from db_adapter.curw_sim.timeseries import Timeseries as Sim_Timeseries, MethodEnum
+from db_adapter.curw_sim.grids import get_flo2d_to_wrf_grid_mappings
+from db_adapter.curw_sim.timeseries import Timeseries as Sim_Timeseries
 from db_adapter.curw_fcst.timeseries import Timeseries as Fcst_Timeseries
 from db_adapter.curw_fcst.source import get_source_id
-
-
-def read_csv(file_name):
-    """
-    Read csv file
-    :param file_name: <file_path/file_name>.csv
-    :return: list of lists which contains each row of the csv file
-    """
-
-    with open(file_name, 'r') as f:
-        data = [list(line) for line in csv.reader(f)][1:]
-
-    return data
-
-
-def read_attribute_from_config_file(attribute, config):
-    """
-    :param attribute: key name of the config json file
-    :param config: loaded json file
-    :return:
-    """
-    if attribute in config and (config[attribute]!=""):
-        return config[attribute]
-    else:
-        print("{} not specified in config file.".format(attribute))
-        exit(1)
+from db_adapter.logger import logger
 
 
 # for bulk insertion for a given one grid interpolation method
-def update_rainfall_fcsts(flo2d_model, method, grid_interpolation):
+def update_rainfall_fcsts(flo2d_model, method, grid_interpolation, model, version):
 
     """
     Update rainfall forecasts for flo2d models
     :param flo2d_model: flo2d model
     :param method: value interpolation method
     :param grid_interpolation: grid interpolation method
+    :param model: wrf forecast model name
+    :param version: wrf forecast model version
     :return:
     """
 
-    print("Update rainfall forecasts")
-
-
     try:
-
-        config = json.loads(open('config.json').read())
-
-        # source details
-        model = read_attribute_from_config_file('model', config)
-        version = read_attribute_from_config_file('version', config)
-
         # Connect to the database
         curw_sim_pool = get_Pool(host=CURW_SIM_HOST, user=CURW_SIM_USERNAME, password=CURW_SIM_PASSWORD,
                 port=CURW_SIM_PORT, db=CURW_SIM_DATABASE)
@@ -90,7 +54,7 @@ def update_rainfall_fcsts(flo2d_model, method, grid_interpolation):
             if tms_id is None:
                 tms_id = Sim_TS.generate_timeseries_id(meta_data=meta_data)
                 meta_data['id'] = tms_id
-                print("{} : Insert entry to run table with id={}".format(datetime.now(), tms_id))
+                logger.info("Insert entry to run table with id={}".format(tms_id))
                 Sim_TS.insert_run(meta_data=meta_data)
 
             obs_end = Sim_TS.get_obs_end(id_=tms_id)
@@ -106,26 +70,13 @@ def update_rainfall_fcsts(flo2d_model, method, grid_interpolation):
                         station_id=flo2d_wrf_mapping.get(meta_data['grid_id']),
                         source_id=source_id, variable_id=1, unit_id=1)
 
-            print("{} : Insert timeseries to database".format(datetime.now()))
+            logger.info("Update forecast rainfall timeseries in curw_sim for id {}".format(tms_id))
             Sim_TS.insert_data(timeseries=fcst_timeseries, tms_id=tms_id, upsert=True)
 
     except Exception as e:
         traceback.print_exc()
+        logger.error("Exception occurred while updating fcst rainfalls in curw_sim.")
     finally:
         curw_fcst_pool.destroy()
         curw_sim_pool.destroy()
 
-
-method = MethodEnum.getAbbreviation(MethodEnum.MME)
-grid_interpolation = GridInterpolationEnum.getAbbreviation(GridInterpolationEnum.MDPA)
-
-print("{} : ####### Insert fcst rainfall for FLO2D 250 grids".format(datetime.now()))
-update_rainfall_fcsts(flo2d_model=FLO2D_250, method=method, grid_interpolation=grid_interpolation)
-
-print("{} : ####### Insert fcst rainfall for FLO2D 150 grids".format(datetime.now()))
-update_rainfall_fcsts(flo2d_model=FLO2D_150, method=method, grid_interpolation=grid_interpolation)
-
-print("{} : ####### Insert fcst rainfall for FLO2D 30 grids".format(datetime.now()))
-update_rainfall_fcsts(flo2d_model=FLO2D_30, method=method, grid_interpolation=grid_interpolation)
-
-print("{} : ####### fcst rainfall insertion process finished #######".format(datetime.now()))

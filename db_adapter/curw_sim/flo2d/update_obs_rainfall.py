@@ -1,26 +1,13 @@
 import traceback
 import pymysql
 from datetime import datetime, timedelta
-import csv
 
+from db_adapter.csv_utils import read_csv
 from db_adapter.base import get_Pool
 from db_adapter.constants import CURW_SIM_DATABASE, CURW_SIM_PASSWORD, CURW_SIM_USERNAME, CURW_SIM_PORT, CURW_SIM_HOST
-from db_adapter.curw_sim.grids import get_flo2d_to_obs_grid_mappings, GridInterpolationEnum, \
-    FLO2D_250, FLO2D_150, FLO2D_30
-from db_adapter.curw_sim.timeseries import  Timeseries, MethodEnum
-
-
-def read_csv(file_name):
-    """
-    Read csv file
-    :param file_name: <file_path/file_name>.csv
-    :return: list of lists which contains each row of the csv file
-    """
-
-    with open(file_name, 'r') as f:
-        data = [list(line) for line in csv.reader(f)][1:]
-
-    return data
+from db_adapter.curw_sim.grids import get_flo2d_to_obs_grid_mappings
+from db_adapter.curw_sim.timeseries import  Timeseries
+from db_adapter.logger import logger
 
 
 def extract_rain_ts(connection, id, start_time):
@@ -66,8 +53,6 @@ def update_rainfall_obs(flo2d_model, method, grid_interpolation):
     :return:
     """
 
-    print("Update rainfall observations")
-
     now = datetime.now()
     OBS_START = (now - timedelta(hours=12)).strftime('%Y-%m-%d %H:%M:%S')
 
@@ -109,7 +94,7 @@ def update_rainfall_obs(flo2d_model, method, grid_interpolation):
             if tms_id is None:
                 tms_id = TS.generate_timeseries_id(meta_data=meta_data)
                 meta_data['id'] = tms_id
-                print("{} : Insert entry to run table with id={}".format(datetime.now(), tms_id))
+                logger.info("Insert entry to run table with id={}".format(tms_id))
                 TS.insert_run(meta_data=meta_data)
 
             obs_end = TS.get_obs_end(id_=tms_id)
@@ -126,44 +111,28 @@ def update_rainfall_obs(flo2d_model, method, grid_interpolation):
             ts = extract_rain_ts(connection=curw_connection, start_time=obs_start, id=obs1_hash_id)
             if ts is not None and len(ts) > 1:
                 obs_timeseries.extend(ts[1:])
-                print("{} : Extracted timeseries from obs station 1 till {}".format(datetime.now(), ts[-1][0]))
                 obs_start = ts[-1][0]
 
             ts2 = extract_rain_ts(connection=curw_connection, start_time=obs_start, id=obs2_hash_id)
             if ts2 is not None and len(ts2) > 1:
                 obs_timeseries.extend(ts2[1:])
-                print("{} : Extracted timeseries from obs station 2 till {}".format(datetime.now(), ts2[-1][0]))
                 obs_start = ts2[-1][0]
 
             ts3 = extract_rain_ts(connection=curw_connection, start_time=obs_start, id=obs3_hash_id)
             if ts3 is not None and len(ts3) > 1:
                 obs_timeseries.extend(ts3[1:])
-                print("{} : Extracted timeseries from obs station 3 till {}".format(datetime.now(), ts3[-1][0]))
 
-            print("{} : Insert timeseries to database".format(datetime.now()))
+            logger.info("Update observed rainfall timeseries in curw_sim for id {}".format(tms_id))
             TS.insert_data(timeseries=obs_timeseries, tms_id=tms_id, upsert=True)
 
             if obs_timeseries is not None and len(obs_timeseries) > 0:
-                print("{} : Update latest obs {}".format(datetime.now(), obs_timeseries[-1][1]))
+                logger.info("Update latest obs {}".format(obs_timeseries[-1][1]))
                 TS.update_latest_obs(id_=tms_id, obs_end=(obs_timeseries[-1][1]))
 
     except Exception as e:
         traceback.print_exc()
+        logger.error("Exception occurred while updating obs rainfalls in curw_sim.")
     finally:
         pool.destroy()
 
-
-method = MethodEnum.getAbbreviation(MethodEnum.MME)
-grid_interpolation = GridInterpolationEnum.getAbbreviation(GridInterpolationEnum.MDPA)
-
-print("{} : ####### Insert obs rainfall for FLO2D 250 grids".format(datetime.now()))
-update_rainfall_obs(flo2d_model=FLO2D_250, method=method, grid_interpolation=grid_interpolation)
-
-print("{} : ####### Insert obs rainfall for FLO2D 150 grids".format(datetime.now()))
-update_rainfall_obs(flo2d_model=FLO2D_150, method=method, grid_interpolation=grid_interpolation)
-
-print("{} : ####### Insert obs rainfall for FLO2D 30 grids".format(datetime.now()))
-update_rainfall_obs(flo2d_model=FLO2D_30, method=method, grid_interpolation=grid_interpolation)
-
-print("{} : ####### obs rainfall insertion process finished #######".format(datetime.now()))
 
