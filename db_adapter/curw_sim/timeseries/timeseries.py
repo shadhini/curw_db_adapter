@@ -14,7 +14,7 @@ class Timeseries:
         self.pool = pool
 
     @staticmethod
-    def generate_timeseries_id(meta_data: object) -> object:
+    def generate_timeseries_id(meta_data):
         """
         Generate the event id for given metadata
         Only 'latitude', 'longitude', 'model', 'method'
