@@ -68,7 +68,7 @@ class Timeseries:
             raise DatabaseAdapterError(error_message, ex)
         finally:
             if connection is not None:
-                self.connection.close()
+                connection.close()
 
     def is_id_exists(self, id_):
         """
@@ -89,7 +89,7 @@ class Timeseries:
             raise False
         finally:
             if connection is not None:
-                self.connection.close()
+                connection.close()
 
     def insert_data(self, timeseries, upsert=False):
         """
@@ -124,7 +124,7 @@ class Timeseries:
 
         finally:
             if connection is not None:
-                self.connection.close()
+                connection.close()
 
     def insert_timeseries(self, timeseries, sim_tag, latitude, longitude,
                           model, version, variable, unit, unit_type, start_date, end_date, fgt):
@@ -200,7 +200,7 @@ class Timeseries:
                 raise DatabaseAdapterError(error_message, ex)
             finally:
                 if connection is not None:
-                    self.connection.close()
+                    connection.close()
 
         try:
             new_timeseries = []
@@ -227,7 +227,7 @@ class Timeseries:
             raise DatabaseAdapterError(error_message, ex)
         finally:
             if connection is not None:
-                self.connection.close()
+                connection.close()
 
     def insert_timeseries(self, timeseries, run_tuple):
 
@@ -278,7 +278,7 @@ class Timeseries:
             raise DatabaseAdapterError(error_message, ex)
         finally:
             if connection is not None:
-                self.connection.close()
+                connection.close()
 
     def insert_run(self, run_tuple):
         """
@@ -309,7 +309,7 @@ class Timeseries:
             raise DatabaseAdapterError(error_message, ex)
         finally:
             if connection is not None:
-                self.connection.close()
+                connection.close()
 
     def update_latest_fgt(self, id_, fgt):
         """
@@ -334,7 +334,7 @@ class Timeseries:
             raise DatabaseAdapterError(error_message, ex)
         finally:
             if connection is not None:
-                self.connection.close()
+                connection.close()
 
     def update_start_date(self, id_, start_date):
         """
@@ -359,7 +359,7 @@ class Timeseries:
             raise DatabaseAdapterError(error_message, ex)
         finally:
             if connection is not None:
-                self.connection.close()
+                connection.close()
 
     def get_latest_timeseries(self, sim_tag, station_id, source_id, variable_id, unit_id, start="2019-01-01 00:00:00"):
 
@@ -402,7 +402,7 @@ class Timeseries:
             raise DatabaseAdapterError(error_message, ex)
         finally:
             if connection is not None:
-                self.connection.close()
+                connection.close()
 
 
     # def get_timeseries(self, timeseries_id, start_date, end_date):

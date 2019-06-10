@@ -63,7 +63,7 @@ class Timeseries:
             raise DatabaseAdapterError(error_message, ex)
         finally:
             if connection is not None:
-                self.connection.close()
+                connection.close()
 
     def get_timeseries_by_grid_id(self, grid_id):
 
@@ -89,7 +89,7 @@ class Timeseries:
             raise DatabaseAdapterError(error_message, ex)
         finally:
             if connection is not None:
-                self.connection.close()
+                connection.close()
 
     def is_id_exists(self, id_):
         """
@@ -110,7 +110,7 @@ class Timeseries:
             raise False
         finally:
             if connection is not None:
-                self.connection.close()
+                connection.close()
 
     def insert_data(self, timeseries, tms_id, upsert=False):
         """
@@ -154,7 +154,7 @@ class Timeseries:
 
         finally:
             if connection is not None:
-                self.connection.close()
+                connection.close()
 
     def insert_data_max(self, timeseries, tms_id, upsert=False):
         """
@@ -198,7 +198,7 @@ class Timeseries:
 
         finally:
             if connection is not None:
-                self.connection.close()
+                connection.close()
 
     def insert_data_min(self, timeseries, tms_id, upsert=False):
         """
@@ -242,7 +242,7 @@ class Timeseries:
 
         finally:
             if connection is not None:
-                self.connection.close()
+                connection.close()
 
     def insert_run(self, meta_data):
         """
@@ -301,7 +301,7 @@ class Timeseries:
             raise DatabaseAdapterError(error_message, ex)
         finally:
             if connection is not None:
-                self.connection.close()
+                connection.close()
 
     def update_latest_obs(self, id_, obs_end):
         """
@@ -327,7 +327,7 @@ class Timeseries:
             raise DatabaseAdapterError(error_message, ex)
         finally:
             if connection is not None:
-                self.connection.close()
+                connection.close()
 
     def get_obs_end(self, id_):
         """
@@ -353,7 +353,7 @@ class Timeseries:
             raise DatabaseAdapterError(error_message, ex)
         finally:
             if connection is not None:
-                self.connection.close()
+                connection.close()
 
 
     # def insert_timeseries(self, timeseries, run_tuple):
@@ -388,7 +388,7 @@ class Timeseries:
     #         raise DatabaseAdapterError(error_message, ex)
     #     finally:
     #         if connection is not None:
-    #             self.connection.close()
+    #             connection.close()
 
 
 
