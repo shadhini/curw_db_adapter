@@ -1,4 +1,4 @@
-from db_adapter.base import get_Pool
+from db_adapter.base import get_Pool, destroy_Pool
 
 from db_adapter.curw_fcst.station import StationEnum, add_stations, get_station_id, get_station_by_id, \
     delete_station_by_id, delete_station

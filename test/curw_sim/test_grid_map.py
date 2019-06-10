@@ -1,4 +1,4 @@
-from db_adapter.base import get_Pool
+from db_adapter.base import get_Pool, destroy_Pool
 from db_adapter.curw_sim.grids import get_flo2d_grid_mappings, add_flo2d_grid_mappings
 
 from db_adapter.logger import logger
@@ -21,4 +21,7 @@ flo2d_grid_mapping = get_flo2d_grid_mappings(pool=pool, flo2d_model='flo2d_250')
 
 print('flo2d_250_5693', flo2d_grid_mapping['flo2d_250_5693'])
 
-pool.destroy()
+destroy_Pool(pool)
+destroy_Pool(pool)
+destroy_Pool(pool)
+destroy_Pool(pool)

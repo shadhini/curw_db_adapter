@@ -30,7 +30,7 @@ def get_source_by_id(pool, id_):
     :return: Source if source exists in the database, else None
     """
 
-    connection = pool.get_conn()
+    connection = pool.connection()
     try:
 
         with connection.cursor() as cursor:
@@ -47,7 +47,7 @@ def get_source_by_id(pool, id_):
         raise DatabaseAdapterError(error_message, ex)
     finally:
         if connection is not None:
-            pool.release(connection)
+            connection.close()
 
 
 def get_source_id(pool, source) -> str:
@@ -58,7 +58,7 @@ def get_source_id(pool, source) -> str:
     :return: str: source id if source exists in the database, else None
     """
 
-    connection = pool.get_conn()
+    connection = pool.connection()
     try:
 
         with connection.cursor() as cursor:
@@ -75,7 +75,7 @@ def get_source_id(pool, source) -> str:
         raise DatabaseAdapterError(error_message, ex)
     finally:
         if connection is not None:
-            pool.release(connection)
+            connection.close()
 
 
 def add_source(pool, source, parameters=None):
@@ -87,7 +87,7 @@ def add_source(pool, source, parameters=None):
     :return: True if the source has been added to the "Source' table of the database, else False
     """
 
-    connection = pool.get_conn()
+    connection = pool.connection()
     try:
         if get_source_id(pool=pool, source=source) is None:
             with connection.cursor() as cursor:
@@ -106,7 +106,7 @@ def add_source(pool, source, parameters=None):
         raise DatabaseAdapterError(error_message, ex)
     finally:
         if connection is not None:
-            pool.release(connection)
+            connection.close()
 
 
 def add_sources(sources, pool):
@@ -144,7 +144,7 @@ def delete_source(pool, source):
     :return: True if the deletion was successful
     """
 
-    connection = pool.get_conn()
+    connection = pool.connection()
     try:
 
         with connection.cursor() as cursor:
@@ -164,7 +164,7 @@ def delete_source(pool, source):
         raise DatabaseAdapterError(error_message, ex)
     finally:
         if connection is not None:
-            pool.release(connection)
+            connection.close()
 
 
 def delete_source_by_id(pool, id_):
@@ -175,7 +175,7 @@ def delete_source_by_id(pool, id_):
     :return: True if the deletion was successful, else False
     """
 
-    connection = pool.get_conn()
+    connection = pool.connection()
     try:
 
         with connection.cursor() as cursor:
@@ -195,4 +195,4 @@ def delete_source_by_id(pool, id_):
         raise DatabaseAdapterError(error_message, ex)
     finally:
         if connection is not None:
-            pool.release(connection)
+            connection.close()

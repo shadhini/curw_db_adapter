@@ -1,18 +1,49 @@
-from pymysqlpool.pool import Pool
+# from pymysqlpool.pool import Pool
+
+import pymysql
+from DBUtils.PooledDB import PooledDB
 
 
 def get_Pool(host, port, user, password, db):
-    # uses pymysql.cursors.DictCursor
-    pool = Pool(host=host, port=port, user=user, password=password, db=db, autocommit=False, max_size=5)
-    pool.init()
+
+    pool = PooledDB(creator=pymysql, maxconnections=3, blocking=True,
+            host=host, port=port, user=user, password=password, db=db, autocommit=False, cursorclass=pymysql.cursors.DictCursor)
+
     return pool
 
-# connection = pool.get_conn()
+
+def destroy_Pool(pool):
+
+    pool.close()
+
+
+    #  Conn = pool.connection() # After each time you need a database connection, you can use the connection() function to get the connection.
+    #
+    # cur=conn.cursor()
+    #
+    # SQL="select * from table"
+    #
+    # count=cur.execute(SQL)
+    #
+    # results=cur.fetchall()
+    #
+    # cur.close()
+    #
+    # conn.close()
+
+
+# def get_Pool(host, port, user, password, db):
+#     # uses pymysql.cursors.DictCursor
+#     pool = Pool(host=host, port=port, user=user, password=password, db=db, autocommit=False, max_size=5)
+#     pool.init()
+#     return pool
+
+# connection = pool.connection()
 # cur = connection.cursor()
 # cur.execute('SELECT * FROM `pet` WHERE `name`=%s', args=("Puffball", ))
 # print(cur.fetchone())
 #
-# pool.release(connection)
+# connection.close()
 
 # Connect to the database
 # connection = pymysql.connect(host='localhost',

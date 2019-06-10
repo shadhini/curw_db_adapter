@@ -1,4 +1,4 @@
-from db_adapter.base import get_Pool
+from db_adapter.base import get_Pool, destroy_Pool
 
 from db_adapter.curw_fcst.source import add_sources, get_source_id, get_source_by_id, delete_source, delete_source_by_id
 
@@ -86,6 +86,7 @@ print("######### Delete source with given model, version #######")
 print("model': 'wrfSE', 'version': 'v3' delete status :",
         delete_source(pool=pool, model="wrfSE", version="v3"))
 
-pool.destroy()
+destroy_Pool(pool)
+
 print("bdjhsvdhsvdjh")
 exit(0)

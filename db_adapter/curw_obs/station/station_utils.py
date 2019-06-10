@@ -27,7 +27,7 @@ def get_station_by_id(pool, id_):
     :return: Station if the stations exists in the database, else None
     """
 
-    connection = pool.get_conn()
+    connection = pool.connection()
     try:
 
         with connection.cursor() as cursor:
@@ -44,7 +44,7 @@ def get_station_by_id(pool, id_):
         raise DatabaseAdapterError(error_message, ex)
     finally:
         if connection is not None:
-            pool.release(connection)
+            connection.close()
 
 
 def get_station_id(pool, latitude, longitude, station_type) -> str:
@@ -58,7 +58,7 @@ def get_station_id(pool, latitude, longitude, station_type) -> str:
     :return: str: station id, if station exists in the db, else None
     """
 
-    connection = pool.get_conn()
+    connection = pool.connection()
     try:
 
         initial_value = str(station_type.value)
@@ -83,7 +83,7 @@ def get_station_id(pool, latitude, longitude, station_type) -> str:
         raise DatabaseAdapterError(error_message, ex)
     finally:
         if connection is not None:
-            pool.release(connection)
+            connection.close()
 
 
 def add_station(pool, name, latitude, longitude, description, station_type):
@@ -114,7 +114,7 @@ def add_station(pool, name, latitude, longitude, description, station_type):
     initial_value = station_type.value
     range_ = StationEnum.getRange(station_type)
 
-    connection = pool.get_conn()
+    connection = pool.connection()
     try:
         if get_station_id(pool=pool, latitude=latitude, longitude=longitude, station_type=station_type) is None:
 
@@ -145,7 +145,7 @@ def add_station(pool, name, latitude, longitude, description, station_type):
         raise DatabaseAdapterError(error_message, ex)
     finally:
         if connection is not None:
-            pool.release(connection)
+            connection.close()
 
 
 def add_stations(stations, pool):
@@ -182,7 +182,7 @@ def delete_station(pool, latitude, longitude, station_type):
     :return: True if the deletion was successful, else False
     """
 
-    connection = pool.get_conn()
+    connection = pool.connection()
     try:
         initial_value = str(station_type.value)
 
@@ -210,7 +210,7 @@ def delete_station(pool, latitude, longitude, station_type):
         raise DatabaseAdapterError(error_message, ex)
     finally:
         if connection is not None:
-            pool.release(connection)
+            connection.close()
 
 
 def delete_station_by_id(pool, id_):
@@ -221,7 +221,7 @@ def delete_station_by_id(pool, id_):
     :return: True if the deletion was successful, else False
     """
 
-    connection = pool.get_conn()
+    connection = pool.connection()
     try:
         with connection.cursor() as cursor:
             sql_statement = "DELETE FROM `station` WHERE `id`=%s"
@@ -240,6 +240,6 @@ def delete_station_by_id(pool, id_):
         raise DatabaseAdapterError(error_message, ex)
     finally:
         if connection is not None:
-            pool.release(connection)
+            connection.close()
 
 

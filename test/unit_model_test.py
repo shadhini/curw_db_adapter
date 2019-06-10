@@ -1,4 +1,4 @@
-from db_adapter.base import get_Pool
+from db_adapter.base import get_Pool, destroy_Pool
 
 from db_adapter.curw_fcst.unit import UnitType, add_units, get_unit_id, get_unit_by_id, delete_unit, delete_unit_by_id
 
@@ -54,3 +54,5 @@ print("Id 3 deleted status: ", delete_unit_by_id(pool=pool, id_=3))
 print("######### Delete unit with given unit, unit_type #######")
 print("unit: count, unit_type: UnitType.Accumulative   delete status :",
         delete_unit(pool=pool, unit="count", unit_type=UnitType.Accumulative))
+
+destroy_Pool(pool)

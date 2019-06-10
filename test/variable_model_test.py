@@ -1,4 +1,4 @@
-from db_adapter.base import get_Pool
+from db_adapter.base import get_Pool, destroy_Pool, destroy_Pool
 
 from db_adapter.curw_fcst.variable import add_variables, get_variable_id, get_variable_by_id, delete_variable_by_id, delete_variable
 
@@ -48,6 +48,9 @@ print("######### Delete variable with given variable name #######")
 print("variable: Precipitation,   delete status :",
         delete_variable(pool=pool, variable="Precipitation"))
 
-pool.destroy()
+# destroy_Pool(pool)
+destroy_Pool(pool)
+destroy_Pool(pool)
+destroy_Pool(pool)
 print("bdjhsvdhsvdjh")
 exit(0)

@@ -3,7 +3,7 @@ import pymysql
 from datetime import datetime, timedelta
 
 from db_adapter.csv_utils import read_csv
-from db_adapter.base import get_Pool
+from db_adapter.base import get_Pool, destroy_Pool
 from db_adapter.constants import CURW_SIM_DATABASE, CURW_SIM_PASSWORD, CURW_SIM_USERNAME, CURW_SIM_PORT, CURW_SIM_HOST
 from db_adapter.curw_sim.grids import get_flo2d_to_obs_grid_mappings
 from db_adapter.curw_sim.timeseries import  Timeseries
@@ -133,6 +133,9 @@ def update_rainfall_obs(flo2d_model, method, grid_interpolation):
         traceback.print_exc()
         logger.error("Exception occurred while updating obs rainfalls in curw_sim.")
     finally:
-        pool.destroy()
+        destroy_Pool(pool)
+destroy_Pool(pool)
+destroy_Pool(pool)
+destroy_Pool(pool)
 
 

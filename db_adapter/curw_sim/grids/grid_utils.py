@@ -33,7 +33,7 @@ def add_flo2d_grid_mappings(pool, grid_interpolation, flo2d_model):
                         flo2d_obs_mapping[index][3], flo2d_obs_mapping[index][5], flo2d_d03_mapping[index][1]]
         grid_mappings_list.append(tuple(grid_mapping))
 
-    connection = pool.get_conn()
+    connection = pool.connection()
     try:
         with connection.cursor() as cursor:
             sql_statement = "INSERT INTO `grid_map` (`grid_id`, `obs1`, `obs2`, `obs3`, `fcst`)" \
@@ -49,7 +49,7 @@ def add_flo2d_grid_mappings(pool, grid_interpolation, flo2d_model):
         raise DatabaseAdapterError(error_message, ex)
     finally:
         if connection is not None:
-            pool.release(connection)
+            connection.close()
 
 
 def get_flo2d_to_obs_grid_mappings(pool, grid_interpolation, flo2d_model):
@@ -64,7 +64,7 @@ def get_flo2d_to_obs_grid_mappings(pool, grid_interpolation, flo2d_model):
 
     flo2d_grid_mappings = {}
 
-    connection = pool.get_conn()
+    connection = pool.connection()
     try:
         with connection.cursor() as cursor:
             sql_statement = "SELECT * FROM `grid_map` WHERE `grid_id` like %s ESCAPE '$'"
@@ -83,7 +83,7 @@ def get_flo2d_to_obs_grid_mappings(pool, grid_interpolation, flo2d_model):
         raise DatabaseAdapterError(error_message, ex)
     finally:
         if connection is not None:
-            pool.release(connection)
+            connection.close()
 
 
 def get_flo2d_to_wrf_grid_mappings(pool, grid_interpolation, flo2d_model):
@@ -98,7 +98,7 @@ def get_flo2d_to_wrf_grid_mappings(pool, grid_interpolation, flo2d_model):
 
     flo2d_grid_mappings = {}
 
-    connection = pool.get_conn()
+    connection = pool.connection()
     try:
         with connection.cursor() as cursor:
             sql_statement = "SELECT `grid_id`, `fcst` FROM `grid_map` WHERE `grid_id` like %s ESCAPE '$'"
@@ -117,7 +117,7 @@ def get_flo2d_to_wrf_grid_mappings(pool, grid_interpolation, flo2d_model):
         raise DatabaseAdapterError(error_message, ex)
     finally:
         if connection is not None:
-            pool.release(connection)
+            connection.close()
 
 # def update_flo2d_d03_mappings(pool, flo2d_model):
 #
@@ -141,7 +141,7 @@ def get_flo2d_to_wrf_grid_mappings(pool, grid_interpolation, flo2d_model):
 #                         flo2d_obs_mapping[index][3], flo2d_obs_mapping[index][5], flo2d_d03_mapping[index][1]]
 #         grid_mappings_list.append(tuple(grid_mapping))
 #
-#     connection = pool.get_conn()
+#     connection = pool.connection()
 #     try:
 #         with connection.cursor() as cursor:
 #             sql_statement = "INSERT INTO `grid_map` (`grid_id`, `obs1`, `obs2`, `obs3`, `fcst`)" \
@@ -157,4 +157,4 @@ def get_flo2d_to_wrf_grid_mappings(pool, grid_interpolation, flo2d_model):
 #         raise DatabaseAdapterError(error_message, ex)
 #     finally:
 #         if connection is not None:
-#             pool.release(connection)
+#             connection.close()

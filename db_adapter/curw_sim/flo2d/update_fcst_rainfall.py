@@ -2,7 +2,7 @@ import traceback
 from datetime import datetime, timedelta
 from db_adapter.csv_utils import read_csv
 
-from db_adapter.base import get_Pool
+from db_adapter.base import get_Pool, destroy_Pool
 from db_adapter.constants import CURW_SIM_DATABASE, CURW_SIM_PASSWORD, CURW_SIM_USERNAME, CURW_SIM_PORT, CURW_SIM_HOST
 from db_adapter.constants import CURW_FCST_DATABASE, CURW_FCST_PASSWORD, CURW_FCST_USERNAME, CURW_FCST_PORT, CURW_FCST_HOST
 from db_adapter.curw_sim.grids import get_flo2d_to_wrf_grid_mappings
@@ -77,6 +77,12 @@ def update_rainfall_fcsts(flo2d_model, method, grid_interpolation, model, versio
         traceback.print_exc()
         logger.error("Exception occurred while updating fcst rainfalls in curw_sim.")
     finally:
-        curw_fcst_pool.destroy()
-        curw_sim_pool.destroy()
+        curw_fcst_destroy_Pool(pool)
+destroy_Pool(pool)
+destroy_Pool(pool)
+destroy_Pool(pool)
+        curw_sim_destroy_Pool(pool)
+destroy_Pool(pool)
+destroy_Pool(pool)
+destroy_Pool(pool)
 

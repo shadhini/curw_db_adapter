@@ -20,7 +20,7 @@ def get_variable_by_id(pool, id_):
     :return: Variable if variable exists in the db, else None
     """
 
-    connection = pool.get_conn()
+    connection = pool.connection()
     try:
 
         with connection.cursor() as cursor:
@@ -37,7 +37,7 @@ def get_variable_by_id(pool, id_):
         raise DatabaseAdapterError(error_message, ex)
     finally:
         if connection is not None:
-            pool.release(connection)
+            connection.close()
 
 
 def get_variable_id(pool, variable) -> str:
@@ -48,7 +48,7 @@ def get_variable_id(pool, variable) -> str:
     :return: str: variable id if variable exists in the db, else None
     """
 
-    connection = pool.get_conn()
+    connection = pool.connection()
     try:
 
         with connection.cursor() as cursor:
@@ -65,7 +65,7 @@ def get_variable_id(pool, variable) -> str:
         raise DatabaseAdapterError(error_message, ex)
     finally:
         if connection is not None:
-            pool.release(connection)
+            connection.close()
 
 
 def add_variable(pool, variable):
@@ -76,7 +76,7 @@ def add_variable(pool, variable):
     :return: True if the variable has been added to the "Variable" table of the database, else False
     """
 
-    connection = pool.get_conn()
+    connection = pool.connection()
     try:
         if get_variable_id(pool=pool, variable=variable) is None:
             with connection.cursor() as cursor:
@@ -95,7 +95,7 @@ def add_variable(pool, variable):
         raise DatabaseAdapterError(error_message, ex)
     finally:
         if connection is not None:
-            pool.release(connection)
+            connection.close()
 
 
 def add_variables(variables, pool):
@@ -124,7 +124,7 @@ def delete_variable(pool, variable):
     :return: True if the deletion was successful, else False
     """
 
-    connection = pool.get_conn()
+    connection = pool.connection()
     try:
 
         with connection.cursor() as cursor:
@@ -144,7 +144,7 @@ def delete_variable(pool, variable):
         raise DatabaseAdapterError(error_message, ex)
     finally:
         if connection is not None:
-            pool.release(connection)
+            connection.close()
 
 
 def delete_variable_by_id(pool, id_):
@@ -155,7 +155,7 @@ def delete_variable_by_id(pool, id_):
     :return: True if the deletion was successful, else False
     """
 
-    connection = pool.get_conn()
+    connection = pool.connection()
     try:
 
         with connection.cursor() as cursor:
@@ -175,4 +175,4 @@ def delete_variable_by_id(pool, id_):
         raise DatabaseAdapterError(error_message, ex)
     finally:
         if connection is not None:
-            pool.release(connection)
+            connection.close()

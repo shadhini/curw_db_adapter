@@ -25,7 +25,7 @@ def get_unit_by_id(pool, id_):
     :return: Unit if unit exists in the db, else None
     """
 
-    connection = pool.get_conn()
+    connection = pool.connection()
     try:
 
         with connection.cursor() as cursor:
@@ -42,7 +42,7 @@ def get_unit_by_id(pool, id_):
         raise DatabaseAdapterError(error_message, ex)
     finally:
         if connection is not None:
-            pool.release(connection)
+            connection.close()
 
 
 def get_unit_id(pool, unit, unit_type) -> str:
@@ -54,7 +54,7 @@ def get_unit_id(pool, unit, unit_type) -> str:
     :return: str: unit id if unit exists in the db, else None
     """
 
-    connection = pool.get_conn()
+    connection = pool.connection()
     try:
 
         with connection.cursor() as cursor:
@@ -71,7 +71,7 @@ def get_unit_id(pool, unit, unit_type) -> str:
         raise DatabaseAdapterError(error_message, ex)
     finally:
         if connection is not None:
-            pool.release(connection)
+            connection.close()
 
 
 def add_unit(pool, unit, unit_type):
@@ -83,7 +83,7 @@ def add_unit(pool, unit, unit_type):
     :return: True if the unit has been added to the "Unit" table of the database, else False
     """
 
-    connection = pool.get_conn()
+    connection = pool.connection()
     try:
         if get_unit_id(pool=pool, unit=unit, unit_type=unit_type) is None:
             with connection.cursor() as cursor:
@@ -102,7 +102,7 @@ def add_unit(pool, unit, unit_type):
         raise DatabaseAdapterError(error_message, ex)
     finally:
         if connection is not None:
-            pool.release(connection)
+            connection.close()
 
 
 def add_units(units, pool):
@@ -137,7 +137,7 @@ def delete_unit(pool, unit, unit_type):
     :return: True if the deletion was successful, else False
     """
 
-    connection = pool.get_conn()
+    connection = pool.connection()
     try:
 
         with connection.cursor() as cursor:
@@ -158,7 +158,7 @@ def delete_unit(pool, unit, unit_type):
         raise DatabaseAdapterError(error_message, ex)
     finally:
         if connection is not None:
-            pool.release(connection)
+            connection.close()
 
 
 def delete_unit_by_id(pool, id_):
@@ -169,7 +169,7 @@ def delete_unit_by_id(pool, id_):
     :return: True if the deletion was successful, else False
     """
 
-    connection = pool.get_conn()
+    connection = pool.connection()
     try:
 
         with connection.cursor() as cursor:
@@ -189,4 +189,4 @@ def delete_unit_by_id(pool, id_):
         raise DatabaseAdapterError(error_message, ex)
     finally:
         if connection is not None:
-            pool.release(connection)
+            connection.close()

@@ -49,7 +49,7 @@ class Timeseries:
         """
         event_id = self.generate_timeseries_id(meta_data)
 
-        connection = self.pool.get_conn()
+        connection = self.pool.connection()
         try:
             with connection.cursor() as cursor:
                 sql_statement = "SELECT 1 FROM `run` WHERE `id`=%s"
@@ -62,7 +62,7 @@ class Timeseries:
             raise DatabaseAdapterError(error_message, ex)
         finally:
             if connection is not None:
-                self.pool.release(connection)
+                self.connection.close()
 
     def is_id_exists(self, id_):
         """
@@ -70,7 +70,7 @@ class Timeseries:
         :param id_:
         :return: True, if id is in the database, False otherwise
         """
-        connection = self.pool.get_conn()
+        connection = self.pool.connection()
         try:
             with connection.cursor() as cursor:
                 sql_statement = "SELECT 1 FROM `run` WHERE `id`=%s"
@@ -83,7 +83,7 @@ class Timeseries:
             raise False
         finally:
             if connection is not None:
-                self.pool.release(connection)
+                self.connection.close()
 
     def insert_data(self, timeseries, upsert=False):
         """
@@ -97,7 +97,7 @@ class Timeseries:
         """
 
         row_count = 0
-        connection = self.pool.get_conn()
+        connection = self.pool.connection()
         try:
             with connection.cursor() as cursor:
                 if upsert:
@@ -118,7 +118,7 @@ class Timeseries:
 
         finally:
             if connection is not None:
-                self.pool.release(connection)
+                self.connection.close()
 
     def insert_timeseries(self, timeseries, latitude, longitude, source, variable, unit, unit_type):
         """
@@ -143,7 +143,7 @@ class Timeseries:
 
         tms_id = Timeseries.get_timeseries_id_if_exists(tms_meta)
 
-        connection = self.pool.get_conn()
+        connection = self.pool.connection()
 
         if tms_id is None:
 
@@ -187,7 +187,7 @@ class Timeseries:
                 raise DatabaseAdapterError(error_message, ex)
             finally:
                 if connection is not None:
-                    self.pool.release(connection)
+                    self.connection.close()
 
         try:
             new_timeseries = []
@@ -211,7 +211,7 @@ class Timeseries:
             raise DatabaseAdapterError(error_message, ex)
         finally:
             if connection is not None:
-                self.pool.release(connection)
+                self.connection.close()
 
     def insert_timeseries(self, timeseries, run_tuple):
 
@@ -224,7 +224,7 @@ class Timeseries:
         :return: timeseries id if insertion was successful, else raise DatabaseAdapterError
         """
 
-        connection = self.pool.get_conn()
+        connection = self.pool.connection()
         try:
 
             with connection.cursor() as cursor:
@@ -246,7 +246,7 @@ class Timeseries:
             raise DatabaseAdapterError(error_message, ex)
         finally:
             if connection is not None:
-                self.pool.release(connection)
+                self.connection.close()
 
     def insert_run(self, run_tuple):
         """
@@ -256,7 +256,7 @@ class Timeseries:
         :return: timeseries id if insertion was successful, else raise DatabaseAdapterError
         """
 
-        connection = self.pool.get_conn()
+        connection = self.pool.connection()
         try:
 
             with connection.cursor() as cursor:
@@ -276,4 +276,4 @@ class Timeseries:
             raise DatabaseAdapterError(error_message, ex)
         finally:
             if connection is not None:
-                self.pool.release(connection)
+                self.connection.close()
