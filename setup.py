@@ -20,11 +20,12 @@ setuptools.setup(
                 "Operating System :: OS Independent",
                 ],
         install_requires=['pymysql',
-                          'pymysql-pooling',
+                          # 'pymysql-pooling',
                           'SQLAlchemy',
                           'pandas',
                           'numpy',
-                          'PyYAML'],
+                          'PyYAML',
+                          'DBUtils'],
         zip_safe=False
         # include_package_data=True # to add non-code files specified in "MANIFEST.in" file
         )
