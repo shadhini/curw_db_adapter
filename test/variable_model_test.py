@@ -50,7 +50,5 @@ print("variable: Precipitation,   delete status :",
 
 # destroy_Pool(pool)
 destroy_Pool(pool)
-destroy_Pool(pool)
-destroy_Pool(pool)
 print("bdjhsvdhsvdjh")
 exit(0)

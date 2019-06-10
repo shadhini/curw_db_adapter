@@ -22,6 +22,3 @@ flo2d_grid_mapping = get_flo2d_grid_mappings(pool=pool, flo2d_model='flo2d_250')
 print('flo2d_250_5693', flo2d_grid_mapping['flo2d_250_5693'])
 
 destroy_Pool(pool)
-destroy_Pool(pool)
-destroy_Pool(pool)
-destroy_Pool(pool)

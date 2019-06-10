@@ -77,12 +77,7 @@ def update_rainfall_fcsts(flo2d_model, method, grid_interpolation, model, versio
         traceback.print_exc()
         logger.error("Exception occurred while updating fcst rainfalls in curw_sim.")
     finally:
-        curw_fcst_destroy_Pool(pool)
-destroy_Pool(pool)
-destroy_Pool(pool)
-destroy_Pool(pool)
-        curw_sim_destroy_Pool(pool)
-destroy_Pool(pool)
-destroy_Pool(pool)
-destroy_Pool(pool)
+        destroy_Pool(curw_sim_pool)
+        destroy_Pool(curw_fcst_pool)
+
 

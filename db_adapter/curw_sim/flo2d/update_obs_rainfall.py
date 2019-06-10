@@ -134,8 +134,6 @@ def update_rainfall_obs(flo2d_model, method, grid_interpolation):
         logger.error("Exception occurred while updating obs rainfalls in curw_sim.")
     finally:
         destroy_Pool(pool)
-destroy_Pool(pool)
-destroy_Pool(pool)
-destroy_Pool(pool)
+
 
 
