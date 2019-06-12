@@ -277,3 +277,29 @@ class Timeseries:
         finally:
             if connection is not None:
                 connection.close()
+
+    def update_hash_id(self, existing_id, new_id):
+        """
+        Update hash id in run table
+        :param existing_id: existing hash id
+        :param new_id: newly generated hash id
+        :return: True if the update was successful, else raise DatabaseAdapterError
+        """
+
+        connection = self.pool.connection()
+        try:
+
+            with connection.cursor() as cursor:
+                sql_statement = "UPDATE `run` SET `id`=%s WHERE `id`=%s;"
+                cursor.execute(sql_statement, (new_id, existing_id))
+            connection.commit()
+            return True
+        except Exception as ex:
+            connection.rollback()
+            error_message = "Updating hash id {} to id={} failed.".format(existing_id, new_id)
+            logger.error(error_message)
+            traceback.print_exc()
+            raise DatabaseAdapterError(error_message, ex)
+        finally:
+            if connection is not None:
+                connection.close()
