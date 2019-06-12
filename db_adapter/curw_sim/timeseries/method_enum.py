@@ -2,13 +2,13 @@ from enum import Enum
 
 
 class MethodEnum(Enum):
-    MME = 'Multi_Model_Ensamble'
+    MME = 'Multi_Model_Ensemble'
     Other = 'Other'
 
     @staticmethod
     def getType(name):
         _nameToType = {
-                'Multi_Model_Ensamble': MethodEnum.MME,
+                'Multi_Model_Ensemble': MethodEnum.MME,
                 'MME'                 : MethodEnum.MME,
                 'Other'               : MethodEnum.Other
                 }
