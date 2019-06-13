@@ -5,9 +5,11 @@ from datetime import datetime, timedelta
 from db_adapter.csv_utils import read_csv
 from db_adapter.base import get_Pool, destroy_Pool
 from db_adapter.constants import CURW_SIM_DATABASE, CURW_SIM_PASSWORD, CURW_SIM_USERNAME, CURW_SIM_PORT, CURW_SIM_HOST
+from db_adapter.constants import HOST, PASSWORD, PORT, DATABASE, USERNAME
 from db_adapter.curw_sim.grids import get_flo2d_to_obs_grid_mappings
 from db_adapter.curw_sim.timeseries import  Timeseries
 from db_adapter.logger import logger
+from db_adapter.constants import COMMON_DATE_TIME_FORMAT
 
 
 def extract_rain_ts(connection, id, start_time):
@@ -24,7 +26,7 @@ def extract_rain_ts(connection, id, start_time):
     try:
         # Extract per 5 min observed timeseries
         with connection.cursor() as cursor1:
-            sql_statement = "select `time`, `value`  from data where `id`=%s and `time` > %s ;"
+            sql_statement = "select `time`, `value`  from data where `id`=%s and `time` >= %s ;"
             print(id, start_time)
             rows = cursor1.execute(sql_statement, (id, start_time))
             if rows > 0:
@@ -42,6 +44,48 @@ def extract_rain_ts(connection, id, start_time):
     #         connection.close()
 
 
+def process_5_min_ts(newly_extracted_timeseries, expected_start):
+
+    processed_ts = []
+
+    current_timestamp = expected_start
+    extracted_ts_index = 0
+
+    while extracted_ts_index < len(newly_extracted_timeseries):
+        if current_timestamp == newly_extracted_timeseries[extracted_ts_index][0]:
+            processed_ts.append(newly_extracted_timeseries[extracted_ts_index])
+            extracted_ts_index +=1
+            current_timestamp = current_timestamp + timedelta(minutes=5)
+        elif current_timestamp < newly_extracted_timeseries[extracted_ts_index][0]:
+            processed_ts.append([current_timestamp, -99999])
+            current_timestamp = current_timestamp + timedelta(minutes=5)
+        else:
+            extracted_ts_index +=1
+
+    return processed_ts
+
+
+def fill_missing_values_5_min_ts(newly_extracted_timeseries, OBS_TS):
+
+    obs_timeseries = OBS_TS
+
+    obs_index = 0
+    new_ts_index = 0
+
+    while new_ts_index < len(newly_extracted_timeseries) and obs_index < len(obs_timeseries):
+        if obs_timeseries[obs_index][0] == newly_extracted_timeseries[new_ts_index][0]:
+            if obs_timeseries[obs_index][1] == -99999:
+                obs_timeseries[obs_index][1] == newly_extracted_timeseries[new_ts_index][1]
+            obs_index += 1
+            new_ts_index += 1
+        elif obs_timeseries[obs_index][0] < newly_extracted_timeseries[new_ts_index][0]:
+            obs_index += 1
+        else:
+            new_ts_index += 1
+
+    return obs_timeseries
+
+
 # for bulk insertion for a given one grid interpolation method
 def update_rainfall_obs(flo2d_model, method, grid_interpolation):
 
@@ -54,7 +98,9 @@ def update_rainfall_obs(flo2d_model, method, grid_interpolation):
     """
 
     now = datetime.now()
-    OBS_START = (now - timedelta(hours=12)).strftime('%Y-%m-%d %H:%M:%S')
+    OBS_START_STRING = (now - timedelta(hours=24)).strftime('%Y-%m-%d %H:00:00')
+    OBS_START = datetime.strptime(OBS_START_STRING, '%Y-%m-%d %H:%M:%S')
+    print(OBS_START, type(OBS_START))
 
     try:
 
@@ -68,6 +114,9 @@ def update_rainfall_obs(flo2d_model, method, grid_interpolation):
 
         pool = get_Pool(host=CURW_SIM_HOST, user=CURW_SIM_USERNAME, password=CURW_SIM_PASSWORD,
                 port=CURW_SIM_PORT, db=CURW_SIM_DATABASE)
+
+        # test ######
+        # pool = get_Pool(host=HOST, user=USERNAME, password=PASSWORD, port=PORT, db=DATABASE)
 
         TS = Timeseries(pool=pool)
 
@@ -110,17 +159,31 @@ def update_rainfall_obs(flo2d_model, method, grid_interpolation):
 
             ts = extract_rain_ts(connection=curw_connection, start_time=obs_start, id=obs1_hash_id)
             if ts is not None and len(ts) > 1:
-                obs_timeseries.extend(ts[1:])
-                obs_start = ts[-1][0]
+                obs_timeseries.extend(process_5_min_ts(newly_extracted_timeseries=ts, expected_start=obs_start)[1:])
+                # obs_start = ts[-1][0]
 
             ts2 = extract_rain_ts(connection=curw_connection, start_time=obs_start, id=obs2_hash_id)
             if ts2 is not None and len(ts2) > 1:
-                obs_timeseries.extend(ts2[1:])
-                obs_start = ts2[-1][0]
+                obs_timeseries = fill_missing_values_5_min_ts(newly_extracted_timeseries=ts2, OBS_TS=obs_timeseries)
+                if obs_timeseries is not None and len(obs_timeseries) > 0:
+                    expected_start = obs_timeseries[-1][0]
+                else:
+                    expected_start= obs_start
+                obs_timeseries.extend(process_5_min_ts(newly_extracted_timeseries=ts2, expected_start=expected_start)[1:])
+                # obs_start = ts2[-1][0]
 
             ts3 = extract_rain_ts(connection=curw_connection, start_time=obs_start, id=obs3_hash_id)
-            if ts3 is not None and len(ts3) > 1:
-                obs_timeseries.extend(ts3[1:])
+            if ts3 is not None and len(ts3) > 1 and len(obs_timeseries) > 0:
+                obs_timeseries = fill_missing_values_5_min_ts(newly_extracted_timeseries=ts3, OBS_TS=obs_timeseries)
+                if obs_timeseries is not None:
+                    expected_start = obs_timeseries[-1][0]
+                else:
+                    expected_start= obs_start
+                obs_timeseries.extend(process_5_min_ts(newly_extracted_timeseries=ts3, expected_start=expected_start)[1:])
+
+            for i in range(len(obs_timeseries)):
+                if obs_timeseries[i][1] == -99999:
+                    obs_timeseries[i][1] = 0
 
             logger.info("Update observed rainfall timeseries in curw_sim for id {}".format(tms_id))
             TS.insert_data(timeseries=obs_timeseries, tms_id=tms_id, upsert=True)
@@ -133,7 +196,7 @@ def update_rainfall_obs(flo2d_model, method, grid_interpolation):
         traceback.print_exc()
         logger.error("Exception occurred while updating obs rainfalls in curw_sim.")
     finally:
-        destroy_Pool(pool)
+        destroy_Pool(pool=pool)
 
 
 
