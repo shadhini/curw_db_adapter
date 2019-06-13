@@ -114,3 +114,49 @@ def get_flo2d_to_wrf_grid_mappings(pool, grid_interpolation, flo2d_model):
     finally:
         if connection is not None:
             connection.close()
+
+
+def add_obs_to_d03_grid_mappings(pool, grid_interpolation):
+
+    """
+    Add observational stations grid mappings to the database
+    :param pool:  database connection pool
+    :param grid_interpolation: grid interpolation method
+    :return: True if the insertion is successful, else False
+    """
+
+    with open('{}_obs_d03_stations_mapping.csv'.format(grid_interpolation), 'r') as f1:
+        obs_d03_mapping=[line for line in csv.reader(f1)][1:]
+
+    with open('curw_active_rainfall_obs_stations.csv', 'r') as f2:
+        obs_stations=[line for line in csv.reader(f2)][1:]
+
+    obs_dict = {}
+
+    for i in range(len(obs_stations)):
+        obs_dict[obs_stations[i][2]] = [obs_stations[i][1], obs_stations[i][3]]
+
+    grid_mappings_list = []
+
+    for index in range(len(obs_d03_mapping)):
+        grid_mapping = ['{}_{}_{}'.format(obs_dict.get(obs_d03_mapping[index][0])[0], obs_dict.get(obs_d03_mapping[index][0])[1], grid_interpolation),
+                        obs_d03_mapping[index][1], obs_d03_mapping[index][3], obs_d03_mapping[index][5]]
+        grid_mappings_list.append(tuple(grid_mapping))
+
+    connection = pool.connection()
+    try:
+        with connection.cursor() as cursor:
+            sql_statement = "INSERT INTO `grid_map_obs` (`grid_id`, `d03_1`, `d03_2`, `d03_3`)" \
+                            " VALUES ( %s, %s, %s, %s);"
+            row_count = cursor.executemany(sql_statement, grid_mappings_list)
+        connection.commit()
+        return row_count
+    except Exception as ex:
+        connection.rollback()
+        error_message = "Insertion of flo2d grid mappings failed."
+        logger.error(error_message)
+        traceback.print_exc()
+        return False
+    finally:
+        if connection is not None:
+            connection.close()
