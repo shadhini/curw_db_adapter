@@ -69,11 +69,11 @@ def update_rainfall_obs(target_model, method, grid_interpolation):
                 charset='utf8mb4',
                 cursorclass=pymysql.cursors.DictCursor)
 
-        pool = get_Pool(host=CURW_SIM_HOST, user=CURW_SIM_USERNAME, password=CURW_SIM_PASSWORD,
-                port=CURW_SIM_PORT, db=CURW_SIM_DATABASE)
+        # pool = get_Pool(host=CURW_SIM_HOST, user=CURW_SIM_USERNAME, password=CURW_SIM_PASSWORD,
+        #         port=CURW_SIM_PORT, db=CURW_SIM_DATABASE)
 
-        # test ######
-        # pool = get_Pool(host=HOST, user=USERNAME, password=PASSWORD, port=PORT, db=DATABASE)
+        ##test ######
+        pool = get_Pool(host=HOST, user=USERNAME, password=PASSWORD, port=PORT, db=DATABASE)
 
         TS = Timeseries(pool=pool)
 
@@ -135,6 +135,3 @@ def update_rainfall_obs(target_model, method, grid_interpolation):
         logger.error("Exception occurred while updating obs rainfalls in curw_sim.")
     finally:
         destroy_Pool(pool=pool)
-
-
-
