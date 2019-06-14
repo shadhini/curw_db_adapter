@@ -15,7 +15,7 @@ def read_attribute_from_config_file(attribute, config):
         exit(1)
 
 
-config = json.loads(open('/home/shadhini/dev/repos/shadhini/db_adapter/db_adapter_config.json').read())
+config = json.loads(open('db_adapter_config.json').read())
 
 DIALECT_MYSQL = "mysql"
 DRIVER_PYMYSQL = "pymysql"
