@@ -43,7 +43,7 @@ def update_rainfall_fcsts(flo2d_model, method, grid_interpolation, model, versio
 
         source_id = get_source_id(pool=curw_fcst_pool, model=model, version=version)
 
-        for flo2d_index in range(len(flo2d_grids)):
+        for flo2d_index in range(1): #len(flo2d_grids)
             meta_data = {
                     'latitude': float('%.6f' % float(flo2d_grids[flo2d_index][2])), 'longitude': float('%.6f' % float(flo2d_grids[flo2d_index][1])),
                     'model': flo2d_model, 'method': method,

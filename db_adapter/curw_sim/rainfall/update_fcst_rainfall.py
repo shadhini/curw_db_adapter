@@ -29,11 +29,11 @@ def update_rainfall_fcsts(target_model, method, grid_interpolation, model, versi
 
     try:
         # Connect to the database
-        # curw_sim_pool = get_Pool(host=CURW_SIM_HOST, user=CURW_SIM_USERNAME, password=CURW_SIM_PASSWORD,
-        #         port=CURW_SIM_PORT, db=CURW_SIM_DATABASE)
+        curw_sim_pool = get_Pool(host=CURW_SIM_HOST, user=CURW_SIM_USERNAME, password=CURW_SIM_PASSWORD,
+                port=CURW_SIM_PORT, db=CURW_SIM_DATABASE)
 
-        ##test ######
-        curw_sim_pool = get_Pool(host=HOST, user=USERNAME, password=PASSWORD, port=PORT, db=DATABASE)
+        # ##test ######
+        # curw_sim_pool = get_Pool(host=HOST, user=USERNAME, password=PASSWORD, port=PORT, db=DATABASE)
 
         curw_fcst_pool = get_Pool(host=CURW_FCST_HOST, user=CURW_FCST_USERNAME, password=CURW_FCST_PASSWORD,
                 port=CURW_FCST_PORT, db=CURW_FCST_DATABASE)
