@@ -60,6 +60,7 @@ def convert_15_min_ts_to_5_mins_ts(newly_extracted_timeseries, expected_start=No
             while count<3:
                 processed_ts.append([current_timestamp, newly_extracted_timeseries[extracted_ts_index][1]/3])
                 current_timestamp = current_timestamp + timedelta(minutes=5)
+                count +=1
             extracted_ts_index +=1
         elif current_timestamp > newly_extracted_timeseries[extracted_ts_index][0]:
             print("Case 2", current_timestamp)
