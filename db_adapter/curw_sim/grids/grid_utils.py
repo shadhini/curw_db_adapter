@@ -116,7 +116,7 @@ def get_flo2d_to_wrf_grid_mappings(pool, grid_interpolation, flo2d_model):
             connection.close()
 
 
-def add_obs_to_d03_grid_mappings(pool, grid_interpolation):
+def add_obs_to_d03_grid_mappings_for_rainfall(pool, grid_interpolation):
 
     """
     Add observational stations grid mappings to the database
@@ -139,7 +139,7 @@ def add_obs_to_d03_grid_mappings(pool, grid_interpolation):
     grid_mappings_list = []
 
     for index in range(len(obs_d03_mapping)):
-        grid_mapping = ['{}_{}_{}'.format(obs_dict.get(obs_d03_mapping[index][0])[0], obs_dict.get(obs_d03_mapping[index][0])[1], grid_interpolation),
+        grid_mapping = ['rainfall_{}_{}_{}'.format(obs_dict.get(obs_d03_mapping[index][0])[0], obs_dict.get(obs_d03_mapping[index][0])[1], grid_interpolation),
                         obs_d03_mapping[index][1], obs_d03_mapping[index][3], obs_d03_mapping[index][5]]
         grid_mappings_list.append(tuple(grid_mapping))
 
@@ -162,7 +162,7 @@ def add_obs_to_d03_grid_mappings(pool, grid_interpolation):
             connection.close()
 
 
-def get_obs_to_d03_grid_mappings(pool, grid_interpolation):
+def get_obs_to_d03_grid_mappings_for_rainfall(pool, grid_interpolation):
 
     """
     Retrieve obs to d03 grid mappings
@@ -178,7 +178,7 @@ def get_obs_to_d03_grid_mappings(pool, grid_interpolation):
         with connection.cursor() as cursor:
             sql_statement = "SELECT `grid_id`,`d03_1`,`d03_2`,`d03_3` FROM `grid_map_obs` " \
                             "WHERE `grid_id` like %s ESCAPE '$'"
-            row_count = cursor.execute(sql_statement, "%$_{}".format(grid_interpolation))
+            row_count = cursor.execute(sql_statement, "rainfall$_%$_{}".format(grid_interpolation))
             if row_count > 0:
                 results = cursor.fetchall()
                 for dict in results:

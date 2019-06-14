@@ -5,7 +5,7 @@ from db_adapter.csv_utils import read_csv
 from db_adapter.base import get_Pool, destroy_Pool
 from db_adapter.constants import CURW_SIM_DATABASE, CURW_SIM_PASSWORD, CURW_SIM_USERNAME, CURW_SIM_PORT, CURW_SIM_HOST
 from db_adapter.constants import CURW_FCST_DATABASE, CURW_FCST_PASSWORD, CURW_FCST_USERNAME, CURW_FCST_PORT, CURW_FCST_HOST
-from db_adapter.curw_sim.grids import get_flo2d_to_wrf_grid_mappings
+from db_adapter.curw_sim.grids import get_obs_to_d03_grid_mappings_for_rainfall
 from db_adapter.curw_sim.timeseries import Timeseries as Sim_Timeseries
 from db_adapter.curw_fcst.timeseries import Timeseries as Fcst_Timeseries
 from db_adapter.curw_fcst.source import get_source_id
@@ -38,7 +38,7 @@ def update_rainfall_fcsts(flo2d_model, method, grid_interpolation, model, versio
 
         flo2d_grids = read_csv('{}m.csv'.format(flo2d_model))
 
-        flo2d_wrf_mapping = get_flo2d_to_wrf_grid_mappings(pool=curw_sim_pool, grid_interpolation=grid_interpolation, flo2d_model=flo2d_model)
+        obs_d03_mapping = get_obs_to_d03_grid_mappings_for_rainfall(pool=curw_sim_pool, grid_interpolation=grid_interpolation)
 
         source_id = get_source_id(pool=curw_fcst_pool, model=model, version=version)
 

@@ -6,11 +6,9 @@ from db_adapter.csv_utils import read_csv
 from db_adapter.base import get_Pool, destroy_Pool
 from db_adapter.constants import CURW_SIM_DATABASE, CURW_SIM_PASSWORD, CURW_SIM_USERNAME, CURW_SIM_PORT, CURW_SIM_HOST
 from db_adapter.constants import HOST, PASSWORD, PORT, DATABASE, USERNAME
-from db_adapter.curw_sim.grids import get_flo2d_to_obs_grid_mappings
 from db_adapter.curw_sim.timeseries import Timeseries
-from db_adapter.curw_sim.common import process_5_min_ts, fill_missing_values_5_min_ts
+from db_adapter.curw_sim.common import process_5_min_ts
 from db_adapter.logger import logger
-from db_adapter.constants import COMMON_DATE_TIME_FORMAT
 
 
 def extract_rain_ts(connection, id, start_time):
@@ -46,11 +44,11 @@ def extract_rain_ts(connection, id, start_time):
 
 
 # for bulk insertion for a given one grid interpolation method
-def update_rainfall_obs(flo2d_model, method, grid_interpolation):
+def update_rainfall_obs(model, method, grid_interpolation):
 
     """
     Update rainfall observations for flo2d models
-    :param flo2d_model: flo2d model
+    :param model: target model
     :param method: value interpolation method
     :param grid_interpolation: grid interpolation method
     :return:
@@ -80,21 +78,23 @@ def update_rainfall_obs(flo2d_model, method, grid_interpolation):
         TS = Timeseries(pool=pool)
 
         active_obs_stations = read_csv('curw_active_rainfall_obs_stations.csv')
-        flo2d_grids = read_csv('{}m.csv'.format(flo2d_model))
-
-        stations_dict_for_obs = { }  # keys: obs station id , value: hash id
+        obs_stations_dict = { }  # keys: obs station id , value: [hash id, latitude, longitude]
 
         for obs_index in range(len(active_obs_stations)):
-            stations_dict_for_obs[active_obs_stations[obs_index][2]] = active_obs_stations[obs_index][0]
+            obs_stations_dict[active_obs_stations[obs_index][2]] = [active_obs_stations[obs_index][0],
+                                                                    active_obs_stations[obs_index][1],
+                                                                    active_obs_stations[obs_index][3],
+                                                                    active_obs_stations[obs_index][4],
+                                                                    active_obs_stations[obs_index][5]]
 
-        flo2d_obs_mapping = get_flo2d_to_obs_grid_mappings(pool=pool, grid_interpolation=grid_interpolation, flo2d_model=flo2d_model)
-
-        for flo2d_index in range(len(flo2d_grids)):
+        for obs_id in obs_stations_dict.keys():
             obs_start = OBS_START
             meta_data = {
-                    'latitude': float('%.6f' % float(flo2d_grids[flo2d_index][2])), 'longitude': float('%.6f' % float(flo2d_grids[flo2d_index][1])),
-                    'model': flo2d_model, 'method': method,
-                    'grid_id': '{}_{}_{}'.format(flo2d_model, flo2d_grids[flo2d_index][0], grid_interpolation)
+                    'latitude': float('%.6f' % float(obs_stations_dict.get(obs_id)[3])),
+                    'longitude': float('%.6f' % float(obs_stations_dict.get(obs_id)[4])),
+                    'model': model, 'method': method,
+                    'grid_id': 'rainfall_{}_{}_{}'.format(obs_stations_dict.get(obs_id)[1],
+                            obs_stations_dict.get(obs_id)[2], grid_interpolation)
                     }
 
             tms_id = TS.get_timeseries_id(grid_id=meta_data.get('grid_id'), method=meta_data.get('method'))
@@ -110,35 +110,14 @@ def update_rainfall_obs(flo2d_model, method, grid_interpolation):
             if obs_end is not None:
                 obs_start = obs_end
 
-            obs1_hash_id = stations_dict_for_obs.get(str(flo2d_obs_mapping.get(meta_data['grid_id'])[0]))
-            obs2_hash_id = stations_dict_for_obs.get(str(flo2d_obs_mapping.get(meta_data['grid_id'])[1]))
-            obs3_hash_id = stations_dict_for_obs.get(str(flo2d_obs_mapping.get(meta_data['grid_id'])[2]))
+            obs_hash_id = obs_stations_dict.get(obs_id)[0]
 
             obs_timeseries = []
 
-            ts = extract_rain_ts(connection=curw_connection, start_time=obs_start, id=obs1_hash_id)
+            ts = extract_rain_ts(connection=curw_connection, start_time=obs_start, id=obs_hash_id)
             if ts is not None and len(ts) > 1:
                 obs_timeseries.extend(process_5_min_ts(newly_extracted_timeseries=ts, expected_start=obs_start)[1:])
                 # obs_start = ts[-1][0]
-
-            ts2 = extract_rain_ts(connection=curw_connection, start_time=obs_start, id=obs2_hash_id)
-            if ts2 is not None and len(ts2) > 1:
-                obs_timeseries = fill_missing_values_5_min_ts(newly_extracted_timeseries=ts2, OBS_TS=obs_timeseries)
-                if obs_timeseries is not None and len(obs_timeseries) > 0:
-                    expected_start = obs_timeseries[-1][0]
-                else:
-                    expected_start= obs_start
-                obs_timeseries.extend(process_5_min_ts(newly_extracted_timeseries=ts2, expected_start=expected_start)[1:])
-                # obs_start = ts2[-1][0]
-
-            ts3 = extract_rain_ts(connection=curw_connection, start_time=obs_start, id=obs3_hash_id)
-            if ts3 is not None and len(ts3) > 1 and len(obs_timeseries) > 0:
-                obs_timeseries = fill_missing_values_5_min_ts(newly_extracted_timeseries=ts3, OBS_TS=obs_timeseries)
-                if obs_timeseries is not None:
-                    expected_start = obs_timeseries[-1][0]
-                else:
-                    expected_start= obs_start
-                obs_timeseries.extend(process_5_min_ts(newly_extracted_timeseries=ts3, expected_start=expected_start)[1:])
 
             for i in range(len(obs_timeseries)):
                 if obs_timeseries[i][1] == -99999:

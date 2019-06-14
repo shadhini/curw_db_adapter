@@ -65,19 +65,20 @@ class Timeseries:
             if connection is not None:
                 connection.close()
 
-    def get_timeseries_by_grid_id(self, grid_id):
+    def get_timeseries_id(self, grid_id, method):
 
         """
-        Check whether a timeseries id exists in the database run table for a given grid_id
+        Check whether a timeseries id exists in the database run table for a given grid_id and method
         :param grid_id: grid id (e.g.: flo2d_250_954)
+        :param method: value interpolation method
         :return: timeseries id if exist else raise DatabaseAdapterError
         """
 
         connection = self.pool.connection()
         try:
             with connection.cursor() as cursor:
-                sql_statement = "SELECT `id` FROM `run` WHERE `grid_id`=%s"
-                result = cursor.execute(sql_statement, grid_id)
+                sql_statement = "SELECT `id` FROM `run` WHERE `grid_id`=%s AND `method`=%s;"
+                result = cursor.execute(sql_statement, (grid_id, method))
                 if result > 0:
                     return cursor.fetchone()['id']
                 else:
