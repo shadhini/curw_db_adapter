@@ -9,6 +9,7 @@ from db_adapter.curw_sim.grids import get_flo2d_to_wrf_grid_mappings
 from db_adapter.curw_sim.timeseries import Timeseries as Sim_Timeseries
 from db_adapter.curw_fcst.timeseries import Timeseries as Fcst_Timeseries
 from db_adapter.curw_fcst.source import get_source_id
+from db_adapter.curw_sim.common import convert_15_min_ts_to_5_mins_ts
 from db_adapter.logger import logger
 
 
@@ -62,13 +63,13 @@ def update_rainfall_fcsts(flo2d_model, method, grid_interpolation, model, versio
             fcst_timeseries = []
 
             if obs_end is not None:
-                fcst_timeseries = Fcst_TS.get_latest_timeseries(sim_tag="evening_18hrs",
-                        station_id=flo2d_wrf_mapping.get(meta_data['grid_id']), start=obs_end,
-                        source_id=source_id, variable_id=1, unit_id=1)[1:]
+                fcst_timeseries = convert_15_min_ts_to_5_mins_ts(newly_extracted_timeseries=Fcst_TS.get_latest_timeseries(
+                        sim_tag="evening_18hrs", station_id=flo2d_wrf_mapping.get(meta_data['grid_id']), start=obs_end,
+                        source_id=source_id, variable_id=1, unit_id=1)[1:], expected_start=(obs_end+timedelta(minutes=5)))
             else:
-                fcst_timeseries = Fcst_TS.get_latest_timeseries(sim_tag="evening_18hrs",
-                        station_id=flo2d_wrf_mapping.get(meta_data['grid_id']),
-                        source_id=source_id, variable_id=1, unit_id=1)[1:]
+                fcst_timeseries = convert_15_min_ts_to_5_mins_ts(newly_extracted_timeseries=Fcst_TS.get_latest_timeseries(
+                        sim_tag="evening_18hrs", station_id=flo2d_wrf_mapping.get(meta_data['grid_id']),
+                        source_id=source_id, variable_id=1, unit_id=1)[1:])
 
             logger.info("Update forecast rainfall timeseries in curw_sim for id {}".format(tms_id))
             Sim_TS.insert_data(timeseries=fcst_timeseries, tms_id=tms_id, upsert=True)

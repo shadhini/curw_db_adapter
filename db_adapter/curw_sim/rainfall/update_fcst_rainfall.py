@@ -5,10 +5,12 @@ from db_adapter.csv_utils import read_csv
 from db_adapter.base import get_Pool, destroy_Pool
 from db_adapter.constants import CURW_SIM_DATABASE, CURW_SIM_PASSWORD, CURW_SIM_USERNAME, CURW_SIM_PORT, CURW_SIM_HOST
 from db_adapter.constants import CURW_FCST_DATABASE, CURW_FCST_PASSWORD, CURW_FCST_USERNAME, CURW_FCST_PORT, CURW_FCST_HOST
+from db_adapter.constants import HOST, PASSWORD, PORT, DATABASE, USERNAME
 from db_adapter.curw_sim.grids import get_obs_to_d03_grid_mappings_for_rainfall
 from db_adapter.curw_sim.timeseries import Timeseries as Sim_Timeseries
 from db_adapter.curw_fcst.timeseries import Timeseries as Fcst_Timeseries
 from db_adapter.curw_fcst.source import get_source_id
+from db_adapter.curw_sim.common import convert_15_min_ts_to_5_mins_ts
 from db_adapter.logger import logger
 
 
@@ -27,8 +29,11 @@ def update_rainfall_fcsts(target_model, method, grid_interpolation, model, versi
 
     try:
         # Connect to the database
-        curw_sim_pool = get_Pool(host=CURW_SIM_HOST, user=CURW_SIM_USERNAME, password=CURW_SIM_PASSWORD,
-                port=CURW_SIM_PORT, db=CURW_SIM_DATABASE)
+        # curw_sim_pool = get_Pool(host=CURW_SIM_HOST, user=CURW_SIM_USERNAME, password=CURW_SIM_PASSWORD,
+        #         port=CURW_SIM_PORT, db=CURW_SIM_DATABASE)
+
+        ##test ######
+        curw_sim_pool = get_Pool(host=HOST, user=USERNAME, password=PASSWORD, port=PORT, db=DATABASE)
 
         curw_fcst_pool = get_Pool(host=CURW_FCST_HOST, user=CURW_FCST_USERNAME, password=CURW_FCST_PASSWORD,
                 port=CURW_FCST_PORT, db=CURW_FCST_DATABASE)
@@ -71,13 +76,13 @@ def update_rainfall_fcsts(target_model, method, grid_interpolation, model, versi
             fcst_timeseries = []
 
             if obs_end is not None:
-                fcst_timeseries = Fcst_TS.get_latest_timeseries(sim_tag="evening_18hrs",
-                        station_id=obs_d03_mapping.get(meta_data['grid_id']), start=obs_end,
-                        source_id=source_id, variable_id=1, unit_id=1)[1:]
+                fcst_timeseries = convert_15_min_ts_to_5_mins_ts(newly_extracted_timeseries=Fcst_TS.get_latest_timeseries(
+                        sim_tag="evening_18hrs", station_id=obs_d03_mapping.get(meta_data['grid_id']), start=obs_end,
+                        source_id=source_id, variable_id=1, unit_id=1)[1:], expected_start= (obs_end+timedelta(minutes=5)))
             else:
-                fcst_timeseries = Fcst_TS.get_latest_timeseries(sim_tag="evening_18hrs",
-                        station_id=obs_d03_mapping.get(meta_data['grid_id']),
-                        source_id=source_id, variable_id=1, unit_id=1)[1:]
+                fcst_timeseries = convert_15_min_ts_to_5_mins_ts(newly_extracted_timeseries=Fcst_TS.get_latest_timeseries(
+                        sim_tag="evening_18hrs",station_id=obs_d03_mapping.get(meta_data['grid_id']),
+                        source_id=source_id, variable_id=1, unit_id=1)[1:])
 
             logger.info("Update forecast rainfall timeseries in curw_sim for id {}".format(tms_id))
             Sim_TS.insert_data(timeseries=fcst_timeseries, tms_id=tms_id, upsert=True)
