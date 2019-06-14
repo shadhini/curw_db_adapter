@@ -57,7 +57,7 @@ def update_rainfall_obs(flo2d_model, method, grid_interpolation):
     """
 
     now = datetime.now()
-    OBS_START_STRING = (now - timedelta(hours=24)).strftime('%Y-%m-%d %H:00:00')
+    OBS_START_STRING = (now - timedelta(days=10)).strftime('%Y-%m-%d %H:00:00')
     OBS_START = datetime.strptime(OBS_START_STRING, '%Y-%m-%d %H:%M:%S')
     print(OBS_START, type(OBS_START))
 
