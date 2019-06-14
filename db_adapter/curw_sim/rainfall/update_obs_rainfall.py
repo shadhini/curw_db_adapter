@@ -44,7 +44,7 @@ def extract_rain_ts(connection, id, start_time):
 
 
 # for bulk insertion for a given one grid interpolation method
-def update_rainfall_obs(model, method, grid_interpolation):
+def update_rainfall_obs(target_model, method, grid_interpolation):
 
     """
     Update rainfall observations for flo2d models
@@ -78,7 +78,7 @@ def update_rainfall_obs(model, method, grid_interpolation):
         TS = Timeseries(pool=pool)
 
         active_obs_stations = read_csv('curw_active_rainfall_obs_stations.csv')
-        obs_stations_dict = { }  # keys: obs station id , value: [hash id, latitude, longitude]
+        obs_stations_dict = { }  # keys: obs station id , value: [hash id, run_name, name,latitude, longitude]
 
         for obs_index in range(len(active_obs_stations)):
             obs_stations_dict[active_obs_stations[obs_index][2]] = [active_obs_stations[obs_index][0],
@@ -92,7 +92,7 @@ def update_rainfall_obs(model, method, grid_interpolation):
             meta_data = {
                     'latitude': float('%.6f' % float(obs_stations_dict.get(obs_id)[3])),
                     'longitude': float('%.6f' % float(obs_stations_dict.get(obs_id)[4])),
-                    'model': model, 'method': method,
+                    'model': target_model, 'method': method,
                     'grid_id': 'rainfall_{}_{}_{}'.format(obs_stations_dict.get(obs_id)[1],
                             obs_stations_dict.get(obs_id)[2], grid_interpolation)
                     }

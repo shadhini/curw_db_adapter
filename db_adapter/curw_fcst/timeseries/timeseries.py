@@ -387,7 +387,7 @@ class Timeseries:
                 else:
                     return None
             with connection.cursor() as cursor2:
-                sql_statement = "SELECT `time`, `value` FROM `data` WHERE `id`=%s AND `fgt`=%s AND `time` > %s;"
+                sql_statement = "SELECT `time`, `value` FROM `data` WHERE `id`=%s AND `fgt`=%s AND `time` >= %s;"
                 rows = cursor2.execute(sql_statement, (meta_data.get('id'), meta_data.get('end_date'), start))
                 if rows > 0:
                     results = cursor2.fetchall()
