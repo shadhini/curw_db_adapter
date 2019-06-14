@@ -160,3 +160,37 @@ def add_obs_to_d03_grid_mappings(pool, grid_interpolation):
     finally:
         if connection is not None:
             connection.close()
+
+
+def get_obs_to_d03_grid_mappings(pool, grid_interpolation):
+
+    """
+    Retrieve obs to d03 grid mappings
+    :param pool: database connection pool
+    :param grid_interpolation: grid interpolation method
+    :return: dictionary with grid ids as keys and corresponding obs1, obs2, obs3 station ids as a list
+    """
+
+    obs_grid_mappings = {}
+
+    connection = pool.connection()
+    try:
+        with connection.cursor() as cursor:
+            sql_statement = "SELECT `grid_id`,`d03_1`,`d03_2`,`d03_3` FROM `grid_map_obs` " \
+                            "WHERE `grid_id` like %s ESCAPE '$'"
+            row_count = cursor.execute(sql_statement, "%$_{}".format(grid_interpolation))
+            if row_count > 0:
+                results = cursor.fetchall()
+                for dict in results:
+                    obs_grid_mappings[dict.get("grid_id")] = [dict.get("d03_1"), dict.get("d03_2"), dict.get("d03_3")]
+                return obs_grid_mappings
+            else:
+                return None
+    except Exception as ex:
+        error_message = "Retrieving flo2d to obs grid mappings failed"
+        logger.error(error_message)
+        traceback.print_exc()
+        raise DatabaseAdapterError(error_message, ex)
+    finally:
+        if connection is not None:
+            connection.close()
