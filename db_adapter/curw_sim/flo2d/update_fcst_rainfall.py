@@ -74,11 +74,13 @@ def update_rainfall_fcsts(flo2d_model, method, grid_interpolation, model, versio
             logger.info("Update forecast rainfall timeseries in curw_sim for id {}".format(tms_id))
             Sim_TS.insert_data(timeseries=fcst_timeseries, tms_id=tms_id, upsert=True)
 
+        destroy_Pool(curw_sim_pool)
+        destroy_Pool(curw_fcst_pool)
+
     except Exception as e:
         traceback.print_exc()
         logger.error("Exception occurred while updating fcst rainfalls in curw_sim.")
     finally:
-        destroy_Pool(curw_sim_pool)
-        destroy_Pool(curw_fcst_pool)
+        logger.info("Process finished")
 
 

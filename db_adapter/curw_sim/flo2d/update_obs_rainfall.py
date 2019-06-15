@@ -151,11 +151,12 @@ def update_rainfall_obs(flo2d_model, method, grid_interpolation):
                 logger.info("Update latest obs {}".format(obs_timeseries[-1][1]))
                 TS.update_latest_obs(id_=tms_id, obs_end=(obs_timeseries[-1][1]))
 
+        destroy_Pool(pool=pool)
+
     except Exception as e:
         traceback.print_exc()
         logger.error("Exception occurred while updating obs rainfalls in curw_sim.")
     finally:
-        destroy_Pool(pool=pool)
-
+        logger.info("Process finished")
 
 
