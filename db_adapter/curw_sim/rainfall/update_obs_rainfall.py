@@ -123,10 +123,9 @@ def update_rainfall_obs(target_model, method, grid_interpolation):
                 if obs_timeseries[i][1] == -99999:
                     obs_timeseries[i][1] = 0
 
-            logger.info("Update observed rainfall timeseries in curw_sim for id {}".format(tms_id))
-            TS.insert_data(timeseries=obs_timeseries, tms_id=tms_id, upsert=True)
-
             if obs_timeseries is not None and len(obs_timeseries) > 0:
+                logger.info("Update observed rainfall timeseries in curw_sim for id {}".format(tms_id))
+                TS.insert_data(timeseries=obs_timeseries, tms_id=tms_id, upsert=True)
                 logger.info("Update latest obs {}".format(obs_timeseries[-1][1]))
                 TS.update_latest_obs(id_=tms_id, obs_end=(obs_timeseries[-1][1]))
 

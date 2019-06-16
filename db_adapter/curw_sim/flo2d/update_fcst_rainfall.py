@@ -71,8 +71,9 @@ def update_rainfall_fcsts(flo2d_model, method, grid_interpolation, model, versio
                         sim_tag="evening_18hrs", station_id=flo2d_wrf_mapping.get(meta_data['grid_id']),
                         source_id=source_id, variable_id=1, unit_id=1))
 
-            logger.info("Update forecast rainfall timeseries in curw_sim for id {}".format(tms_id))
-            Sim_TS.insert_data(timeseries=fcst_timeseries, tms_id=tms_id, upsert=True)
+            if fcst_timeseries is not None and len(fcst_timeseries)>0:
+                logger.info("Update forecast rainfall timeseries in curw_sim for id {}".format(tms_id))
+                Sim_TS.insert_data(timeseries=fcst_timeseries, tms_id=tms_id, upsert=True)
 
         destroy_Pool(curw_sim_pool)
         destroy_Pool(curw_fcst_pool)
