@@ -97,7 +97,6 @@ def average_timeseries(timeseries):
     else:
         for i in range(len(timeseries)):
             count = len(timeseries[i])-1
-            print((sum(timeseries[i][1:])/count))
             avg_timeseries.append([timeseries[i][0], '%.3f' % (sum(timeseries[i][1:])/count)])
 
     return avg_timeseries

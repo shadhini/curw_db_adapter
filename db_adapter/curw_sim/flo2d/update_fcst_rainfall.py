@@ -75,7 +75,7 @@ def update_rainfall_fcsts(flo2d_model, method, grid_interpolation, model_list):
                             source_id=source_id, variable_id=1, unit_id=1))
 
                 if i == 0:
-                    fcst_timeseries =  temp_timeseries
+                    fcst_timeseries = temp_timeseries
                 else:
                     fcst_timeseries = append_value_for_timestamp(existing_ts=fcst_timeseries, new_ts=temp_timeseries)
 
