@@ -9,20 +9,20 @@ from db_adapter.curw_sim.grids import get_flo2d_to_wrf_grid_mappings
 from db_adapter.curw_sim.timeseries import Timeseries as Sim_Timeseries
 from db_adapter.curw_fcst.timeseries import Timeseries as Fcst_Timeseries
 from db_adapter.curw_fcst.source import get_source_id
-from db_adapter.curw_sim.common import convert_15_min_ts_to_5_mins_ts
+from db_adapter.curw_sim.common import convert_15_min_ts_to_5_mins_ts, append_value_for_timestamp, average_timeseries
 from db_adapter.logger import logger
 
 
 # for bulk insertion for a given one grid interpolation method
-def update_rainfall_fcsts(flo2d_model, method, grid_interpolation, model, version):
+def update_rainfall_fcsts(flo2d_model, method, grid_interpolation, model_list):
 
     """
     Update rainfall forecasts for flo2d models
     :param flo2d_model: flo2d model
     :param method: value interpolation method
     :param grid_interpolation: grid interpolation method
-    :param model: wrf forecast model name
-    :param version: wrf forecast model version
+    :param model_list: list of forecast model and their versions used to calculate the rainfall
+    e.g.: [["WRF_E", "v4"],["WRF_SE", "v4"]]
     :return:
     """
 
@@ -40,8 +40,6 @@ def update_rainfall_fcsts(flo2d_model, method, grid_interpolation, model, versio
         flo2d_grids = read_csv('{}m.csv'.format(flo2d_model))
 
         flo2d_wrf_mapping = get_flo2d_to_wrf_grid_mappings(pool=curw_sim_pool, grid_interpolation=grid_interpolation, flo2d_model=flo2d_model)
-
-        source_id = get_source_id(pool=curw_fcst_pool, model=model, version=version)
 
         for flo2d_index in range(len(flo2d_grids)):
             meta_data = {
@@ -62,18 +60,30 @@ def update_rainfall_fcsts(flo2d_model, method, grid_interpolation, model, versio
 
             fcst_timeseries = []
 
-            if obs_end is not None:
-                fcst_timeseries = convert_15_min_ts_to_5_mins_ts(newly_extracted_timeseries=Fcst_TS.get_latest_timeseries(
-                        sim_tag="evening_18hrs", station_id=flo2d_wrf_mapping.get(meta_data['grid_id']), start=obs_end,
-                        source_id=source_id, variable_id=1, unit_id=1), expected_start=(obs_end+timedelta(minutes=5)))
-            else:
-                fcst_timeseries = convert_15_min_ts_to_5_mins_ts(newly_extracted_timeseries=Fcst_TS.get_latest_timeseries(
-                        sim_tag="evening_18hrs", station_id=flo2d_wrf_mapping.get(meta_data['grid_id']),
-                        source_id=source_id, variable_id=1, unit_id=1))
+            for i in range(len(model_list)):
+                source_id = get_source_id(pool=curw_fcst_pool, model=model_list[i][0], version=model_list[i][1])
 
-            if fcst_timeseries is not None and len(fcst_timeseries)>0:
+                temp_timeseries = []
+
+                if obs_end is not None:
+                    temp_timeseries = convert_15_min_ts_to_5_mins_ts(newly_extracted_timeseries=Fcst_TS.get_latest_timeseries(
+                            sim_tag="evening_18hrs", station_id=flo2d_wrf_mapping.get(meta_data['grid_id']), start=obs_end,
+                            source_id=source_id, variable_id=1, unit_id=1), expected_start=(obs_end+timedelta(minutes=5)))
+                else:
+                    temp_timeseries = convert_15_min_ts_to_5_mins_ts(newly_extracted_timeseries=Fcst_TS.get_latest_timeseries(
+                            sim_tag="evening_18hrs", station_id=flo2d_wrf_mapping.get(meta_data['grid_id']),
+                            source_id=source_id, variable_id=1, unit_id=1))
+
+                if i == 0:
+                    fcst_timeseries =  temp_timeseries
+                else:
+                    fcst_timeseries = append_value_for_timestamp(existing_ts=fcst_timeseries, new_ts=temp_timeseries)
+
+            avg_timeseries = average_timeseries(fcst_timeseries)
+
+            if avg_timeseries is not None and len(avg_timeseries)>0:
                 logger.info("Update forecast rainfall timeseries in curw_sim for id {}".format(tms_id))
-                Sim_TS.insert_data(timeseries=fcst_timeseries, tms_id=tms_id, upsert=True)
+                Sim_TS.insert_data(timeseries=avg_timeseries, tms_id=tms_id, upsert=True)
 
         destroy_Pool(curw_sim_pool)
         destroy_Pool(curw_fcst_pool)
