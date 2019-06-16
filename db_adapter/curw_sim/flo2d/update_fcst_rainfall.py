@@ -41,7 +41,7 @@ def update_rainfall_fcsts(flo2d_model, method, grid_interpolation, model_list):
 
         flo2d_wrf_mapping = get_flo2d_to_wrf_grid_mappings(pool=curw_sim_pool, grid_interpolation=grid_interpolation, flo2d_model=flo2d_model)
 
-        for flo2d_index in range(1):  # len(flo2d_grids)
+        for flo2d_index in range(len(flo2d_grids)):  # len(flo2d_grids)
             meta_data = {
                     'latitude': float('%.6f' % float(flo2d_grids[flo2d_index][2])), 'longitude': float('%.6f' % float(flo2d_grids[flo2d_index][1])),
                     'model': flo2d_model, 'method': method,
