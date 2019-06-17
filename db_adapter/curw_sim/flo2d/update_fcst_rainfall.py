@@ -81,6 +81,10 @@ def update_rainfall_fcsts(flo2d_model, method, grid_interpolation, model_list):
 
             avg_timeseries = average_timeseries(fcst_timeseries)
 
+            for i in range(len(avg_timeseries)):
+                if avg_timeseries[i][1]==-99999:
+                    avg_timeseries[i][1] = 0
+
             if avg_timeseries is not None and len(avg_timeseries)>0:
                 logger.info("Update forecast rainfall timeseries in curw_sim for id {}".format(tms_id))
                 Sim_TS.insert_data(timeseries=avg_timeseries, tms_id=tms_id, upsert=True)

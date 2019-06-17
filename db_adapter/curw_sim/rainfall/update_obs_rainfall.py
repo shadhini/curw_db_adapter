@@ -105,10 +105,10 @@ def update_rainfall_obs(target_model, method, grid_interpolation):
                 logger.info("Insert entry to run table with id={}".format(tms_id))
                 TS.insert_run(meta_data=meta_data)
 
-            # obs_end = TS.get_obs_end(id_=tms_id)
-            #
-            # if obs_end is not None:
-            #     obs_start = obs_end
+            obs_end = TS.get_obs_end(id_=tms_id)
+
+            if obs_end is not None:
+                obs_start = obs_end
 
             obs_hash_id = obs_stations_dict.get(obs_id)[0]
 
