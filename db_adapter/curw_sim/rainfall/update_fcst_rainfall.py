@@ -82,11 +82,11 @@ def update_rainfall_fcsts(target_model, method, grid_interpolation, model_list):
                 if obs_end is not None:
                     print("*******", " station_id=" ,obs_d03_mapping.get(meta_data['grid_id']), " source_id=", source_id)
                     temp_timeseries = convert_15_min_ts_to_5_mins_ts(newly_extracted_timeseries=Fcst_TS.get_latest_timeseries(
-                            sim_tag="evening_18hrs", station_id=obs_d03_mapping.get(meta_data['grid_id']), start=obs_end,
+                            sim_tag="evening_18hrs", station_id=obs_d03_mapping.get(meta_data['grid_id'])[0], start=obs_end,
                             source_id=source_id, variable_id=1, unit_id=1), expected_start= (obs_end+timedelta(minutes=5)))
                 else:
                     temp_timeseries = convert_15_min_ts_to_5_mins_ts(newly_extracted_timeseries=Fcst_TS.get_latest_timeseries(
-                            sim_tag="evening_18hrs",station_id=obs_d03_mapping.get(meta_data['grid_id']),
+                            sim_tag="evening_18hrs",station_id=obs_d03_mapping.get(meta_data['grid_id'])[0],
                             source_id=source_id, variable_id=1, unit_id=1))
 
                 if i==0:
