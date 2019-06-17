@@ -147,7 +147,9 @@ def add_obs_to_d03_grid_mappings_for_rainfall(pool, grid_interpolation):
     try:
         with connection.cursor() as cursor:
             sql_statement = "INSERT INTO `grid_map_obs` (`grid_id`, `d03_1`, `d03_2`, `d03_3`)" \
-                            " VALUES ( %s, %s, %s, %s);"
+                            " VALUES ( %s, %s, %s, %s) " \
+                            "ON DUPLICATE KEY UPDATE `d03_1`=VALUES(`d03_1`), `d03_2`=VALUES(`d03_2`), " \
+                            "`d03_3`=VALUES(`d03_3`);"
             row_count = cursor.executemany(sql_statement, grid_mappings_list)
         connection.commit()
         return row_count
