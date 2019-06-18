@@ -63,16 +63,9 @@ def update_rainfall_fcsts(flo2d_model, method, grid_interpolation, model_list):
             for i in range(len(model_list)):
                 source_id = get_source_id(pool=curw_fcst_pool, model=model_list[i][0], version=model_list[i][1])
 
-                temp_timeseries = []
-
-                if obs_end is not None:
-                    temp_timeseries = convert_15_min_ts_to_5_mins_ts(newly_extracted_timeseries=Fcst_TS.get_latest_timeseries(
-                            sim_tag="evening_18hrs", station_id=flo2d_wrf_mapping.get(meta_data['grid_id']), start=obs_end,
-                            source_id=source_id, variable_id=1, unit_id=1), expected_start=(obs_end+timedelta(minutes=5)))
-                else:
-                    temp_timeseries = convert_15_min_ts_to_5_mins_ts(newly_extracted_timeseries=Fcst_TS.get_latest_timeseries(
-                            sim_tag="evening_18hrs", station_id=flo2d_wrf_mapping.get(meta_data['grid_id']),
-                            source_id=source_id, variable_id=1, unit_id=1))
+                temp_timeseries = convert_15_min_ts_to_5_mins_ts(newly_extracted_timeseries=Fcst_TS.get_latest_timeseries(
+                        sim_tag="evening_18hrs", station_id=flo2d_wrf_mapping.get(meta_data['grid_id']),
+                        source_id=source_id, variable_id=1, unit_id=1))
 
                 if i == 0:
                     fcst_timeseries = temp_timeseries
