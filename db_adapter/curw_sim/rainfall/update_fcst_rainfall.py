@@ -97,7 +97,7 @@ def update_rainfall_fcsts(target_model, method, grid_interpolation, model_list):
             avg_timeseries = average_timeseries(fcst_timeseries)
 
             for i in range(len(avg_timeseries)):
-                if avg_timeseries[i][1]==-99999:
+                if avg_timeseries[i][1] == -99999:
                     avg_timeseries[i][1] = 0
 
             if avg_timeseries is not None and len(avg_timeseries)>0:
