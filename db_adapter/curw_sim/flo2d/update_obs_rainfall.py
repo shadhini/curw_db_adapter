@@ -57,7 +57,7 @@ def update_rainfall_obs(flo2d_model, method, grid_interpolation):
     """
 
     now = datetime.now()
-    OBS_START_STRING = (now - timedelta(days=3)).strftime('%Y-%m-%d %H:00:00')
+    OBS_START_STRING = (now - timedelta(days=10)).strftime('%Y-%m-%d %H:00:00')
     OBS_START = datetime.strptime(OBS_START_STRING, '%Y-%m-%d %H:%M:%S')
     print(OBS_START, type(OBS_START))
 
@@ -106,10 +106,10 @@ def update_rainfall_obs(flo2d_model, method, grid_interpolation):
                 logger.info("Insert entry to run table with id={}".format(tms_id))
                 TS.insert_run(meta_data=meta_data)
 
-            # obs_end = TS.get_obs_end(id_=tms_id)
-            #
-            # if obs_end is not None:
-            #     obs_start = obs_end
+            obs_end = TS.get_obs_end(id_=tms_id)
+
+            if obs_end is not None:
+                obs_start = obs_end
 
             obs1_hash_id = stations_dict_for_obs.get(str(flo2d_obs_mapping.get(meta_data['grid_id'])[0]))
             obs2_hash_id = stations_dict_for_obs.get(str(flo2d_obs_mapping.get(meta_data['grid_id'])[1]))
