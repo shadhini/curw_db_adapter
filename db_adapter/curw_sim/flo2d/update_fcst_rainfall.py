@@ -53,7 +53,6 @@ def update_rainfall_fcsts(flo2d_model, method, grid_interpolation, model_list):
             if tms_id is None:
                 tms_id = Sim_TS.generate_timeseries_id(meta_data=meta_data)
                 meta_data['id'] = tms_id
-                logger.info("Insert entry to run table with id={}".format(tms_id))
                 Sim_TS.insert_run(meta_data=meta_data)
 
             obs_end = Sim_TS.get_obs_end(id_=tms_id)
@@ -89,7 +88,6 @@ def update_rainfall_fcsts(flo2d_model, method, grid_interpolation, model_list):
                     avg_timeseries[i][1] = 0
 
             if avg_timeseries is not None and len(avg_timeseries)>0:
-                logger.info("Update forecast rainfall timeseries in curw_sim for id {}".format(tms_id))
                 Sim_TS.insert_data(timeseries=avg_timeseries, tms_id=tms_id, upsert=True)
 
         destroy_Pool(curw_sim_pool)
@@ -98,7 +96,3 @@ def update_rainfall_fcsts(flo2d_model, method, grid_interpolation, model_list):
     except Exception as e:
         traceback.print_exc()
         logger.error("Exception occurred while updating fcst rainfalls in curw_sim.")
-    finally:
-        logger.info("Process finished")
-
-

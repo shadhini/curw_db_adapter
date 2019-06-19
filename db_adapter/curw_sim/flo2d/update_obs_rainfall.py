@@ -59,7 +59,6 @@ def update_rainfall_obs(flo2d_model, method, grid_interpolation):
     now = datetime.now()
     OBS_START_STRING = (now - timedelta(days=10)).strftime('%Y-%m-%d %H:00:00')
     OBS_START = datetime.strptime(OBS_START_STRING, '%Y-%m-%d %H:%M:%S')
-    print(OBS_START, type(OBS_START))
 
     try:
 
@@ -103,7 +102,6 @@ def update_rainfall_obs(flo2d_model, method, grid_interpolation):
             if tms_id is None:
                 tms_id = TS.generate_timeseries_id(meta_data=meta_data)
                 meta_data['id'] = tms_id
-                logger.info("Insert entry to run table with id={}".format(tms_id))
                 TS.insert_run(meta_data=meta_data)
 
             obs_end = TS.get_obs_end(id_=tms_id)

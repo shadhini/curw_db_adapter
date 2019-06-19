@@ -57,7 +57,6 @@ def update_rainfall_obs(target_model, method, grid_interpolation):
     now = datetime.now()
     OBS_START_STRING = (now - timedelta(days=10)).strftime('%Y-%m-%d %H:00:00')
     OBS_START = datetime.strptime(OBS_START_STRING, '%Y-%m-%d %H:%M:%S')
-    print(OBS_START, type(OBS_START))
 
     try:
 
@@ -103,7 +102,6 @@ def update_rainfall_obs(target_model, method, grid_interpolation):
             if tms_id is None:
                 tms_id = TS.generate_timeseries_id(meta_data=meta_data)
                 meta_data['id'] = tms_id
-                logger.info("Insert entry to run table with id={}".format(tms_id))
                 TS.insert_run(meta_data=meta_data)
 
             obs_end = TS.get_obs_end(id_=tms_id)
@@ -125,9 +123,7 @@ def update_rainfall_obs(target_model, method, grid_interpolation):
                     obs_timeseries[i][1] = 0
 
             if obs_timeseries is not None and len(obs_timeseries) > 0:
-                logger.info("Update observed rainfall timeseries in curw_sim for id {}".format(tms_id))
                 TS.insert_data(timeseries=obs_timeseries, tms_id=tms_id, upsert=True)
-                logger.info("Update latest obs {}".format(obs_timeseries[-1][1]))
                 TS.update_latest_obs(id_=tms_id, obs_end=(obs_timeseries[-1][1]))
 
         destroy_Pool(pool=pool)
@@ -135,5 +131,3 @@ def update_rainfall_obs(target_model, method, grid_interpolation):
     except Exception as e:
         traceback.print_exc()
         logger.error("Exception occurred while updating obs rainfalls in curw_sim.")
-    finally:
-        logger.info("Process finished")

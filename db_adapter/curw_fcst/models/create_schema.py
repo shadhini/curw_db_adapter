@@ -11,7 +11,6 @@ from db_adapter.logger import logger
 
 def create_curw_fcst_db():
 
-    logger.info("Creating curw_fcst schema.")
     # connect to the MySQL engine
 
     engine = get_engine(DIALECT_MYSQL, DRIVER_PYMYSQL, CURW_FCST_HOST, CURW_FCST_PORT, CURW_FCST_DATABASE,
@@ -20,6 +19,5 @@ def create_curw_fcst_db():
     # create the schema using classes defined
     CurwFcstBase.metadata.create_all(engine)
 
-    logger.info("curw_fcst schema generated.")
 
 

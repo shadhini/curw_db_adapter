@@ -9,12 +9,10 @@ def get_engine(dialect, driver, host, port, db, user, password):
     """ Connecting to database """
 
     db_url = "%s+%s://%s:%s@%s:%d/%s" % (dialect, driver, user, password, host, port, db)
-    logger.info("Connecting to database.")
     return create_engine(db_url, echo=False)
 
 
 def get_sessionmaker(engine):
-    logger.info("Define a Session class which will serve as a factory for new Session objects.")
     return sessionmaker(bind=engine)
 
 # ---- declarative_base ----
