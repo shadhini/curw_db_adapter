@@ -77,6 +77,7 @@ def update_rainfall_obs(target_model, method, grid_interpolation):
 
         TS = Timeseries(pool=pool)
 
+        # [hash_id, run_name, station_id, station_name, latitude, longitude]
         active_obs_stations = read_csv('curw_active_rainfall_obs_stations.csv')
         obs_stations_dict = { }  # keys: obs station id , value: [hash id, run_name, name,latitude, longitude]
 
