@@ -7,18 +7,13 @@ from db_adapter.logger import logger
 Source JSON Object would looks like this 
 e.g.:
    {
-        'source'     : 'wrfSE',
-        'parameters': { }
-    }
-    {
-        'source'     : 'OBS_WATER_LEVEL',
-        'parameters': {
-                "CHANNEL_CELL_MAP"               : {
-                        "594" : "Wellawatta", "1547": "Ingurukade", "3255": "Yakbedda", "3730": "Wellampitiya",
-                        "7033": "Janakala Kendraya"
-                        }, "FLOOD_PLAIN_CELL_MAP": { }
-                }
-    }
+        'source'     : 'CUrW_WeatherStation',
+        'parameters' : { }
+   },
+   {
+        'source'     : 'CUrW_WeatherStation',
+        'parameters' : { }
+   }
 """
 
 
