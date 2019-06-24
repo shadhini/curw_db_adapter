@@ -10,7 +10,8 @@ from db_adapter.exceptions import DatabaseAdapterError
 Station JSON Object would looks like this 
 e.g.:
     {
-        'name'        : '79.875435_6.535172',
+        'station_type': 'CUrW_WeatherStation',
+        'name'        : 'IBATTARA2',
         'latitude'    : '6.535172',
         'longitude'   : '79.875435',
         'description' : '',
@@ -69,8 +70,8 @@ def get_station_id(pool, latitude, longitude, station_type) -> str:
             pattern = "{}{}_____".format(initial_value[0], initial_value[1])
 
         with connection.cursor() as cursor:
-            sql_statement = "SELECT `id` FROM `station` WHERE `id` like %s and `latitude`=%s and `longitude`=%s"
-            row_count = cursor.execute(sql_statement, (pattern, latitude, longitude))
+            sql_statement = "SELECT `id` FROM `station` WHERE `id` like %s and `latitude`=%s and `longitude`=%s and `station_type`=%s;"
+            row_count = cursor.execute(sql_statement, (pattern, latitude, longitude, StationEnum.getTypeString(station_type)))
             if row_count > 0:
                 return cursor.fetchone()['id']
             else:
@@ -90,17 +91,25 @@ def add_station(pool, name, latitude, longitude, description, station_type):
     """
     Insert sources into the database
 
-    Station ids ranged as below;
-    - 1 xx xxx - CUrW (stationId: curw_<SOMETHING>)
-    - 2 xx xxx - Megapolis (stationId: megapolis_<SOMETHING>)
-    - 3 xx xxx - Government (stationId: gov_<SOMETHING>. May follow as gov_irr_<SOMETHING>)
-    - 4 xx xxx - Public (stationId: pub_<SOMETHING>)
-    - 8 xx xxx - Satellite (stationId: sat_<SOMETHING>)
+    StationEnum ids ranged as below;
 
-    Simulation models station ids ranged over 1’000’000 as below;
-    - 1 1xx xxx - WRF (stationId: [;<prefix>_]wrf_<SOMETHING>)
-    - 1 2xx xxx - FLO2D (stationId: [;<prefix>_]flo2d_<SOMETHING>)model
-    - 1 3xx xxx - MIKE (stationId: [;<prefix>_]mike_<SOMETHING>)
+        - 1 xx xxx - CUrW_WeatherStation (station_id: curw_<SOMETHING>)
+        - 1 xx xxx - CUrW_WaterLevelGauge (station_id: curw_wl_<SOMETHING>)
+        - 3 xx xxx - Megapolis (station_id: megapolis_<SOMETHING>)
+        - 4 xx xxx - Government (station_id: gov_<SOMETHING>. May follow as gov_irr_<SOMETHING>)
+        - 5 xx xxx - Satellite (station_id: sat_<SOMETHING>)
+
+        - 2 xxx xxx - Public (station_id: pub_<SOMETHING>)
+
+        Simulation models StationEnum ids ranged over 1’000’000 as below;
+        - 1 1xx xxx - WRF (name: wrf_<SOMETHING>)
+        - 1 2xx xxx - FLO2D 250(name: flo2d_250_<SOMETHING>)
+        - 1 3xx xxx - FLO2D 150(name: flo2d_150_<SOMETHING>)
+        - 1 4xx xxx - FLO2D 30(name: flo2d_30_<SOMETHING>)
+        - 1 8xx xxx - MIKE11(name: mike_<SOMETHING>)
+
+        Other;
+        - 3 xxx xxx - Other (name/station_id: other_<SOMETHING>)
 
     :param pool: database connection pool
     :param name: string
@@ -127,9 +136,10 @@ def add_station(pool, name, latitude, longitude, description, station_type):
                     station_id = initial_value
 
             with connection.cursor() as cursor2:
-                sql_statement = "INSERT INTO `station` (`id`, `name`, `latitude`, `longitude`, `description`) " \
-                                "VALUES ( %s, %s, %s, %s, %s)"
-                row_count = cursor2.execute(sql_statement, (station_id, name, latitude, longitude, description))
+                sql_statement = "INSERT INTO `station` (`id`, `station_type`, `name`, `latitude`, `longitude`, `description`) " \
+                                "VALUES ( %s, %s, %s, %s, %s, %s)"
+                row_count = cursor2.execute(sql_statement,
+                        (station_id, StationEnum.getTypeString(station_type), name, latitude, longitude, description))
                 connection.commit()
                 return True if row_count > 0 else False
         else:
@@ -192,8 +202,8 @@ def delete_station(pool, latitude, longitude, station_type):
             pattern = "{}{}_____".format(initial_value[0], initial_value[1])
 
         with connection.cursor() as cursor:
-            sql_statement = "DELETE FROM `station` WHERE `id` like %s and `latitude`=%s and `longitude`=%s"
-            row_count = cursor.execute(sql_statement, (pattern, latitude, longitude))
+            sql_statement = "DELETE FROM `station` WHERE `id` like %s and `latitude`=%s and `longitude`=%s and `station_type`=%s;"
+            row_count = cursor.execute(sql_statement, (pattern, latitude, longitude, StationEnum.getTypeString(station_type)))
             connection.commit()
             if row_count > 0:
                 return True
