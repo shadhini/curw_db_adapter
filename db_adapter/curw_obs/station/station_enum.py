@@ -5,13 +5,13 @@ class StationEnum(Enum):
     """
     StationEnum ids ranged as below;
 
-        - 1 xx xxx - CUrW_WeatherStation (name: curw_<SOMETHING>)
-        - 1 xx xxx - CUrW_WaterLevelGauge (name: curw_wl_<SOMETHING>)
-        - 3 xx xxx - Megapolis (name: megapolis_<SOMETHING>)
-        - 4 xx xxx - Government (name: gov_<SOMETHING>. May follow as gov_irr_<SOMETHING>)
-        - 5 xx xxx - Satellite (name: sat_<SOMETHING>)
+        - 1 xx xxx - CUrW_WeatherStation (station_id: curw_<SOMETHING>)
+        - 1 xx xxx - CUrW_WaterLevelGauge (station_id: curw_wl_<SOMETHING>)
+        - 3 xx xxx - Megapolis (station_id: megapolis_<SOMETHING>)
+        - 4 xx xxx - Government (station_id: gov_<SOMETHING>. May follow as gov_irr_<SOMETHING>)
+        - 5 xx xxx - Satellite (station_id: sat_<SOMETHING>)
 
-        - 2 xxx xxx - Public (name: pub_<SOMETHING>)
+        - 2 xxx xxx - Public (station_id: pub_<SOMETHING>)
 
         Simulation models StationEnum ids ranged over 1’000’000 as below;
         - 1 1xx xxx - WRF (name: wrf_<SOMETHING>)
@@ -21,7 +21,7 @@ class StationEnum(Enum):
         - 1 8xx xxx - MIKE11(name: mike_<SOMETHING>)
 
         Other;
-        - 3 xxx xxx - Other (name: other_<SOMETHING>)
+        - 3 xxx xxx - Other (name/station_id: other_<SOMETHING>)
     """
     CUrW_WeatherStation = 100000
     CUrW_WaterLevelGauge = 100000
