@@ -318,7 +318,7 @@ def get_flo2d_output_stations(pool, flo2d_model):
 
     flo2d_output_stations = {}
 
-    id_pattern = '{}_____'.format(flo2d_model.split('0')[0])
+    id_pattern = '{}_____'.format(flo2d_model.value.split('0')[0])
 
     connection = pool.connection()
     try:
