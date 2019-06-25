@@ -138,7 +138,7 @@ def add_station(pool, name, latitude, longitude, description, station_type):
             with connection.cursor() as cursor2:
                 sql_statement = "INSERT INTO `station` (`id`, `station_type`, `name`, `latitude`, `longitude`, `description`) " \
                                 "VALUES ( %s, %s, %s, %s, %s, %s)"
-                logger.debug("station type @db_adapter add_station()", station_type)
+                logger.info("station type @db_adapter add_station()", station_type)
                 row_count = cursor2.execute(sql_statement,
                         (station_id, StationEnum.getTypeString(station_type), name, latitude, longitude, description))
                 connection.commit()
