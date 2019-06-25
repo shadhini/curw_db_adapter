@@ -305,3 +305,38 @@ def get_wrf_stations(pool):
     finally:
         if connection is not None:
             connection.close()
+
+
+def get_flo2d_output_stations(pool, flo2d_model):
+
+    """
+    Retrieve ids of wrf_v3 stations, for each station name
+    :param flo2d_model: StationEnum describing the flo2d model
+    :param pool: database connection pool
+    :return: dictionary with keys of type "<cell_id>" and corresponding station id as the value
+    """
+
+    flo2d_output_stations = {}
+
+    id_pattern = '{}_____'.format(flo2d_model.split('0')[0])
+
+    connection = pool.connection()
+    try:
+        with connection.cursor() as cursor:
+            sql_statement = "SELECT `id`, `name` FROM `station` WHERE `id` like %s"
+            row_count = cursor.execute(sql_statement, id_pattern)
+            if row_count > 0:
+                results = cursor.fetchall()
+                for dict in results:
+                    flo2d_output_stations[dict.get("name").split("_")[0]] = dict.get("id")
+                return flo2d_output_stations
+            else:
+                return None
+    except Exception as ex:
+        error_message = "Retrieving flo2d output stations failed"
+        logger.error(error_message)
+        traceback.print_exc()
+        raise DatabaseAdapterError(error_message, ex)
+    finally:
+        if connection is not None:
+            connection.close()
