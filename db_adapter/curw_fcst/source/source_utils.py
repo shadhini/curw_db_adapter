@@ -204,3 +204,32 @@ def delete_source_by_id(pool, id_):
     finally:
         if connection is not None:
             connection.close()
+
+
+def get_source_parameters(pool, model, version):
+    """
+        Retrieve Source parameters
+        :param pool: database connection pool
+        :param model:
+        :param version:
+        :return: str: json object parameters if source exists in the database, else None
+        """
+
+    connection = pool.connection()
+    try:
+
+        with connection.cursor() as cursor:
+            sql_statement = "SELECT `parameters` FROM `source` WHERE `model`=%s and `version`=%s"
+            row_count = cursor.execute(sql_statement, (model, version))
+            if row_count > 0:
+                return cursor.fetchone()['parameters']
+            else:
+                return None
+    except Exception as ex:
+        error_message = "Retrieving source parameters: model={} and version={} failed.".format(model, version)
+        logger.error(error_message)
+        traceback.print_exc()
+        raise DatabaseAdapterError(error_message, ex)
+    finally:
+        if connection is not None:
+            connection.close()
