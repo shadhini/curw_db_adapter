@@ -313,7 +313,7 @@ def get_flo2d_output_stations(pool, flo2d_model):
     Retrieve ids of wrf_v3 stations, for each station name
     :param flo2d_model: StationEnum describing the flo2d model
     :param pool: database connection pool
-    :return: dictionary with keys of type "<cell_id>" and corresponding station id as the value
+    :return: dictionary with keys of type "<cell_id>" and [list of station id, latitude and longitude] as the value
     """
 
     flo2d_output_stations = {}
@@ -323,12 +323,12 @@ def get_flo2d_output_stations(pool, flo2d_model):
     connection = pool.connection()
     try:
         with connection.cursor() as cursor:
-            sql_statement = "SELECT `id`, `name` FROM `station` WHERE `id` like %s"
+            sql_statement = "SELECT * FROM `station` WHERE `id` like %s"
             row_count = cursor.execute(sql_statement, id_pattern)
             if row_count > 0:
                 results = cursor.fetchall()
                 for dict in results:
-                    flo2d_output_stations[dict.get("name").split("_")[0]] = dict.get("id")
+                    flo2d_output_stations[dict.get("name").split("_")[0]] = [dict.get("id"), dict.get("latitude"), dict.get("longitude")]
                 return flo2d_output_stations
             else:
                 return None
