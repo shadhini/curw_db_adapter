@@ -104,7 +104,7 @@ class StationEnum(Enum):
 
     @staticmethod
     def getTypeString(name):
-        _nameToRange = {
+        _nameToString = {
                 StationEnum.CUrW_WeatherStation : 'CUrW_WeatherStation',
                 StationEnum.CUrW_WaterLevelGauge: 'CUrW_WaterLevelGauge',
                 StationEnum.Megapolis           : 'Megapolis',
@@ -121,4 +121,5 @@ class StationEnum(Enum):
 
                 StationEnum.Other               : 'Other'
                 }
-        return _nameToRange.get(name, 'Other')
+
+        return _nameToString.get(name, 'Other')
