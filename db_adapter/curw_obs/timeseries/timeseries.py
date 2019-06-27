@@ -211,7 +211,7 @@ class Timeseries:
             with connection.cursor() as cursor:
                 sql_statement = "INSERT INTO `run` (`id`, `run_name`, `station`, " \
                                 "`variable`, `unit`) " \
-                                "VALUES ( %s, %s, %s, %s, %s, %s, %s)"
+                                "VALUES ( %s, %s, %s, %s, %s)"
                 cursor.execute(sql_statement, (run_meta.get('tms_id'), run_meta.get('run_name'), run_meta.get('station_id'),
                                                run_meta.get('variable_id'), run_meta.get('unit_id')))
 
