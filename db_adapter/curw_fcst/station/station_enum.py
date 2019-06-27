@@ -1,7 +1,7 @@
-from enum import Enum
+from aenum import Enum, NoAlias
 
 
-class StationEnum(Enum):
+class StationEnum(Enum, settings=NoAlias):
     """
     StationEnum ids ranged as below;
 
