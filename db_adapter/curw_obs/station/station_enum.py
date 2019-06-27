@@ -85,9 +85,9 @@ class StationEnum(Enum):
                 'CUrW_WaterLevelGauge': StationEnum.CUrW_WaterLevelGauge,
                 'Megapolis'           : StationEnum.Megapolis,
                 'Government'          : StationEnum.Government,
-                'Gov'                 : StationEnum.Gov,
+                'Gov'                 : StationEnum.Government,
                 'Satellite'           : StationEnum.Satellite,
-                'Sat'                 : StationEnum.Sat,
+                'Sat'                 : StationEnum.Satellite,
 
                 'WRF'                 : StationEnum.WRF,
                 'FLO2D_250'           : StationEnum.FLO2D_250,
