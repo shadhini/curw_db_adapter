@@ -125,9 +125,13 @@ def add_station(pool, name, latitude, longitude, description, station_type):
 
     station_enum = station_type
 
+    logger.info("1 station_type: ", station_enum)
+
     connection = pool.connection()
     try:
         if get_station_id(pool=pool, latitude=latitude, longitude=longitude, station_type=station_enum) is None:
+
+            logger.info("2 station_enum", station_enum)
 
             with connection.cursor() as cursor1:
                 sql_statement = "SELECT `id` FROM `station` WHERE `id` BETWEEN %s and %s ORDER BY `id` DESC"
@@ -137,9 +141,13 @@ def add_station(pool, name, latitude, longitude, description, station_type):
                 else:
                     station_id = initial_value
 
+            logger.info("3 station_enum", station_enum)
+
             with connection.cursor() as cursor2:
                 sql_statement = "INSERT INTO `station` (`id`, `station_type`, `name`, `latitude`, `longitude`, `description`) " \
                                 "VALUES ( %s, %s, %s, %s, %s, %s)"
+
+                logger.info("4 string :", StationEnum.getTypeString(station_enum))
                 row_count = cursor2.execute(sql_statement,
                         (station_id, StationEnum.getTypeString(station_enum), name, latitude, longitude, description))
                 connection.commit()
