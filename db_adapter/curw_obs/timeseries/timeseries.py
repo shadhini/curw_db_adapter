@@ -279,3 +279,29 @@ class Timeseries:
         finally:
             if connection is not None:
                 connection.close()
+
+    def update_run_name(pool, id_, run_name):
+        """
+            Update run name
+            :param pool:
+            :param id_: timeseries id
+            :param run_name: new run name
+            :return: True if successful
+        """
+
+        connection = pool.connection()
+        try:
+            with connection.cursor() as cursor:
+                sql_statement = "UPDATE `run` SET `run_name`=%s WHERE `id`=%s"
+                cursor.execute(sql_statement, (run_name, id_))
+            connection.commit()
+            return True
+        except Exception as ex:
+            connection.rollback()
+            error_message = "Updating run name for id={} failed.".format(id_)
+            logger.error(error_message)
+            traceback.print_exc()
+            raise DatabaseAdapterError(error_message, ex)
+        finally:
+            if connection is not None:
+                connection.close()
