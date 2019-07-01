@@ -1,10 +1,13 @@
 import traceback
 import csv
 import pkg_resources
+import json, collections
+from datetime import datetime
 
 from db_adapter.curw_obs.station.station_enum import StationEnum
 from db_adapter.logger import logger
 from db_adapter.exceptions import DatabaseAdapterError
+from db_adapter.constants import COMMON_DATE_TIME_FORMAT
 
 """
 Station JSON Object would looks like this 
@@ -247,6 +250,103 @@ def delete_station_by_id(pool, id_):
     except Exception as ex:
         connection.rollback()
         error_message = "Deleting station with id {} failed.".format(id_)
+        logger.error(error_message)
+        traceback.print_exc()
+        raise DatabaseAdapterError(error_message, ex)
+    finally:
+        if connection is not None:
+            connection.close()
+
+
+def get_description(pool, id_):
+    """
+    Retrieve station description for a given station id
+    :param pool:
+    :param id_: station id
+    :return:
+    """
+
+    description = {}
+
+    connection = pool.connection()
+    try:
+
+        with connection.cursor() as cursor:
+            sql_statement = "SELECT `description` FROM `station` WHERE `id`=%s"
+            row_count = cursor.execute(sql_statement, id_)
+            if row_count > 0:
+                description = json.loads(cursor.fetchone()['description'], object_pairs_hook=collections.OrderedDict)
+
+        return description
+    except Exception as ex:
+        error_message = "Retrieving station description for id={} failed.".format(id_)
+        logger.error(error_message)
+        traceback.print_exc()
+        raise DatabaseAdapterError(error_message, ex)
+    finally:
+        if connection is not None:
+            connection.close()
+
+
+def update_description(pool, id_, description, append=False):
+    """
+    Update description in case weather station iot device is changed
+    "description" is a JSON object with timestamp as the key
+    :param pool:
+    :param id_: station id
+    :param description: JSON: new station description
+    :param append: If True, new description would be appended to the already existing description,
+    otherwise description would be reset to the new  description
+    :return: True if successful
+    """
+    existing_description = get_description(pool=pool, id_=id_)
+
+    new_description = {}
+
+    timestamp = (datetime.now()).strftime(COMMON_DATE_TIME_FORMAT)
+
+    if append:
+        new_description = existing_description
+
+    new_description[timestamp] = description
+
+    connection = pool.connection()
+    try:
+        with connection.cursor() as cursor:
+            sql_statement = "UPDATE `station` SET `description`=%s WHERE `id`=%s"
+            cursor.execute(sql_statement, (description, id_))
+        connection.commit()
+        return True
+    except Exception as ex:
+        connection.rollback()
+        error_message = "Updating station description for id={} failed.".format(id_)
+        logger.error(error_message)
+        traceback.print_exc()
+        raise DatabaseAdapterError(error_message, ex)
+    finally:
+        if connection is not None:
+            connection.close()
+
+
+def update_run_name(pool, id_, run_name):
+    """
+        Update run name
+        :param pool:
+        :param id_: timeseries id
+        :param run_name: new run name
+        :return: True if successful
+    """
+
+    connection = pool.connection()
+    try:
+        with connection.cursor() as cursor:
+            sql_statement = "UPDATE `run` SET `run_name`=%s WHERE `id`=%s"
+            cursor.execute(sql_statement, (run_name, id_))
+        connection.commit()
+        return True
+    except Exception as ex:
+        connection.rollback()
+        error_message = "Updating run name for id={} failed.".format(id_)
         logger.error(error_message)
         traceback.print_exc()
         raise DatabaseAdapterError(error_message, ex)
