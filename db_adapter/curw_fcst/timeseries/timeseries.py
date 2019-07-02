@@ -261,6 +261,8 @@ class Timeseries:
         {
             'tms_id'  : '',
             'sim_tag' : '',
+            'start_date': '',
+            'end_date': '',
             'station_id'  : '',
             'source_id' : '',
             'unit_id'     : '',
@@ -273,10 +275,11 @@ class Timeseries:
         try:
 
             with connection.cursor() as cursor:
-                sql_statement = "INSERT INTO `run` (`id`, `sim_tag`, `station`, `source`, " \
+                sql_statement = "INSERT INTO `run` (`id`, `sim_tag`, `start_date`, `end_date`, `station`, `source`, " \
                                 "`variable`, `unit`) " \
-                                "VALUES ( %s, %s, %s, %s, %s, %s)"
-                cursor.execute(sql_statement, (run_meta.get('tms_id'), run_meta.get('sim_tag'), run_meta.get('station_id'),
+                                "VALUES ( %s, %s, %s, %s, %s, %s, %s, %s)"
+                cursor.execute(sql_statement, (run_meta.get('tms_id'), run_meta.get('sim_tag'),
+                                               run_meta.get('start_date'), run_meta.get('end_date'), run_meta.get('station_id'),
                                                run_meta.get('source_id'), run_meta.get('variable_id'), run_meta.get('unit_id')))
 
             connection.commit()
