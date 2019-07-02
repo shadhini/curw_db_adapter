@@ -326,6 +326,3 @@ def update_description(pool, id_, description, append=False):
     finally:
         if connection is not None:
             connection.close()
-
-
-
