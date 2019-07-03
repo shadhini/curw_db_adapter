@@ -91,7 +91,7 @@ class Timeseries:
             if connection is not None:
                 connection.close()
 
-    def insert_data(self, timeseries, upsert=False):
+    def insert_processed_data(self, timeseries, upsert=False):
         """
         Insert timeseries to Data table in the database
         :param timeseries: list of [tms_id, time, fgt, value] lists
