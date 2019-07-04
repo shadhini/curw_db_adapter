@@ -6,7 +6,7 @@ from db_adapter.logger import logger
 from db_adapter.exceptions import DatabaseAdapterError
 
 
-def add_flo2d_grid_mappings(pool, grid_interpolation, flo2d_model):
+def add_flo2d_raincell_grid_mappings(pool, grid_interpolation, flo2d_model):
 
     """
     Add flo2d grid mappings to the database
@@ -25,15 +25,20 @@ def add_flo2d_grid_mappings(pool, grid_interpolation, flo2d_model):
     grid_mappings_list = []
 
     for index in range(len(flo2d_obs_mapping)):
-        grid_mapping = ['{}_{}_{}'.format(flo2d_model, flo2d_obs_mapping[index][0], grid_interpolation), flo2d_obs_mapping[index][1],
-                        flo2d_obs_mapping[index][3], flo2d_obs_mapping[index][5], flo2d_d03_mapping[index][1]]
+        cell_id = flo2d_obs_mapping[index][0]
+        obs1 = flo2d_obs_mapping[index][1]
+        obs2 = flo2d_obs_mapping[index][3]
+        obs3 = flo2d_obs_mapping[index][5]
+        fcst = flo2d_d03_mapping[index][1]
+        grid_mapping = ['{}_{}_{}'.format(flo2d_model, grid_interpolation, (str(cell_id)).zfill(10)), cell_id,
+                        obs1, obs2, obs3, fcst]
         grid_mappings_list.append(tuple(grid_mapping))
 
     connection = pool.connection()
     try:
         with connection.cursor() as cursor:
-            sql_statement = "INSERT INTO `grid_map` (`grid_id`, `obs1`, `obs2`, `obs3`, `fcst`)" \
-                            " VALUES ( %s, %s, %s, %s, %s) "\
+            sql_statement = "INSERT INTO `grid_map_flo2d_raincell` (`grid_id`, `cell_id`, `obs1`, `obs2`, `obs3`, `fcst`)" \
+                            " VALUES ( %s, %s, %s, %s, %s, %s) "\
                             "ON DUPLICATE KEY UPDATE `obs1`=VALUES(`obs1`), `obs2`=VALUES(`obs2`), " \
                             "`obs3`=VALUES(`obs3`);"
             row_count = cursor.executemany(sql_statement, grid_mappings_list)
@@ -41,7 +46,7 @@ def add_flo2d_grid_mappings(pool, grid_interpolation, flo2d_model):
         return row_count
     except Exception as ex:
         connection.rollback()
-        error_message = "Insertion of flo2d grid mappings failed."
+        error_message = "Insertion of flo2d raincell grid mappings failed."
         logger.error(error_message)
         traceback.print_exc()
         raise DatabaseAdapterError(error_message, ex)
@@ -50,7 +55,7 @@ def add_flo2d_grid_mappings(pool, grid_interpolation, flo2d_model):
             connection.close()
 
 
-def get_flo2d_to_obs_grid_mappings(pool, grid_interpolation, flo2d_model):
+def get_flo2d_cells_to_obs_grid_mappings(pool, grid_interpolation, flo2d_model):
 
     """
     Retrieve flo2d to obs grid mappings
@@ -65,8 +70,8 @@ def get_flo2d_to_obs_grid_mappings(pool, grid_interpolation, flo2d_model):
     connection = pool.connection()
     try:
         with connection.cursor() as cursor:
-            sql_statement = "SELECT * FROM `grid_map` WHERE `grid_id` like %s ESCAPE '$'"
-            row_count = cursor.execute(sql_statement, "flo2d$_{}$_%$_{}".format(flo2d_model.split('_')[1], grid_interpolation))
+            sql_statement = "SELECT * FROM `grid_map_flo2d_raincell` WHERE `grid_id` like %s ESCAPE '$'"
+            row_count = cursor.execute(sql_statement, "flo2d$_{}$_{}$_%".format(flo2d_model.split('_')[1], grid_interpolation))
             if row_count > 0:
                 results = cursor.fetchall()
                 for dict in results:
@@ -75,7 +80,7 @@ def get_flo2d_to_obs_grid_mappings(pool, grid_interpolation, flo2d_model):
             else:
                 return None
     except Exception as ex:
-        error_message = "Retrieving flo2d to obs grid mappings failed"
+        error_message = "Retrieving flo2d cells to obs grid mappings failed"
         logger.error(error_message)
         traceback.print_exc()
         raise DatabaseAdapterError(error_message, ex)
@@ -84,7 +89,7 @@ def get_flo2d_to_obs_grid_mappings(pool, grid_interpolation, flo2d_model):
             connection.close()
 
 
-def get_flo2d_to_wrf_grid_mappings(pool, grid_interpolation, flo2d_model):
+def get_flo2d_cells_to_wrf_grid_mappings(pool, grid_interpolation, flo2d_model):
 
     """
     Retrieve flo2d to wrf stations mappings
@@ -99,8 +104,8 @@ def get_flo2d_to_wrf_grid_mappings(pool, grid_interpolation, flo2d_model):
     connection = pool.connection()
     try:
         with connection.cursor() as cursor:
-            sql_statement = "SELECT `grid_id`, `fcst` FROM `grid_map` WHERE `grid_id` like %s ESCAPE '$'"
-            row_count = cursor.execute(sql_statement, "flo2d$_{}$_%$_{}".format(flo2d_model.split('_')[1], grid_interpolation))
+            sql_statement = "SELECT `grid_id`, `fcst` FROM `grid_map_flo2d_raincell` WHERE `grid_id` like %s ESCAPE '$'"
+            row_count = cursor.execute(sql_statement, "flo2d$_{}$_{}$_%".format(flo2d_model.split('_')[1], grid_interpolation))
             if row_count > 0:
                 results = cursor.fetchall()
                 for dict in results:
@@ -109,7 +114,7 @@ def get_flo2d_to_wrf_grid_mappings(pool, grid_interpolation, flo2d_model):
             else:
                 return None
     except Exception as ex:
-        error_message = "Retrieving flo2d to obs grid mappings failed"
+        error_message = "Retrieving flo2d cells to obs grid mappings failed"
         logger.error(error_message)
         traceback.print_exc()
         raise DatabaseAdapterError(error_message, ex)
