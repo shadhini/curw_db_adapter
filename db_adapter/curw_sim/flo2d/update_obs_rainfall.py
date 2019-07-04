@@ -6,7 +6,7 @@ from db_adapter.csv_utils import read_csv
 from db_adapter.base import get_Pool, destroy_Pool
 from db_adapter.constants import CURW_SIM_DATABASE, CURW_SIM_PASSWORD, CURW_SIM_USERNAME, CURW_SIM_PORT, CURW_SIM_HOST
 from db_adapter.constants import HOST, PASSWORD, PORT, DATABASE, USERNAME
-from db_adapter.curw_sim.grids import get_flo2d_to_obs_grid_mappings
+from db_adapter.curw_sim.grids import get_flo2d_cells_to_obs_grid_mappings
 from db_adapter.curw_sim.timeseries import Timeseries
 from db_adapter.curw_sim.common import process_5_min_ts, fill_missing_values_5_min_ts
 from db_adapter.logger import logger
@@ -87,14 +87,17 @@ def update_rainfall_obs(flo2d_model, method, grid_interpolation):
         for obs_index in range(len(active_obs_stations)):
             stations_dict_for_obs[active_obs_stations[obs_index][2]] = active_obs_stations[obs_index][0]
 
-        flo2d_obs_mapping = get_flo2d_to_obs_grid_mappings(pool=pool, grid_interpolation=grid_interpolation, flo2d_model=flo2d_model)
+        flo2d_obs_mapping = get_flo2d_cells_to_obs_grid_mappings(pool=pool, grid_interpolation=grid_interpolation, flo2d_model=flo2d_model)
 
         for flo2d_index in range(len(flo2d_grids)):
             obs_start = OBS_START
+            lat = flo2d_grids[flo2d_index][2]
+            lon = flo2d_grids[flo2d_index][1]
+            cell_id = flo2d_grids[flo2d_index][0]
             meta_data = {
-                    'latitude': float('%.6f' % float(flo2d_grids[flo2d_index][2])), 'longitude': float('%.6f' % float(flo2d_grids[flo2d_index][1])),
+                    'latitude': float('%.6f' % float(lat)), 'longitude': float('%.6f' % float(lon)),
                     'model': flo2d_model, 'method': method,
-                    'grid_id': '{}_{}_{}'.format(flo2d_model, flo2d_grids[flo2d_index][0], grid_interpolation)
+                    'grid_id': '{}_{}_{}'.format(flo2d_model, grid_interpolation, (str(cell_id)).zfill(10))
                     }
 
             tms_id = TS.get_timeseries_id(grid_id=meta_data.get('grid_id'), method=meta_data.get('method'))

@@ -5,7 +5,7 @@ from db_adapter.csv_utils import read_csv
 from db_adapter.base import get_Pool, destroy_Pool
 from db_adapter.constants import CURW_SIM_DATABASE, CURW_SIM_PASSWORD, CURW_SIM_USERNAME, CURW_SIM_PORT, CURW_SIM_HOST
 from db_adapter.constants import CURW_FCST_DATABASE, CURW_FCST_PASSWORD, CURW_FCST_USERNAME, CURW_FCST_PORT, CURW_FCST_HOST
-from db_adapter.curw_sim.grids import get_flo2d_to_wrf_grid_mappings
+from db_adapter.curw_sim.grids import get_flo2d_cells_to_wrf_grid_mappings
 from db_adapter.curw_sim.timeseries import Timeseries as Sim_Timeseries
 from db_adapter.curw_fcst.timeseries import Timeseries as Fcst_Timeseries
 from db_adapter.curw_fcst.source import get_source_id
@@ -39,13 +39,16 @@ def update_rainfall_fcsts(flo2d_model, method, grid_interpolation, model_list):
 
         flo2d_grids = read_csv('{}m.csv'.format(flo2d_model))  # [Grid_ ID, X(longitude), Y(latitude)]
 
-        flo2d_wrf_mapping = get_flo2d_to_wrf_grid_mappings(pool=curw_sim_pool, grid_interpolation=grid_interpolation, flo2d_model=flo2d_model)
+        flo2d_wrf_mapping = get_flo2d_cells_to_wrf_grid_mappings(pool=curw_sim_pool, grid_interpolation=grid_interpolation, flo2d_model=flo2d_model)
 
         for flo2d_index in range(len(flo2d_grids)):  # len(flo2d_grids)
+            lat = flo2d_grids[flo2d_index][2]
+            lon = flo2d_grids[flo2d_index][1]
+            cell_id = flo2d_grids[flo2d_index][0]
             meta_data = {
-                    'latitude': float('%.6f' % float(flo2d_grids[flo2d_index][2])), 'longitude': float('%.6f' % float(flo2d_grids[flo2d_index][1])),
+                    'latitude': float('%.6f' % float(lat)), 'longitude': float('%.6f' % float(lon)),
                     'model': flo2d_model, 'method': method,
-                    'grid_id': '{}_{}_{}'.format(flo2d_model, flo2d_grids[flo2d_index][0], grid_interpolation)
+                    'grid_id': '{}_{}_{}'.format(flo2d_model, grid_interpolation, (str(cell_id)).zfill(10))
                     }
 
             tms_id = Sim_TS.get_timeseries_id(grid_id=meta_data.get('grid_id'), method=meta_data.get('method'))
