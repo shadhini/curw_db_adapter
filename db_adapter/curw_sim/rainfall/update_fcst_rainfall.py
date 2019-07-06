@@ -15,7 +15,7 @@ from db_adapter.logger import logger
 
 
 # for bulk insertion for a given one grid interpolation method
-def update_rainfall_fcsts(target_model, method, grid_interpolation, model_list):
+def update_rainfall_fcsts(target_model, method, grid_interpolation, model_list, timestep):
 
     """
     Update rainfall forecasts for flo2d models
@@ -24,6 +24,7 @@ def update_rainfall_fcsts(target_model, method, grid_interpolation, model_list):
     :param grid_interpolation: grid interpolation method
     :param model_list: list of forecast model and their versions used to calculate the rainfall
     e.g.: [["WRF_E", "v4"],["WRF_SE", "v4"]]
+    :param timestep: output timeseries timestep
     :return:
     """
 
@@ -79,17 +80,30 @@ def update_rainfall_fcsts(target_model, method, grid_interpolation, model_list):
 
                 temp_timeseries = []
 
-                if obs_end is not None:
-                    temp_timeseries = convert_15_min_ts_to_5_mins_ts(
-                            newly_extracted_timeseries=Fcst_TS.get_latest_timeseries(
-                                    sim_tag="evening_18hrs", station_id=obs_d03_mapping.get(meta_data['grid_id'])[0],
-                                    start=obs_end,
-                                    source_id=source_id, variable_id=1, unit_id=1))
-                else:
-                    temp_timeseries = convert_15_min_ts_to_5_mins_ts(
-                            newly_extracted_timeseries=Fcst_TS.get_latest_timeseries(
-                                    sim_tag="evening_18hrs", station_id=obs_d03_mapping.get(meta_data['grid_id'])[0],
-                                    source_id=source_id, variable_id=1, unit_id=1))
+                if timestep == 5:
+                    if obs_end is not None:
+                        temp_timeseries = convert_15_min_ts_to_5_mins_ts(
+                                newly_extracted_timeseries=Fcst_TS.get_latest_timeseries(
+                                        sim_tag="evening_18hrs", station_id=obs_d03_mapping.get(meta_data['grid_id'])[0],
+                                        start=obs_end,
+                                        source_id=source_id, variable_id=1, unit_id=1))
+                    else:
+                        temp_timeseries = convert_15_min_ts_to_5_mins_ts(
+                                newly_extracted_timeseries=Fcst_TS.get_latest_timeseries(
+                                        sim_tag="evening_18hrs", station_id=obs_d03_mapping.get(meta_data['grid_id'])[0],
+                                        source_id=source_id, variable_id=1, unit_id=1))
+                elif timestep == 15:
+                    if obs_end is not None:
+                        temp_timeseries = Fcst_TS.get_latest_timeseries(
+                                        sim_tag="evening_18hrs",
+                                        station_id=obs_d03_mapping.get(meta_data['grid_id'])[0],
+                                        start=obs_end,
+                                        source_id=source_id, variable_id=1, unit_id=1)
+                    else:
+                        temp_timeseries = Fcst_TS.get_latest_timeseries(
+                                        sim_tag="evening_18hrs",
+                                        station_id=obs_d03_mapping.get(meta_data['grid_id'])[0],
+                                        source_id=source_id, variable_id=1, unit_id=1)
 
                 if i==0:
                     fcst_timeseries = temp_timeseries

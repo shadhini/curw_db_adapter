@@ -1,4 +1,7 @@
+import traceback
 from datetime import datetime, timedelta
+
+from db_adapter.logger import logger
 
 
 def process_5_min_ts(newly_extracted_timeseries, expected_start):
@@ -22,7 +25,28 @@ def process_5_min_ts(newly_extracted_timeseries, expected_start):
     return processed_ts
 
 
-def fill_missing_values_5_min_ts(newly_extracted_timeseries, OBS_TS):
+def process_15_min_ts(newly_extracted_timeseries, expected_start):
+
+    processed_ts = []
+
+    current_timestamp = expected_start
+    extracted_ts_index = 0
+
+    while extracted_ts_index < len(newly_extracted_timeseries):
+        if current_timestamp == newly_extracted_timeseries[extracted_ts_index][0]:
+            processed_ts.append(newly_extracted_timeseries[extracted_ts_index])
+            extracted_ts_index +=1
+            current_timestamp = current_timestamp + timedelta(minutes=15)
+        elif current_timestamp < newly_extracted_timeseries[extracted_ts_index][0]:
+            processed_ts.append([current_timestamp, -99999])
+            current_timestamp = current_timestamp + timedelta(minutes=15)
+        else:
+            extracted_ts_index +=1
+
+    return processed_ts
+
+
+def fill_missing_values(newly_extracted_timeseries, OBS_TS):
 
     obs_timeseries = OBS_TS
 
@@ -102,6 +126,72 @@ def average_timeseries(timeseries):
     return avg_timeseries
 
 
+##########################
+# Extract obs timeseries #
+##########################
+def extract_obs_rain_5_min_ts(connection, id, start_time):
+    """
+    Extract obs station timeseries (15 min intervals)
+    :param connection: connection to curw database
+    :param stations_dict: dictionary with station_id as keys and run_ids as values
+    :param start_time: start of timeseries
+    :return:
+    """
+
+    timeseries = []
+
+    try:
+        # Extract per 5 min observed timeseries
+        with connection.cursor() as cursor1:
+            sql_statement = "select `time`, `value`  from data where `id`=%s and `time` >= %s ;"
+            print(id, start_time)
+            rows = cursor1.execute(sql_statement, (id, start_time))
+            if rows > 0:
+                results = cursor1.fetchall()
+                for result in results:
+                    timeseries.append([result.get('time'), result.get('value')])
+
+        return timeseries
+
+    except Exception as ex:
+        traceback.print_exc()
+        logger.error("Exception occurred while retrieving observed rainfall 5 min timeseries from database")
+
+
+def extract_obs_rain_15_min_ts(connection, id, start_time):
+    """
+    Extract obs station timeseries (15 min intervals)
+    :param connection: connection to curw database
+    :param stations_dict: dictionary with station_id as keys and run_ids as values
+    :param start_time: start of timeseries
+    :return:
+    """
+
+    timeseries = []
+
+    try:
+        # Extract per 5 min observed timeseries
+        with connection.cursor() as cursor1:
+            sql_statement = "select max(`time`) as time, sum(`value`) as value from `data` where `id`=%s and `time` >= %s " \
+                            "group by floor((HOUR(TIMEDIFF(time, %s))*60+MINUTE(TIMEDIFF(time, %s))-1)/15);"
+
+            print(id, start_time)
+            rows = cursor1.execute(sql_statement, (id, start_time, start_time, start_time))
+            if rows > 0:
+                results = cursor1.fetchall()
+                for result in results:
+                    timeseries.append([result.get('time'), result.get('value')])
+
+        return timeseries
+
+    except Exception as ex:
+        traceback.print_exc()
+        logger.error("Exception occurred while retrieving observed rainfall 15 min timeseries from database")
+
+
+########
+# test #
+########
 # timeseries1 = [["2019-05-06 00:00:00", 0.025, 0.369, 0.12, 2.36], ["2019-05-06 00:05:00", 0.025, 0.369, 0.12, 2.36],
 #               ["2019-05-06 00:10:00", 0.025, 0.025, 0.025, 0.025]]
 #

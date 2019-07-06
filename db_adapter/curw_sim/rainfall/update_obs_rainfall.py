@@ -7,50 +7,20 @@ from db_adapter.base import get_Pool, destroy_Pool
 from db_adapter.constants import CURW_SIM_DATABASE, CURW_SIM_PASSWORD, CURW_SIM_USERNAME, CURW_SIM_PORT, CURW_SIM_HOST
 from db_adapter.constants import HOST, PASSWORD, PORT, DATABASE, USERNAME
 from db_adapter.curw_sim.timeseries import Timeseries
-from db_adapter.curw_sim.common import process_5_min_ts
+from db_adapter.curw_sim.common import process_5_min_ts, process_15_min_ts, \
+    extract_obs_rain_5_min_ts, extract_obs_rain_15_min_ts
 from db_adapter.logger import logger
 
 
-def extract_rain_ts(connection, id, start_time):
-    """
-    Extract obs station timeseries (15 min intervals)
-    :param connection: connection to curw database
-    :param stations_dict: dictionary with station_id as keys and run_ids as values
-    :param start_time: start of timeseries
-    :return:
-    """
-
-    timeseries = []
-
-    try:
-        # Extract per 5 min observed timeseries
-        with connection.cursor() as cursor1:
-            sql_statement = "select `time`, `value`  from data where `id`=%s and `time` >= %s ;"
-            print(id, start_time)
-            rows = cursor1.execute(sql_statement, (id, start_time))
-            if rows > 0:
-                results = cursor1.fetchall()
-                for result in results:
-                    timeseries.append([result.get('time'), result.get('value')])
-        if len(timeseries) > 1:
-            print(id, "::", len(timeseries), "::", timeseries[1][0], "::", timeseries[-1][0])
-        return timeseries
-
-    except Exception as ex:
-        traceback.print_exc()
-    # finally:
-    #     if connection is not None:
-    #         connection.close()
-
-
 # for bulk insertion for a given one grid interpolation method
-def update_rainfall_obs(target_model, method, grid_interpolation):
+def update_rainfall_obs(target_model, method, grid_interpolation, timestep):
 
     """
     Update rainfall observations for flo2d models
     :param model: target model
     :param method: value interpolation method
     :param grid_interpolation: grid interpolation method
+    :param timestep:
     :return:
     """
 
@@ -113,10 +83,16 @@ def update_rainfall_obs(target_model, method, grid_interpolation):
 
             obs_timeseries = []
 
-            ts = extract_rain_ts(connection=curw_connection, start_time=obs_start, id=obs_hash_id)
-            if ts is not None and len(ts) > 1:
-                obs_timeseries.extend(process_5_min_ts(newly_extracted_timeseries=ts, expected_start=obs_start)[1:])
-                # obs_start = ts[-1][0]
+            if timestep == 5:
+                ts = extract_obs_rain_5_min_ts(connection=curw_connection, start_time=obs_start, id=obs_hash_id)
+                if ts is not None and len(ts) > 1:
+                    obs_timeseries.extend(process_5_min_ts(newly_extracted_timeseries=ts, expected_start=obs_start)[1:])
+                    # obs_start = ts[-1][0]
+            elif timestep == 15:
+                ts = extract_obs_rain_15_min_ts(connection=curw_connection, start_time=obs_start, id=obs_hash_id)
+                if ts is not None and len(ts) > 1:
+                    obs_timeseries.extend(process_15_min_ts(newly_extracted_timeseries=ts, expected_start=obs_start)[1:])
+                    # obs_start = ts[-1][0]
 
             for i in range(len(obs_timeseries)):
                 if obs_timeseries[i][1] == -99999:
