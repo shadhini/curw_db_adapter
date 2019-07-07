@@ -107,8 +107,11 @@ def update_rainfall_fcsts(target_model, method, grid_interpolation, model_list, 
                                         source_id=source_id, variable_id=1, unit_id=1)
 
                 if i==0:
+                    print("i==0: temp :", len(temp_timeseries), temp_timeseries[0][0], temp_timeseries[-1][0])
                     fcst_timeseries = temp_timeseries
                 else:
+                    print("i!=0: fcst :", len(fcst_timeseries), fcst_timeseries[0][0], fcst_timeseries[-1][0])
+                    print("i==0: temp :", len(temp_timeseries), temp_timeseries[0][0], temp_timeseries[-1][0])
                     fcst_timeseries = append_value_for_timestamp(existing_ts=fcst_timeseries,
                             new_ts=temp_timeseries)
 
