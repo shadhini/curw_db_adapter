@@ -101,8 +101,8 @@ def append_value_for_timestamp(existing_ts, new_ts):
 
     appended_ts =[]
 
-    logger.info("existing ts : ", existing_ts)
-    logger.info("new ts : ", new_ts)
+    logger.info("existing ts : ", len(existing_ts))
+    logger.info("new ts : ", len(new_ts))
     for i in range(len(existing_ts)):
         appended_ts.append(existing_ts[i])
         appended_ts[i].append(new_ts[i][1])
