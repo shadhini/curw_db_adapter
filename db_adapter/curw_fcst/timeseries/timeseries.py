@@ -347,7 +347,7 @@ class Timeseries:
             if connection is not None:
                 connection.close()
 
-    def get_latest_timeseries(self, sim_tag, station_id, source_id, variable_id, unit_id, start="2019-01-01 00:00:00"):
+    def get_latest_timeseries(self, sim_tag, station_id, source_id, variable_id, unit_id, start=None):
 
         """
         Retrieve the latest fcst timeseries available for the given parameters
@@ -372,13 +372,22 @@ class Timeseries:
                     meta_data = cursor1.fetchone()
                 else:
                     return None
-            with connection.cursor() as cursor2:
-                sql_statement = "SELECT `time`, `value` FROM `data` WHERE `id`=%s AND `fgt`=%s AND `time` >= %s;"
-                rows = cursor2.execute(sql_statement, (meta_data.get('id'), meta_data.get('end_date'), start))
-                if rows > 0:
-                    results = cursor2.fetchall()
-                    for result in results:
-                        ts.append([result.get('time'), result.get('value')])
+            if start:
+                with connection.cursor() as cursor2:
+                    sql_statement = "SELECT `time`, `value` FROM `data` WHERE `id`=%s AND `fgt`=%s AND `time` >= %s;"
+                    rows = cursor2.execute(sql_statement, (meta_data.get('id'), meta_data.get('end_date'), start))
+                    if rows > 0:
+                        results = cursor2.fetchall()
+                        for result in results:
+                            ts.append([result.get('time'), result.get('value')])
+            else:
+                with connection.cursor() as cursor2:
+                    sql_statement = "SELECT `time`, `value` FROM `data` WHERE `id`=%s AND `fgt`=%s;"
+                    rows = cursor2.execute(sql_statement, (meta_data.get('id'), meta_data.get('end_date')))
+                    if rows > 0:
+                        results = cursor2.fetchall()
+                        for result in results:
+                            ts.append([result.get('time'), result.get('value')])
             return ts
 
         except Exception as ex:

@@ -81,6 +81,7 @@ def update_rainfall_fcsts(target_model, method, grid_interpolation, model_list, 
                 temp_timeseries = []
 
                 if timestep == 5:
+                    print("obs end: ", obs_end)
                     if obs_end is not None:
                         temp_timeseries = convert_15_min_ts_to_5_mins_ts(
                                 newly_extracted_timeseries=Fcst_TS.get_latest_timeseries(
