@@ -101,9 +101,12 @@ def append_value_for_timestamp(existing_ts, new_ts):
 
     appended_ts =[]
 
-    for i in range(len(existing_ts)):
-        appended_ts.append(existing_ts[i])
-        appended_ts[i].append(new_ts[i][1])
+    if len(existing_ts) == len(new_ts) and existing_ts[0][0] == new_ts[0][0]:
+        for i in range(len(existing_ts)):
+            appended_ts.append(existing_ts[i])
+            appended_ts[i].append(new_ts[i][1])
+    else:
+        return existing_ts
 
     return appended_ts
 
