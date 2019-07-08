@@ -46,7 +46,7 @@ class Timeseries:
         """
         Check whether a timeseries id exists in the database for a given set of meta data
         :param meta_data: Dict with ''latitude', 'longitude', 'model', 'method' keys
-        :return: timeseries id if exist else raise DatabaseAdapterError
+        :return: timeseries id if exist else return False
         """
         event_id = self.generate_timeseries_id(meta_data)
 
@@ -60,7 +60,7 @@ class Timeseries:
             error_message = "Retrieving timeseries id for metadata={} failed.".format(meta_data)
             logger.error(error_message)
             traceback.print_exc()
-            raise DatabaseAdapterError(error_message, ex)
+            return False
         finally:
             if connection is not None:
                 connection.close()
@@ -71,7 +71,7 @@ class Timeseries:
         Check whether a timeseries id exists in the database run table for a given grid_id and method
         :param grid_id: grid id (e.g.: flo2d_250_954)
         :param method: value interpolation method
-        :return: timeseries id if exist else raise DatabaseAdapterError
+        :return: timeseries id if exist else None, if error occures, return False
         """
 
         connection = self.pool.connection()
@@ -87,7 +87,7 @@ class Timeseries:
             error_message = "Retrieving timeseries id for grid_id={} failed.".format(grid_id)
             logger.error(error_message)
             traceback.print_exc()
-            raise DatabaseAdapterError(error_message, ex)
+            return False
         finally:
             if connection is not None:
                 connection.close()
@@ -108,7 +108,7 @@ class Timeseries:
             error_message = "Check operation to find timeseries id {} in the run table failed.".format(id_)
             logger.error(error_message)
             traceback.print_exc()
-            raise False
+            return
         finally:
             if connection is not None:
                 connection.close()
@@ -121,7 +121,7 @@ class Timeseries:
         :param boolean upsert: If True, upsert existing values ON DUPLICATE KEY. Default is False.
         Ref: 1). https://stackoverflow.com/a/14383794/1461060
              2). https://chartio.com/resources/tutorials/how-to-insert-if-row-does-not-exist-upsert-in-mysql/
-        :return: row count if insertion was successful, else raise DatabaseAdapterError
+        :return: row count if insertion was successful, else False
         """
 
         new_timeseries = []
@@ -151,8 +151,7 @@ class Timeseries:
                     upsert)
             logger.error(error_message)
             traceback.print_exc()
-            raise DatabaseAdapterError(error_message, ex)
-
+            return False
         finally:
             if connection is not None:
                 connection.close()
@@ -165,7 +164,7 @@ class Timeseries:
         :param boolean upsert: If True, upsert existing values ON DUPLICATE KEY. Default is False.
         Ref: 1). https://stackoverflow.com/a/14383794/1461060
              2). https://chartio.com/resources/tutorials/how-to-insert-if-row-does-not-exist-upsert-in-mysql/
-        :return: row count if insertion was successful, else raise DatabaseAdapterError
+        :return: row count if insertion was successful, else False
         """
 
         new_timeseries = []
@@ -195,8 +194,7 @@ class Timeseries:
                     upsert)
             logger.error(error_message)
             traceback.print_exc()
-            raise DatabaseAdapterError(error_message, ex)
-
+            return False
         finally:
             if connection is not None:
                 connection.close()
@@ -209,7 +207,7 @@ class Timeseries:
         :param boolean upsert: If True, upsert existing values ON DUPLICATE KEY. Default is False.
         Ref: 1). https://stackoverflow.com/a/14383794/1461060
              2). https://chartio.com/resources/tutorials/how-to-insert-if-row-does-not-exist-upsert-in-mysql/
-        :return: row count if insertion was successful, else raise DatabaseAdapterError
+        :return: row count if insertion was successful, else False
         """
 
         new_timeseries = []
@@ -239,8 +237,7 @@ class Timeseries:
                     upsert)
             logger.error(error_message)
             traceback.print_exc()
-            raise DatabaseAdapterError(error_message, ex)
-
+            return False
         finally:
             if connection is not None:
                 connection.close()
@@ -259,7 +256,7 @@ class Timeseries:
                 'obs_end'  : ''
                 }
            grid_id and obs_end keys are optional
-        :return: timeseries id if insertion was successful, else raise DatabaseAdapterError
+        :return: timeseries id if insertion was successful, else False
         """
 
         if 'grid_id' in meta_data.keys() and 'obs_end' in meta_data.keys():
@@ -299,7 +296,7 @@ class Timeseries:
                 .format(run_tuple[0], run_tuple[1], run_tuple[2], run_tuple[3], run_tuple[4])
             logger.error(error_message)
             traceback.print_exc()
-            raise DatabaseAdapterError(error_message, ex)
+            return False
         finally:
             if connection is not None:
                 connection.close()
@@ -309,7 +306,7 @@ class Timeseries:
         Update obs_end for inserted timeseries
         :param id_: timeseries id
         :param obs_end: end time of observations
-        :return: True if update is successful, else raise DatabaseAdapterError
+        :return: True if update is successful, else False
         """
 
         connection = self.pool.connection()
@@ -325,7 +322,7 @@ class Timeseries:
             error_message = "Updating obs_end for id={} failed.".format(id_)
             logger.error(error_message)
             traceback.print_exc()
-            raise DatabaseAdapterError(error_message, ex)
+            return False
         finally:
             if connection is not None:
                 connection.close()
@@ -334,7 +331,7 @@ class Timeseries:
         """
         Retrieve obs_end for a given hash id
         :param id_:
-        :return:
+        :return: obs_end if exists, None if doesn't exist, False otherwise
         """
 
         connection = self.pool.connection()
@@ -351,7 +348,7 @@ class Timeseries:
             error_message = "Retrieving obs_end for id={} failed.".format(id_)
             logger.error(error_message)
             traceback.print_exc()
-            raise DatabaseAdapterError(error_message, ex)
+            return False
         finally:
             if connection is not None:
                 connection.close()
@@ -361,7 +358,7 @@ class Timeseries:
         Update hash id in run table
         :param existing_id: existing hash id
         :param new_id: newly generated hash id
-        :return: True if the update was successful, else raise DatabaseAdapterError
+        :return: True if the update was successful, else False
         """
 
         connection = self.pool.connection()
@@ -377,33 +374,7 @@ class Timeseries:
             error_message = "Updating hash id {} to id={} failed.".format(existing_id, new_id)
             logger.error(error_message)
             traceback.print_exc()
-            raise DatabaseAdapterError(error_message, ex)
-        finally:
-            if connection is not None:
-                connection.close()
-
-    def update_hash_id(self, existing_id, new_id):
-        """
-        Update hash id in run table
-        :param existing_id: existing hash id
-        :param new_id: newly generated hash id
-        :return: True if the update was successful, else raise DatabaseAdapterError
-        """
-
-        connection = self.pool.connection()
-        try:
-
-            with connection.cursor() as cursor:
-                sql_statement = "UPDATE `run` SET `id`=%s WHERE `id`=%s;"
-                cursor.execute(sql_statement, (new_id, existing_id))
-            connection.commit()
-            return True
-        except Exception as ex:
-            connection.rollback()
-            error_message = "Updating hash id {} to id={} failed.".format(existing_id, new_id)
-            logger.error(error_message)
-            traceback.print_exc()
-            raise DatabaseAdapterError(error_message, ex)
+            return  False
         finally:
             if connection is not None:
                 connection.close()
