@@ -30,14 +30,14 @@ def add_flo2d_raincell_grid_mappings(pool, grid_interpolation, flo2d_model):
         obs2 = flo2d_obs_mapping[index][3]
         obs3 = flo2d_obs_mapping[index][5]
         fcst = flo2d_d03_mapping[index][1]
-        grid_mapping = ['{}_{}_{}'.format(flo2d_model, grid_interpolation, (str(cell_id)).zfill(10)), cell_id,
+        grid_mapping = ['{}_{}_{}'.format(flo2d_model, grid_interpolation, (str(cell_id)).zfill(10)),
                         obs1, obs2, obs3, fcst]
         grid_mappings_list.append(tuple(grid_mapping))
 
     connection = pool.connection()
     try:
         with connection.cursor() as cursor:
-            sql_statement = "INSERT INTO `grid_map_flo2d_raincell` (`grid_id`, `cell_id`, `obs1`, `obs2`, `obs3`, `fcst`)" \
+            sql_statement = "INSERT INTO `grid_map_flo2d_raincell` (`grid_id`, `obs1`, `obs2`, `obs3`, `fcst`)" \
                             " VALUES ( %s, %s, %s, %s, %s, %s) "\
                             "ON DUPLICATE KEY UPDATE `obs1`=VALUES(`obs1`), `obs2`=VALUES(`obs2`), " \
                             "`obs3`=VALUES(`obs3`);"
