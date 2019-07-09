@@ -120,7 +120,7 @@ def add_station(pool, name, latitude, longitude, description, station_type):
 
             with connection.cursor() as cursor1:
                 sql_statement = "SELECT `id` FROM `station` WHERE `id` BETWEEN %s and %s ORDER BY `id` DESC"
-                row_count = cursor1.execute(sql_statement, (initial_value, initial_value + range_))
+                row_count = cursor1.execute(sql_statement, (initial_value, initial_value + range_ - 1))
                 if row_count > 0:
                     station_id = cursor1.fetchone()['id'] + 1
                 else:

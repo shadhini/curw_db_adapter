@@ -14,6 +14,7 @@ class StationEnum(Enum, settings=NoAlias):
         - 2 xxx xxx - Public (station_id: pub_<SOMETHING>)
 
         Simulation models StationEnum ids ranged over 1’000’000 as below;
+        - 1 0xx xxx - HECHMS (name: hechms_<SOMETHING>)
         - 1 1xx xxx - WRF (name: wrf_<SOMETHING>)
         - 1 2xx xxx - FLO2D 250(name: flo2d_250_<SOMETHING>)
         - 1 3xx xxx - FLO2D 150(name: flo2d_150_<SOMETHING>)
@@ -29,6 +30,7 @@ class StationEnum(Enum, settings=NoAlias):
     Government = 400000
     Satellite = 500000
 
+    HECHMS = 1000000
     WRF = 1100000
     FLO2D_250 = 1200000
     FLO2D_150 = 1300000
@@ -46,6 +48,7 @@ class StationEnum(Enum, settings=NoAlias):
             Government          : 100000,
             Satellite           : 500000,
 
+            HECHMS              : 100000,
             WRF                 : 100000,
             FLO2D_250           : 100000,
             FLO2D_150           : 100000,
@@ -66,6 +69,7 @@ class StationEnum(Enum, settings=NoAlias):
                 StationEnum.Government          : 100000,
                 StationEnum.Satellite           : 500000,
 
+                StationEnum.HECHMS              : 100000,
                 StationEnum.WRF                 : 100000,
                 StationEnum.FLO2D_250           : 100000,
                 StationEnum.FLO2D_150           : 100000,
@@ -89,6 +93,7 @@ class StationEnum(Enum, settings=NoAlias):
                 'Satellite'           : StationEnum.Satellite,
                 'Sat'                 : StationEnum.Satellite,
 
+                'HECHMS'              : StationEnum.HECHMS,
                 'WRF'                 : StationEnum.WRF,
                 'FLO2D_250'           : StationEnum.FLO2D_250,
                 'FLO2D_150'           : StationEnum.FLO2D_150,
@@ -111,6 +116,7 @@ class StationEnum(Enum, settings=NoAlias):
                 StationEnum.Government          : 'Government',
                 StationEnum.Satellite           : 'Satellite',
 
+                StationEnum.HECHMS              : 'HECHMS',
                 StationEnum.WRF                 : 'WRF',
                 StationEnum.FLO2D_250           : 'FLO2D_250',
                 StationEnum.FLO2D_150           : 'FLO2D_150',
