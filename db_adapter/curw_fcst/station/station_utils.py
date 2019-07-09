@@ -340,3 +340,34 @@ def get_flo2d_output_stations(pool, flo2d_model):
     finally:
         if connection is not None:
             connection.close()
+
+def get_hechms_stations(pool):
+
+    """
+    Retrieve ids of hechms stations, for each station name
+    :param pool: database connection pool
+    :return: dictionary with station names as keys and corresponding id as the value
+    """
+
+    hechms_stations = {}
+
+    connection = pool.connection()
+    try:
+        with connection.cursor() as cursor:
+            sql_statement = "SELECT `id`, `name` FROM `station` WHERE `id` like %s"
+            row_count = cursor.execute(sql_statement, "10_____")
+            if row_count > 0:
+                results = cursor.fetchall()
+                for dict in results:
+                    hechms_stations[dict.get("name")] = dict.get("id")
+                return hechms_stations
+            else:
+                return None
+    except Exception as ex:
+        error_message = "Retrieving hechms stations failed"
+        logger.error(error_message)
+        traceback.print_exc()
+        raise DatabaseAdapterError(error_message, ex)
+    finally:
+        if connection is not None:
+            connection.close()
