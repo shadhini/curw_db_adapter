@@ -310,11 +310,13 @@ def update_description(pool, id_, description, append=False):
 
     new_description[timestamp] = description
 
+    new_description = json.loads(new_description, object_pairs_hook=collections.OrderedDict)
+
     connection = pool.connection()
     try:
         with connection.cursor() as cursor:
             sql_statement = "UPDATE `station` SET `description`=%s WHERE `id`=%s"
-            cursor.execute(sql_statement, (description, id_))
+            cursor.execute(sql_statement, (new_description, id_))
         connection.commit()
         return True
     except Exception as ex:
