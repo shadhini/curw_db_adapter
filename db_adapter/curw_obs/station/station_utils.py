@@ -90,7 +90,7 @@ def get_station_id(pool, latitude, longitude, station_type) -> str:
             connection.close()
 
 
-def add_station(pool, name, latitude, longitude, description, station_type):
+def add_station(pool, name, latitude, longitude, station_type, description=None):
     """
     Insert sources into the database
 
