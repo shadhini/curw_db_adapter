@@ -53,7 +53,7 @@ class Timeseries:
         connection = self.pool.connection()
         try:
             with connection.cursor() as cursor:
-                sql_statement = "SELECT 1 FROM `run_dis` WHERE `id`=%s"
+                sql_statement = "SELECT 1 FROM `dis_run` WHERE `id`=%s"
                 is_exist = cursor.execute(sql_statement, event_id)
             return event_id if is_exist > 0 else None
         except Exception as ex:
@@ -68,7 +68,7 @@ class Timeseries:
     def get_timeseries_id(self, grid_id, method):
 
         """
-        Check whether a timeseries id exists in the database run_dis table for a given grid_id and method
+        Check whether a timeseries id exists in the database dis_run table for a given grid_id and method
         :param grid_id: grid id (e.g.: flo2d_250_954)
         :param method: value interpolation method
         :return: timeseries id if exist else raise DatabaseAdapterError
@@ -77,7 +77,7 @@ class Timeseries:
         connection = self.pool.connection()
         try:
             with connection.cursor() as cursor:
-                sql_statement = "SELECT `id` FROM `run_dis` WHERE `grid_id`=%s AND `method`=%s;"
+                sql_statement = "SELECT `id` FROM `dis_run` WHERE `grid_id`=%s AND `method`=%s;"
                 result = cursor.execute(sql_statement, (grid_id, method))
                 if result > 0:
                     return cursor.fetchone()['id']
@@ -101,11 +101,11 @@ class Timeseries:
         connection = self.pool.connection()
         try:
             with connection.cursor() as cursor:
-                sql_statement = "SELECT 1 FROM `run_dis` WHERE `id`=%s"
+                sql_statement = "SELECT 1 FROM `dis_run` WHERE `id`=%s"
                 is_exist = cursor.execute(sql_statement, id_)
             return False if is_exist > 0 is None else True
         except Exception as ex:
-            error_message = "Check operation to find timeseries id {} in the run_dis table failed.".format(id_)
+            error_message = "Check operation to find timeseries id {} in the dis_run table failed.".format(id_)
             logger.error(error_message)
             traceback.print_exc()
             raise False
@@ -138,16 +138,16 @@ class Timeseries:
         try:
             with connection.cursor() as cursor:
                 if upsert:
-                    sql_statement = "INSERT INTO `data` (`id`, `time`, `value`) VALUES (%s, %s, %s) " \
+                    sql_statement = "INSERT INTO `dis_data` (`id`, `time`, `value`) VALUES (%s, %s, %s) " \
                                     "ON DUPLICATE KEY UPDATE `value`=VALUES(`value`)"
                 else:
-                    sql_statement = "INSERT INTO `data` (`id`, `time`, `value`) VALUES (%s, %s, %s)"
+                    sql_statement = "INSERT INTO `dis_data` (`id`, `time`, `value`) VALUES (%s, %s, %s)"
                 row_count = cursor.executemany(sql_statement, timeseries)
             connection.commit()
             return row_count
         except Exception as ex:
             connection.rollback()
-            error_message = "Data insertion to data table for tms id {}, upsert={} failed.".format(timeseries[0][0],
+            error_message = "Data insertion to dis_data table for tms id {}, upsert={} failed.".format(timeseries[0][0],
                     upsert)
             logger.error(error_message)
             traceback.print_exc()
@@ -182,16 +182,16 @@ class Timeseries:
         try:
             with connection.cursor() as cursor:
                 if upsert:
-                    sql_statement = "INSERT INTO `data_max` (`id`, `time`, `value`) VALUES (%s, %s, %s) " \
+                    sql_statement = "INSERT INTO `dis_data_max` (`id`, `time`, `value`) VALUES (%s, %s, %s) " \
                                     "ON DUPLICATE KEY UPDATE `value`=VALUES(`value`)"
                 else:
-                    sql_statement = "INSERT INTO `data_max` (`id`, `time`, `value`) VALUES (%s, %s, %s)"
+                    sql_statement = "INSERT INTO `dis_data_max` (`id`, `time`, `value`) VALUES (%s, %s, %s)"
                 row_count = cursor.executemany(sql_statement, timeseries)
             connection.commit()
             return row_count
         except Exception as ex:
             connection.rollback()
-            error_message = "Data insertion to data table for tms id {}, upsert={} failed.".format(timeseries[0][0],
+            error_message = "Data insertion to dis_data table for tms id {}, upsert={} failed.".format(timeseries[0][0],
                     upsert)
             logger.error(error_message)
             traceback.print_exc()
@@ -226,16 +226,16 @@ class Timeseries:
         try:
             with connection.cursor() as cursor:
                 if upsert:
-                    sql_statement = "INSERT INTO `data_min` (`id`, `time`, `value`) VALUES (%s, %s, %s) " \
+                    sql_statement = "INSERT INTO `dis_data_min` (`id`, `time`, `value`) VALUES (%s, %s, %s) " \
                                     "ON DUPLICATE KEY UPDATE `value`=VALUES(`value`)"
                 else:
-                    sql_statement = "INSERT INTO `data_min` (`id`, `time`, `value`) VALUES (%s, %s, %s)"
+                    sql_statement = "INSERT INTO `dis_data_min` (`id`, `time`, `value`) VALUES (%s, %s, %s)"
                 row_count = cursor.executemany(sql_statement, timeseries)
             connection.commit()
             return row_count
         except Exception as ex:
             connection.rollback()
-            error_message = "Data insertion to data table for tms id {}, upsert={} failed.".format(timeseries[0][0],
+            error_message = "Data insertion to dis_data table for tms id {}, upsert={} failed.".format(timeseries[0][0],
                     upsert)
             logger.error(error_message)
             traceback.print_exc()
@@ -245,9 +245,9 @@ class Timeseries:
             if connection is not None:
                 connection.close()
 
-    def insert_run_dis(self, meta_data):
+    def insert_run(self, meta_data):
         """
-        Insert new run_dis entry
+        Insert new dis_run entry
         :param meta_data: dictionary like
         meta_data = {
                 'id'       : '',
@@ -263,40 +263,40 @@ class Timeseries:
         """
 
         if 'grid_id' in meta_data.keys() and 'obs_end' in meta_data.keys():
-            sql_statement = "INSERT INTO `run_dis` (`id`, `latitude`, `longitude`, `model`, `method`, " \
+            sql_statement = "INSERT INTO `dis_run` (`id`, `latitude`, `longitude`, `model`, `method`, " \
                             "`grid_id`, `obs_end`) " \
                             "VALUES ( %s, %s, %s, %s, %s, %s, %s)"
-            run_dis_tuple = (meta_data['id'], meta_data['latitude'], meta_data['longitude'], meta_data['model'],
+            dis_run_tuple = (meta_data['id'], meta_data['latitude'], meta_data['longitude'], meta_data['model'],
                          meta_data['method'], meta_data['grid_id'], meta_data['obs_end'])
 
         elif 'grid_id' in meta_data.keys():
-            sql_statement = "INSERT INTO `run_dis` (`id`, `latitude`, `longitude`, `model`, `method`, `grid_id`) " \
+            sql_statement = "INSERT INTO `dis_run` (`id`, `latitude`, `longitude`, `model`, `method`, `grid_id`) " \
                             "VALUES ( %s, %s, %s, %s, %s, %s)"
-            run_dis_tuple = (meta_data['id'], meta_data['latitude'], meta_data['longitude'], meta_data['model'],
+            dis_run_tuple = (meta_data['id'], meta_data['latitude'], meta_data['longitude'], meta_data['model'],
                          meta_data['method'], meta_data['grid_id'])
         elif 'obs_end' in meta_data.keys():
-            sql_statement = "INSERT INTO `run_dis` (`id`, `latitude`, `longitude`, `model`, `method`, `obs_end`) " \
+            sql_statement = "INSERT INTO `dis_run` (`id`, `latitude`, `longitude`, `model`, `method`, `obs_end`) " \
                             "VALUES ( %s, %s, %s, %s, %s, %s)"
-            run_dis_tuple = (meta_data['id'], meta_data['latitude'], meta_data['longitude'], meta_data['model'],
+            dis_run_tuple = (meta_data['id'], meta_data['latitude'], meta_data['longitude'], meta_data['model'],
                          meta_data['method'], meta_data['obs_end'])
         else:
-            sql_statement = "INSERT INTO `run_dis` (`id`, `latitude`, `longitude`, `model`, `method`) " \
+            sql_statement = "INSERT INTO `dis_run` (`id`, `latitude`, `longitude`, `model`, `method`) " \
                             "VALUES ( %s, %s, %s, %s, %s)"
-            run_dis_tuple = (meta_data['id'], meta_data['latitude'], meta_data['longitude'], meta_data['model'],
+            dis_run_tuple = (meta_data['id'], meta_data['latitude'], meta_data['longitude'], meta_data['model'],
                          meta_data['method'])
 
         connection = self.pool.connection()
         try:
             with connection.cursor() as cursor:
-                cursor.execute(sql_statement, run_dis_tuple)
+                cursor.execute(sql_statement, dis_run_tuple)
 
             connection.commit()
-            return run_dis_tuple[0]
+            return dis_run_tuple[0]
         except Exception as ex:
             connection.rollback()
             error_message = "Insertion failed for timeseries with tms_id={}, latitude={}, longitude={}, model={}," \
                             " method={}" \
-                .format(run_dis_tuple[0], run_dis_tuple[1], run_dis_tuple[2], run_dis_tuple[3], run_dis_tuple[4])
+                .format(dis_run_tuple[0], dis_run_tuple[1], dis_run_tuple[2], dis_run_tuple[3], dis_run_tuple[4])
             logger.error(error_message)
             traceback.print_exc()
             raise DatabaseAdapterError(error_message, ex)
@@ -316,7 +316,7 @@ class Timeseries:
         try:
 
             with connection.cursor() as cursor:
-                sql_statement = "UPDATE `run_dis` SET `obs_end`=%s WHERE `id`=%s"
+                sql_statement = "UPDATE `dis_run` SET `obs_end`=%s WHERE `id`=%s"
                 cursor.execute(sql_statement, (obs_end, id_))
             connection.commit()
             return True
@@ -341,7 +341,7 @@ class Timeseries:
         try:
 
             with connection.cursor() as cursor:
-                sql_statement = "SELECT `obs_end` FROM `run_dis` WHERE `id`=%s"
+                sql_statement = "SELECT `obs_end` FROM `dis_run` WHERE `id`=%s"
                 result = cursor.execute(sql_statement, id_)
                 if result > 0:
                     return cursor.fetchone()['obs_end']
@@ -358,7 +358,7 @@ class Timeseries:
 
     def update_hash_id(self, existing_id, new_id):
         """
-        Update hash id in run_dis table
+        Update hash id in dis_run table
         :param existing_id: existing hash id
         :param new_id: newly generated hash id
         :return: True if the update was successful, else raise DatabaseAdapterError
@@ -368,7 +368,7 @@ class Timeseries:
         try:
 
             with connection.cursor() as cursor:
-                sql_statement = "UPDATE `run_dis` SET `id`=%s WHERE `id`=%s;"
+                sql_statement = "UPDATE `dis_run` SET `id`=%s WHERE `id`=%s;"
                 cursor.execute(sql_statement, (new_id, existing_id))
             connection.commit()
             return True
