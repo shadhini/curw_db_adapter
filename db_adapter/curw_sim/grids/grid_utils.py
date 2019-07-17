@@ -203,3 +203,79 @@ def get_obs_to_d03_grid_mappings_for_rainfall(pool, grid_interpolation):
     finally:
         if connection is not None:
             connection.close()
+
+
+def add_flo2d_initial_conditions(pool, flo2d_model):
+
+    """
+    Add flo2d grid mappings to the database
+    :param pool:  database connection pool
+    :param flo2d_model: string: flo2d model (e.g. FLO2D_250, FLO2D_150, FLO2D_30)
+    :return: True if the insertion is successful, else False
+    """
+
+    with open('{}_initial_cond.csv.csv'.format(flo2d_model), 'r') as f1:
+        flo2d_init_cond=[line for line in csv.reader(f1)][1:]
+
+    grid_mappings_list = []
+
+    for index in range(len(flo2d_init_cond)):
+        upstrm = flo2d_init_cond[index][0]
+        downstrm = flo2d_init_cond[index][1]
+        obs_wl = flo2d_init_cond[index][2]
+        canal = flo2d_init_cond[index][3]
+        grid_mapping = ['{}_{}_{}'.format(flo2d_model, upstrm, downstrm),
+                        upstrm, downstrm, canal, obs_wl]
+        grid_mappings_list.append(tuple(grid_mapping))
+
+    connection = pool.connection()
+    try:
+        with connection.cursor() as cursor:
+            sql_statement = "INSERT INTO `grid_map_flo2d_initial_cond` (`grid_id`, `up_strm`, `down_strm`, `canal_seg`, `obs_wl`)" \
+                            " VALUES ( %s, %s, %s, %s, %s) "\
+                            "ON DUPLICATE KEY UPDATE `obs_wl`=VALUES(`obs_wl`);"
+            row_count = cursor.executemany(sql_statement, grid_mappings_list)
+        connection.commit()
+        return row_count
+    except Exception as ex:
+        connection.rollback()
+        error_message = "Insertion of flo2d initial conditions failed."
+        logger.error(error_message)
+        traceback.print_exc()
+        raise DatabaseAdapterError(error_message, ex)
+    finally:
+        if connection is not None:
+            connection.close()
+
+
+def get_flo2d_initial_conditions(pool):
+
+    """
+    Retrieve flo2d initial conditions
+    :param pool: database connection pool
+    :return: dictionary with grid ids as keys and corresponding up_strm, down_strm, canal_seg, and obs_wl as a list
+    """
+
+    obs_grid_mappings = {}
+
+    connection = pool.connection()
+    try:
+        with connection.cursor() as cursor:
+            sql_statement = "SELECT `grid_id`,`d03_1`,`d03_2`,`d03_3` FROM `grid_map_obs` " \
+                            "WHERE `grid_id` like %s ESCAPE '$'"
+            row_count = cursor.execute(sql_statement, "rainfall$_%$_{}".format(grid_interpolation))
+            if row_count > 0:
+                results = cursor.fetchall()
+                for dict in results:
+                    obs_grid_mappings[dict.get("grid_id")] = [dict.get("d03_1"), dict.get("d03_2"), dict.get("d03_3")]
+                return obs_grid_mappings
+            else:
+                return None
+    except Exception as ex:
+        error_message = "Retrieving flo2d to obs grid mappings failed"
+        logger.error(error_message)
+        traceback.print_exc()
+        raise DatabaseAdapterError(error_message, ex)
+    finally:
+        if connection is not None:
+            connection.close()
