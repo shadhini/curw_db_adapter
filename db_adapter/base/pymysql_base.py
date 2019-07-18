@@ -6,7 +6,7 @@ from DBUtils.PooledDB import PooledDB
 
 def get_Pool(host, port, user, password, db):
 
-    pool = PooledDB(creator=pymysql, maxconnections=6, blocking=True,
+    pool = PooledDB(creator=pymysql, maxconnections=5, blocking=True,
             host=host, port=port, user=user, password=password, db=db, autocommit=False, cursorclass=pymysql.cursors.DictCursor)
 
     return pool
