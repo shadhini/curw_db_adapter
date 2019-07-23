@@ -3,10 +3,12 @@ import hashlib
 import json
 import traceback
 from pymysql import IntegrityError
+from datetime import datetime, timedelta
 
 from db_adapter.logger import logger
 from db_adapter.exceptions import DatabaseAdapterError, DuplicateEntryError
 from db_adapter.curw_obs.station import StationEnum
+from db_adapter.constants import COMMON_DATE_TIME_FORMAT
 
 
 class Timeseries:
@@ -232,17 +234,30 @@ class Timeseries:
 
     def update_end_date(self, id_, end_date):
         """
-        Update end_date for inserted timeseries
+        Update end_date for inserted timeseries, if end date is latest date than the existing one
         :param id_: timeseries id
         :return: end_date if update is successful, else raise DatabaseAdapterError
         """
 
         connection = self.pool.connection()
+
+        if type(end_date) is str:
+            end_date = datetime.strptime(end_date, COMMON_DATE_TIME_FORMAT)
+
+        existing_end_date = None
         try:
 
             with connection.cursor() as cursor:
-                sql_statement = "UPDATE `run` SET `end_date`=%s WHERE `id`=%s"
-                cursor.execute(sql_statement, (end_date, id_))
+                sql_statement = "SELECT `end_date` FROM `run` WHERE `id`=%s"
+                row_count= cursor.execute(sql_statement, id_)
+                if row_count > 0:
+                    existing_end_date = cursor.fetchone()['end_date']
+
+            if existing_end_date is None or existing_end_date < end_date:
+                with connection.cursor() as cursor:
+                    sql_statement = "UPDATE `run` SET `end_date`=%s WHERE `id`=%s"
+                    cursor.execute(sql_statement, (end_date, id_))
+
             connection.commit()
             return end_date
         except Exception as ex:
@@ -257,17 +272,30 @@ class Timeseries:
 
     def update_start_date(self, id_, start_date):
         """
-            Update (very first obs date) start_date for inserted timeseries
+            Update (very first obs date) start_date for inserted timeseries, if start_date is earlier date than the existing one
             :param id_: timeseries id
             :return: start_date if update is successful, else raise DatabaseAdapterError
         """
 
         connection = self.pool.connection()
+
+        if type(start_date) is str:
+            start_date = datetime.strptime(start_date, COMMON_DATE_TIME_FORMAT)
+
+        existing_start_date = None
+
         try:
 
             with connection.cursor() as cursor:
-                sql_statement = "UPDATE `run` SET `start_date`=%s WHERE `id`=%s"
-                cursor.execute(sql_statement, (start_date, id_))
+                sql_statement = "SELECT `start_date` FROM `run` WHERE `id`=%s"
+                row_count = cursor.execute(sql_statement, id_)
+                if row_count > 0:
+                    existing_start_date = cursor.fetchone()['start_date']
+
+            if existing_start_date is None or existing_start_date > start_date:
+                with connection.cursor() as cursor:
+                    sql_statement = "UPDATE `run` SET `start_date`=%s WHERE `id`=%s"
+                    cursor.execute(sql_statement, (start_date, id_))
             connection.commit()
             return start_date
         except Exception as ex:
