@@ -275,7 +275,9 @@ def get_description(pool, id_):
             sql_statement = "SELECT `description` FROM `station` WHERE `id`=%s"
             row_count = cursor.execute(sql_statement, id_)
             if row_count > 0:
-                description = json.loads(cursor.fetchone()['description'], object_pairs_hook=collections.OrderedDict)
+                result = cursor.fetchone()['description']
+                if result is not None:
+                    description = json.loads(result, object_pairs_hook=collections.OrderedDict)
 
         return description
     except Exception as ex:
