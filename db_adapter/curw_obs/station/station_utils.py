@@ -312,7 +312,7 @@ def update_description(pool, id_, description, append=True):
 
     new_description[timestamp] = description
 
-    new_description = json.loads(new_description, object_pairs_hook=collections.OrderedDict)
+    new_description = json.dumps(json.loads(new_description, object_pairs_hook=collections.OrderedDict))
 
     connection = pool.connection()
     try:
