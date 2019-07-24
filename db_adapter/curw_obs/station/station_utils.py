@@ -312,7 +312,7 @@ def update_description(pool, id_, description, append=True):
 
     new_description[timestamp] = description
 
-    ordered_description = collections.OrderedDict(sorted(new_description.items()))
+    ordered_description = json.dumps(collections.OrderedDict(sorted(new_description.items())))
 
     connection = pool.connection()
     try:

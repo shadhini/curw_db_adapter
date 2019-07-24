@@ -210,7 +210,7 @@ def add_flo2d_initial_conditions(pool, flo2d_model):
     """
     Add flo2d grid mappings to the database
     :param pool:  database connection pool
-    :param flo2d_model: string: flo2d model (e.g. FLO2D_250, FLO2D_150, FLO2D_30)
+    :param flo2d_model: string: flo2d model (e.g. enum values of FLO2D_250, FLO2D_150, FLO2D_30)
     :return: True if the insertion is successful, else False
     """
 
@@ -248,31 +248,32 @@ def add_flo2d_initial_conditions(pool, flo2d_model):
             connection.close()
 
 
-def get_flo2d_initial_conditions(pool):
+def get_flo2d_initial_conditions(pool, flo2d_model):
 
     """
     Retrieve flo2d initial conditions
     :param pool: database connection pool
+    :param flo2d_model: string: flo2d model (e.g. FLO2D_250, FLO2D_150, FLO2D_30)
     :return: dictionary with grid ids as keys and corresponding up_strm, down_strm, canal_seg, and obs_wl as a list
     """
 
-    obs_grid_mappings = {}
+    initial_conditions = {}
 
     connection = pool.connection()
     try:
         with connection.cursor() as cursor:
-            sql_statement = "SELECT `grid_id`,`d03_1`,`d03_2`,`d03_3` FROM `grid_map_obs` " \
+            sql_statement = "SELECT `grid_id`,`up_strm`,`down_strm`,`obs_wl` FROM `grid_map_flo2d_initial_cond` " \
                             "WHERE `grid_id` like %s ESCAPE '$'"
-            row_count = cursor.execute(sql_statement, "rainfall$_%$_{}".format(grid_interpolation))
+            row_count = cursor.execute(sql_statement, "{}$_%".format(flo2d_model))
             if row_count > 0:
                 results = cursor.fetchall()
                 for dict in results:
-                    obs_grid_mappings[dict.get("grid_id")] = [dict.get("d03_1"), dict.get("d03_2"), dict.get("d03_3")]
-                return obs_grid_mappings
+                    initial_conditions[dict.get("grid_id")] = [dict.get("up_strm"), dict.get("down_strm"), dict.get("obs_wl")]
+                return initial_conditions
             else:
                 return None
     except Exception as ex:
-        error_message = "Retrieving flo2d to obs grid mappings failed"
+        error_message = "Retrieving {} initial conditions failed".format(flo2d_model)
         logger.error(error_message)
         traceback.print_exc()
         raise DatabaseAdapterError(error_message, ex)
