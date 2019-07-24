@@ -214,7 +214,7 @@ def add_flo2d_initial_conditions(pool, flo2d_model):
     :return: True if the insertion is successful, else False
     """
 
-    with open('{}_initial_cond.csv.csv'.format(flo2d_model), 'r') as f1:
+    with open('{}_initial_cond.csv'.format(flo2d_model), 'r') as f1:
         flo2d_init_cond=[line for line in csv.reader(f1)][1:]
 
     grid_mappings_list = []
