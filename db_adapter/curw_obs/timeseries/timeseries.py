@@ -308,7 +308,7 @@ class Timeseries:
             if connection is not None:
                 connection.close()
 
-    def update_run_name(pool, id_, run_name):
+    def update_run_name(self, id_, run_name):
         """
             Update run name
             :param pool:
@@ -317,7 +317,7 @@ class Timeseries:
             :return: True if successful
         """
 
-        connection = pool.connection()
+        connection = self.pool.connection()
         try:
             with connection.cursor() as cursor:
                 sql_statement = "UPDATE `run` SET `run_name`=%s WHERE `id`=%s"
