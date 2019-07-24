@@ -288,7 +288,7 @@ def get_description(pool, id_):
             connection.close()
 
 
-def update_description(pool, id_, description, append=False):
+def update_description(pool, id_, description, append=True):
     """
     Update description in case weather station iot device is changed
     "description" is a JSON object with timestamp as the key
