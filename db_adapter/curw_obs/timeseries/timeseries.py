@@ -221,7 +221,7 @@ class Timeseries:
             return run_meta.get('tms_id')
         except Exception as ex:
             connection.rollback()
-            error_message = "Insertion failed for run enty with tms_id={}, run_name={}, station_id={}, " \
+            error_message = "Insertion failed for run entry with tms_id={}, run_name={}, station_id={}, " \
                             " variable_id={}, unit_id={}" \
                 .format(run_meta.get('tms_id'), run_meta.get('run_name'), run_meta.get('station_id'),
                     run_meta.get('variable_id'), run_meta.get('unit_id'))
