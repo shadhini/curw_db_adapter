@@ -39,7 +39,7 @@ class StationEnum(Enum, settings=NoAlias):
 
     Public = 2000000
 
-    Other = 3000000
+    Other = 10000000
 
     _nameToRange = {
             CUrW_WeatherStation : 200000,
@@ -55,7 +55,7 @@ class StationEnum(Enum, settings=NoAlias):
             FLO2D_30            : 200000,
             MIKE11              : 100000,
 
-            Public              : 1000000,
+            Public              : 8000000,
 
             Other               : 1000000
             }
@@ -76,7 +76,7 @@ class StationEnum(Enum, settings=NoAlias):
                 StationEnum.FLO2D_30            : 200000,
                 StationEnum.MIKE11              : 100000,
 
-                StationEnum.Public              : 1000000,
+                StationEnum.Public              : 8000000,
 
                 StationEnum.Other               : 1000000
                 }
