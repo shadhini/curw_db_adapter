@@ -245,7 +245,7 @@ class Timeseries:
                 sql_statement = "SELECT `end_date` FROM `run` WHERE `id`=%s"
                 row_count= cursor.execute(sql_statement, id_)
                 if row_count > 0:
-                    return  cursor.fetchone()['end_date']
+                    return cursor.fetchone()['end_date']
             return None
         except Exception as ex:
             error_message = "Retrieving end_date for id={} failed.".format(id_)
