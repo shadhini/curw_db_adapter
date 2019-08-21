@@ -231,6 +231,31 @@ class Timeseries:
             if connection is not None:
                 connection.close()
 
+    def get_end_date(self, id_):
+        """
+        Retrieve end date
+        :param id_: timeseries id
+        :return: end_date
+        """
+
+        connection = self.pool.connection()
+
+        try:
+            with connection.cursor() as cursor:
+                sql_statement = "SELECT `end_date` FROM `run` WHERE `id`=%s"
+                row_count= cursor.execute(sql_statement, id_)
+                if row_count > 0:
+                    return  cursor.fetchone()['end_date']
+            return None
+        except Exception as ex:
+            error_message = "Retrieving end_date for id={} failed.".format(id_)
+            logger.error(error_message)
+            traceback.print_exc()
+            raise DatabaseAdapterError(error_message, ex)
+        finally:
+            if connection is not None:
+                connection.close()
+
     def update_end_date(self, id_, end_date):
         """
         Update end_date for inserted timeseries, if end date is latest date than the existing one
