@@ -38,7 +38,7 @@ def update_rainfall_fcsts(flo2d_model, method, grid_interpolation, model_list, t
         Sim_TS = Sim_Timeseries(pool=curw_sim_pool)
         Fcst_TS = Fcst_Timeseries(pool=curw_fcst_pool)
 
-        flo2d_grids = read_csv('{}m.csv'.format(flo2d_model))  # [Grid_ ID, X(longitude), Y(latitude)]
+        flo2d_grids = read_csv('flo2d/{}m.csv'.format(flo2d_model))  # [Grid_ ID, X(longitude), Y(latitude)]
 
         flo2d_wrf_mapping = get_flo2d_cells_to_wrf_grid_mappings(pool=curw_sim_pool, grid_interpolation=grid_interpolation, flo2d_model=flo2d_model)
 
