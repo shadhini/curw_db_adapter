@@ -43,7 +43,7 @@ def update_rainfall_fcsts(target_model, method, grid_interpolation, model_list, 
         Fcst_TS = Fcst_Timeseries(pool=curw_fcst_pool)
 
         # [hash_id, run_name, station_id, station_name, latitude, longitude]
-        active_obs_stations = read_csv('curw_active_rainfall_obs_stations.csv')
+        active_obs_stations = read_csv('grids/obs_stations/rainfall/curw_active_rainfall_obs_stations.csv')
         obs_stations_dict = { }  # keys: obs station id , value: [run_name, name, latitude, longitude]
 
         for obs_index in range(len(active_obs_stations)):
