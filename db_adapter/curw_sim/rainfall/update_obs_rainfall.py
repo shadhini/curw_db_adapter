@@ -100,5 +100,6 @@ def update_rainfall_obs(target_model, method, grid_interpolation, timestep):
         traceback.print_exc()
         logger.error("Exception occurred while updating obs rainfalls in curw_sim.")
     finally:
+        curw_obs_connection.close()
         destroy_Pool(pool=curw_sim_pool)
         destroy_Pool(pool=curw_obs_pool)

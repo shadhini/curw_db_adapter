@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from db_adapter.csv_utils import read_csv
 from db_adapter.base import get_Pool, destroy_Pool
 from db_adapter.constants import CURW_SIM_DATABASE, CURW_SIM_PASSWORD, CURW_SIM_USERNAME, CURW_SIM_PORT, CURW_SIM_HOST
+from db_adapter.constants import CURW_OBS_DATABASE, CURW_OBS_PASSWORD, CURW_OBS_USERNAME, CURW_OBS_PORT, CURW_OBS_HOST
 from db_adapter.constants import HOST, PASSWORD, PORT, DATABASE, USERNAME
 from db_adapter.curw_sim.grids import get_flo2d_cells_to_obs_grid_mappings
 from db_adapter.curw_sim.timeseries import Timeseries
@@ -33,20 +34,18 @@ def update_rainfall_obs(flo2d_model, method, grid_interpolation, timestep):
     try:
 
         # Connect to the database
-        curw_connection = pymysql.connect(host='104.198.0.87',
-                user='root',
-                password='cfcwm07',
-                db='curw',
-                charset='utf8mb4',
-                cursorclass=pymysql.cursors.DictCursor)
+        curw_obs_pool = get_Pool(host=CURW_OBS_HOST, user=CURW_OBS_USERNAME, password=CURW_OBS_PASSWORD,
+                                 port=CURW_OBS_PORT, db=CURW_OBS_DATABASE)
 
-        pool = get_Pool(host=CURW_SIM_HOST, user=CURW_SIM_USERNAME, password=CURW_SIM_PASSWORD,
-                port=CURW_SIM_PORT, db=CURW_SIM_DATABASE)
+        curw_obs_connection = curw_obs_pool.connection()
+
+        curw_sim_pool = get_Pool(host=CURW_SIM_HOST, user=CURW_SIM_USERNAME, password=CURW_SIM_PASSWORD,
+                                 port=CURW_SIM_PORT, db=CURW_SIM_DATABASE)
 
         # test ######
         # pool = get_Pool(host=HOST, user=USERNAME, password=PASSWORD, port=PORT, db=DATABASE)
 
-        TS = Timeseries(pool=pool)
+        TS = Timeseries(pool=curw_sim_pool)
 
         # [hash_id, run_name, station_id, station_name, latitude, longitude]
         active_obs_stations = read_csv('grids/obs_stations/rainfall/curw_active_rainfall_obs_stations.csv')
@@ -57,7 +56,7 @@ def update_rainfall_obs(flo2d_model, method, grid_interpolation, timestep):
         for obs_index in range(len(active_obs_stations)):
             stations_dict_for_obs[active_obs_stations[obs_index][2]] = active_obs_stations[obs_index][0]
 
-        flo2d_obs_mapping = get_flo2d_cells_to_obs_grid_mappings(pool=pool, grid_interpolation=grid_interpolation, flo2d_model=flo2d_model)
+        flo2d_obs_mapping = get_flo2d_cells_to_obs_grid_mappings(pool=curw_sim_pool, grid_interpolation=grid_interpolation, flo2d_model=flo2d_model)
 
         for flo2d_index in range(len(flo2d_grids)):
             obs_start = OBS_START
@@ -89,12 +88,12 @@ def update_rainfall_obs(flo2d_model, method, grid_interpolation, timestep):
             obs_timeseries = []
 
             if timestep == 5:
-                ts = extract_obs_rain_5_min_ts(connection=curw_connection, start_time=obs_start, id=obs1_hash_id)
+                ts = extract_obs_rain_5_min_ts(connection=curw_obs_connection, start_time=obs_start, id=obs1_hash_id)
                 if ts is not None and len(ts) > 1:
                     obs_timeseries.extend(process_5_min_ts(newly_extracted_timeseries=ts, expected_start=obs_start)[1:])
                     # obs_start = ts[-1][0]
 
-                ts2 = extract_obs_rain_5_min_ts(connection=curw_connection, start_time=obs_start, id=obs2_hash_id)
+                ts2 = extract_obs_rain_5_min_ts(connection=curw_obs_connection, start_time=obs_start, id=obs2_hash_id)
                 if ts2 is not None and len(ts2) > 1:
                     obs_timeseries = fill_missing_values(newly_extracted_timeseries=ts2, OBS_TS=obs_timeseries)
                     if obs_timeseries is not None and len(obs_timeseries) > 0:
@@ -104,7 +103,7 @@ def update_rainfall_obs(flo2d_model, method, grid_interpolation, timestep):
                     obs_timeseries.extend(process_5_min_ts(newly_extracted_timeseries=ts2, expected_start=expected_start)[1:])
                     # obs_start = ts2[-1][0]
 
-                ts3 = extract_obs_rain_5_min_ts(connection=curw_connection, start_time=obs_start, id=obs3_hash_id)
+                ts3 = extract_obs_rain_5_min_ts(connection=curw_obs_connection, start_time=obs_start, id=obs3_hash_id)
                 if ts3 is not None and len(ts3) > 1 and len(obs_timeseries) > 0:
                     obs_timeseries = fill_missing_values(newly_extracted_timeseries=ts3, OBS_TS=obs_timeseries)
                     if obs_timeseries is not None:
@@ -113,12 +112,12 @@ def update_rainfall_obs(flo2d_model, method, grid_interpolation, timestep):
                         expected_start= obs_start
                     obs_timeseries.extend(process_5_min_ts(newly_extracted_timeseries=ts3, expected_start=expected_start)[1:])
             elif timestep == 15:
-                ts = extract_obs_rain_15_min_ts(connection=curw_connection, start_time=obs_start, id=obs1_hash_id)
+                ts = extract_obs_rain_15_min_ts(connection=curw_obs_connection, start_time=obs_start, id=obs1_hash_id)
                 if ts is not None and len(ts) > 1:
                     obs_timeseries.extend(process_15_min_ts(newly_extracted_timeseries=ts, expected_start=obs_start)[1:])
                     # obs_start = ts[-1][0]
 
-                ts2 = extract_obs_rain_15_min_ts(connection=curw_connection, start_time=obs_start, id=obs2_hash_id)
+                ts2 = extract_obs_rain_15_min_ts(connection=curw_obs_connection, start_time=obs_start, id=obs2_hash_id)
                 if ts2 is not None and len(ts2) > 1:
                     obs_timeseries = fill_missing_values(newly_extracted_timeseries=ts2, OBS_TS=obs_timeseries)
                     if obs_timeseries is not None and len(obs_timeseries) > 0:
@@ -128,7 +127,7 @@ def update_rainfall_obs(flo2d_model, method, grid_interpolation, timestep):
                     obs_timeseries.extend(process_15_min_ts(newly_extracted_timeseries=ts2, expected_start=expected_start)[1:])
                     # obs_start = ts2[-1][0]
 
-                ts3 = extract_obs_rain_15_min_ts(connection=curw_connection, start_time=obs_start, id=obs3_hash_id)
+                ts3 = extract_obs_rain_15_min_ts(connection=curw_obs_connection, start_time=obs_start, id=obs3_hash_id)
                 if ts3 is not None and len(ts3) > 1 and len(obs_timeseries) > 0:
                     obs_timeseries = fill_missing_values(newly_extracted_timeseries=ts3, OBS_TS=obs_timeseries)
                     if obs_timeseries is not None:
@@ -147,12 +146,13 @@ def update_rainfall_obs(flo2d_model, method, grid_interpolation, timestep):
                 logger.info("Update latest obs {}".format(obs_timeseries[-1][1]))
                 TS.update_latest_obs(id_=tms_id, obs_end=(obs_timeseries[-1][1]))
 
-        destroy_Pool(pool=pool)
-
     except Exception as e:
         traceback.print_exc()
         logger.error("Exception occurred while updating obs rainfalls in curw_sim.")
     finally:
+        curw_obs_connection.close()
+        destroy_Pool(pool=curw_sim_pool)
+        destroy_Pool(pool=curw_obs_pool)
         logger.info("Process finished")
 
 
