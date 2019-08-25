@@ -143,7 +143,7 @@ def add_obs_to_d03_grid_mappings_for_rainfall(pool, grid_interpolation):
 
     for i in range(len(obs_stations)):
         station_id = obs_stations[i][1]
-        station_name = obs_stations[i][3]
+        station_name = obs_stations[i][2]
         obs_dict[station_id] = [station_name]
 
     grid_mappings_list = []
