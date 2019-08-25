@@ -47,24 +47,23 @@ def update_rainfall_obs(target_model, method, grid_interpolation, timestep):
         TS = Timeseries(pool=pool)
 
         # [hash_id, run_name, station_id, station_name, latitude, longitude]
+        # [hash_id, station_id, station_name, latitude, longitude]
         active_obs_stations = read_csv('grids/obs_stations/rainfall/curw_active_rainfall_obs_stations.csv')
-        obs_stations_dict = { }  # keys: obs station id , value: [hash id, run_name, name,latitude, longitude]
+        obs_stations_dict = { }  # keys: obs station id , value: [hash id, name, latitude, longitude]
 
         for obs_index in range(len(active_obs_stations)):
-            obs_stations_dict[active_obs_stations[obs_index][2]] = [active_obs_stations[obs_index][0],
-                                                                    active_obs_stations[obs_index][1],
+            obs_stations_dict[active_obs_stations[obs_index][1]] = [active_obs_stations[obs_index][0],
+                                                                    active_obs_stations[obs_index][2],
                                                                     active_obs_stations[obs_index][3],
-                                                                    active_obs_stations[obs_index][4],
-                                                                    active_obs_stations[obs_index][5]]
+                                                                    active_obs_stations[obs_index][4]]
 
         for obs_id in obs_stations_dict.keys():
             obs_start = OBS_START
             meta_data = {
-                    'latitude': float('%.6f' % float(obs_stations_dict.get(obs_id)[3])),
-                    'longitude': float('%.6f' % float(obs_stations_dict.get(obs_id)[4])),
+                    'latitude': float('%.6f' % float(obs_stations_dict.get(obs_id)[2])),
+                    'longitude': float('%.6f' % float(obs_stations_dict.get(obs_id)[3])),
                     'model': target_model, 'method': method,
-                    'grid_id': 'rainfall_{}_{}_{}'.format(obs_stations_dict.get(obs_id)[1],
-                            obs_stations_dict.get(obs_id)[2], grid_interpolation)
+                    'grid_id': 'rainfall_{}_{}'.format(obs_stations_dict.get(obs_id)[1], grid_interpolation)
                     }
 
             tms_id = TS.get_timeseries_id(grid_id=meta_data.get('grid_id'), method=meta_data.get('method'))

@@ -55,8 +55,8 @@ def update_rainfall_fcsts(target_model, method, grid_interpolation, model_list, 
 
         for obs_id in obs_stations_dict.keys():
             meta_data = {
-                    'latitude': float('%.6f' % float(obs_stations_dict.get(obs_id)[2])),
-                    'longitude': float('%.6f' % float(obs_stations_dict.get(obs_id)[3])),
+                    'latitude': float('%.6f' % float(obs_stations_dict.get(obs_id)[1])),
+                    'longitude': float('%.6f' % float(obs_stations_dict.get(obs_id)[2])),
                     'model': target_model, 'method': method,
                     'grid_id': 'rainfall_{}_{}'.format(obs_stations_dict.get(obs_id)[0], grid_interpolation)
                     }
