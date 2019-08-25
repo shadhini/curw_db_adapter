@@ -131,22 +131,26 @@ def add_obs_to_d03_grid_mappings_for_rainfall(pool, grid_interpolation):
     :param grid_interpolation: grid interpolation method
     :return: True if the insertion is successful, else False
     """
-
-    with open('{}_obs_d03_stations_mapping.csv'.format(grid_interpolation), 'r') as f1:
+    # [obs_grid_id,d03_1_id,d03_1_dist,d03_2_id,d03_2_dist,d03_3_id,d03_3_dist]
+    with open('grid_maps/obs_stations/rainfall/{}_obs_d03_stations_mapping.csv'.format(grid_interpolation), 'r') as f1:
         obs_d03_mapping=[line for line in csv.reader(f1)][1:]
 
-    with open('curw_active_rainfall_obs_stations.csv', 'r') as f2:
+    # [hash_id,station_id,station_name,latitude,longitude]
+    with open('grids/obs_stations/rainfall/curw_active_rainfall_obs_stations.csv', 'r') as f2:
         obs_stations=[line for line in csv.reader(f2)][1:]
 
     obs_dict = {}
 
     for i in range(len(obs_stations)):
-        obs_dict[obs_stations[i][2]] = [obs_stations[i][1], obs_stations[i][3]]
+        station_id = obs_stations[i][1]
+        station_name = obs_stations[i][3]
+        obs_dict[station_id] = [station_name]
 
     grid_mappings_list = []
 
     for index in range(len(obs_d03_mapping)):
-        grid_mapping = ['rainfall_{}_{}_{}'.format(obs_dict.get(obs_d03_mapping[index][0])[0], obs_dict.get(obs_d03_mapping[index][0])[1], grid_interpolation),
+        obs_id = obs_d03_mapping[index][0]
+        grid_mapping = ['rainfall_{}_{}'.format(obs_dict.get(obs_id)[0], grid_interpolation),
                         obs_d03_mapping[index][1], obs_d03_mapping[index][3], obs_d03_mapping[index][5]]
         grid_mappings_list.append(tuple(grid_mapping))
 
