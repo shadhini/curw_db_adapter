@@ -37,7 +37,7 @@ def update_discharge_estimated(target_model, method, timeseries, station_name):
 
         for obs_index in range(len(extract_stations)):
             extract_stations_dict[extract_stations[obs_index][0]] = [extract_stations[obs_index][1],
-                                                                    extract_stations[obs_index][2]]
+                                                                     extract_stations[obs_index][2]]
 
         meta_data = {
             'latitude': float('%.6f' % float(extract_stations_dict.get(station_name)[0])),
@@ -52,8 +52,6 @@ def update_discharge_estimated(target_model, method, timeseries, station_name):
             tms_id = TS.generate_timeseries_id(meta_data=meta_data)
             meta_data['id'] = tms_id
             TS.insert_run(meta_data=meta_data)
-
-        obs_end = TS.get_obs_end(id_=tms_id)
 
         if timeseries is not None and len(timeseries) > 0:
             TS.insert_data(timeseries=timeseries, tms_id=tms_id, upsert=True)
