@@ -12,7 +12,7 @@ from db_adapter.logger import logger
 
 
 # for bulk insertion for a given one grid interpolation method
-def update_discharge_estimated(target_model, method, timeseries, station_name):
+def update_discharge_estimated(method, timeseries, station_name, target_model=None):
     # this is an hourly timeseries
 
     """
@@ -31,13 +31,16 @@ def update_discharge_estimated(target_model, method, timeseries, station_name):
 
         TS = Timeseries(pool=curw_sim_pool)
 
-        # [hash_id, station_id, station_name, latitude, longitude]
+        # [station_name,latitude,longitude,target]
         extract_stations = read_csv('grids/discharge_stations/extract_stations.csv')
-        extract_stations_dict = { }  # keys: station_name , value: [latitude, longitude]
+        extract_stations_dict = { }  # keys: station_name , value: [latitude, longitude, target_model]
 
         for obs_index in range(len(extract_stations)):
             extract_stations_dict[extract_stations[obs_index][0]] = [extract_stations[obs_index][1],
-                                                                     extract_stations[obs_index][2]]
+                                                                     extract_stations[obs_index][2],
+                                                                     extract_stations[obs_index][3]]
+        if target_model is None:
+            target_model = extract_stations_dict.get(station_name)[2]
 
         meta_data = {
             'latitude': float('%.6f' % float(extract_stations_dict.get(station_name)[0])),
