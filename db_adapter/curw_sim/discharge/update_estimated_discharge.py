@@ -55,7 +55,6 @@ def update_discharge_estimated(target_model, method, timeseries, station_name):
 
         if timeseries is not None and len(timeseries) > 0:
             TS.insert_data(timeseries=timeseries, tms_id=tms_id, upsert=True)
-            TS.update_latest_obs(id_=tms_id, obs_end=([-1][1]))
 
     except Exception as e:
         traceback.print_exc()
