@@ -382,8 +382,7 @@ class Timeseries:
             if connection is not None:
                 connection.close()
 
-
-    def get_timeseris(self, id_):
+    def get_timeseris(self, id_, start_date, end_date):
         """
         Retrieve timeseries by id
         :param id_:
@@ -395,8 +394,8 @@ class Timeseries:
         try:
 
             with connection.cursor() as cursor:
-                sql_statement = "SELECT `time`,`value` FROM `dis_data` WHERE `id`=%s"
-                rows = cursor.execute(sql_statement, id_)
+                sql_statement = "SELECT `time`,`value` FROM `dis_data` WHERE `id`=%s AND `time` BETWEEN %s AND %s;"
+                rows = cursor.execute(sql_statement, (id_, start_date, end_date))
                 if rows > 0:
                     results = cursor.fetchall()
                     for result in results:
