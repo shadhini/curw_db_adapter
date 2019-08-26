@@ -383,4 +383,31 @@ class Timeseries:
                 connection.close()
 
 
+    def get_timeseris(self, id_):
+        """
+        Retrieve timeseries by id
+        :param id_:
+        :return: list of [time, value] pairs if id exists, else None
+        """
+
+        connection = self.pool.connection()
+        ts = []
+        try:
+
+            with connection.cursor() as cursor:
+                sql_statement = "SELECT `time`,`value` FROM `dis_data` WHERE `id`=%s"
+                rows = cursor.execute(sql_statement, id_)
+                if rows > 0:
+                    results = cursor.fetchall()
+                    for result in results:
+                        ts.append([result.get('time'), result.get('value')])
+            return ts
+        except Exception as ex:
+            error_message = "Retrieving timeseries for id {} failed.".format(id_)
+            logger.error(error_message)
+            traceback.print_exc()
+            raise DatabaseAdapterError(error_message, ex)
+        finally:
+            if connection is not None:
+                connection.close()
 
