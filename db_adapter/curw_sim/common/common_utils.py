@@ -4,6 +4,35 @@ from datetime import datetime, timedelta
 from db_adapter.logger import logger
 
 
+def process_continuous_ts(original_ts, expected_start, filling_value, timestep):
+    """
+
+    :param original_ts: original timeseries to be processed : list of [time, value] pairs
+    :param expected_start: expected start of the output timeseries
+    :param filling_value: value that should be assigned for missing data
+    :param timestep: expected time step in minutes of the output timeseries
+    :return: timeseries as list of [time, value] pairs
+    """
+
+    processed_ts = []
+
+    current_timestamp = expected_start
+    original_ts_index = 0
+
+    while original_ts_index < len(original_ts):
+        if current_timestamp == original_ts[original_ts_index][0]:
+            processed_ts.append(original_ts[original_ts_index])
+            original_ts_index +=1
+            current_timestamp = current_timestamp + timedelta(minutes=timestep)
+        elif current_timestamp < original_ts[original_ts_index][0]:
+            processed_ts.append([current_timestamp, filling_value])
+            current_timestamp = current_timestamp + timedelta(minutes=timestep)
+        else:
+            original_ts_index +=1
+
+    return processed_ts
+
+
 def process_5_min_ts(newly_extracted_timeseries, expected_start):
 
     processed_ts = []
@@ -119,10 +148,8 @@ def average_timeseries(timeseries):
     """
     avg_timeseries = []
 
-    if len(timeseries[0]) <= 2:
-        return timeseries
-    else:
-        for i in range(len(timeseries)):
+    for i in range(len(timeseries)):
+        if len(timeseries[i])>1:
             count = len(timeseries[i])-1
             avg_timeseries.append([timeseries[i][0], '%.3f' % (sum(timeseries[i][1:])/count)])
 
