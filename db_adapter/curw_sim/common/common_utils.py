@@ -156,6 +156,42 @@ def join_ts(TS1, TS2):
     return output_ts
 
 
+def append_ts(original_ts, new_ts):
+    """
+    append new ts to original ts
+    :param original_ts:
+    :param new_ts:
+    :return:
+    """
+
+    appended_ts = []
+
+    original_ts_index = 0
+    new_ts_index = 0
+
+    while new_ts_index < len(new_ts):
+
+        while original_ts_index < len(original_ts):
+
+            if original_ts[original_ts_index][0] == new_ts[new_ts_index][0]:
+                appended_ts.append(original_ts[original_ts_index])
+                appended_ts[original_ts_index].append(new_ts[new_ts_index][1])
+                original_ts_index += 1
+                new_ts_index += 1
+            elif original_ts[original_ts_index][0] < new_ts[new_ts_index][0]:
+                appended_ts.append(original_ts[original_ts_index])
+                original_ts_index += 1
+            elif original_ts[original_ts_index][0] > new_ts[new_ts_index][0]:
+                appended_ts.append(new_ts[new_ts_index])
+                new_ts_index += 1
+
+        appended_ts.append(new_ts[new_ts_index])
+
+        new_ts_index += 1
+
+    return appended_ts
+
+
 def append_value_for_timestamp(existing_ts, new_ts):
 
     """
