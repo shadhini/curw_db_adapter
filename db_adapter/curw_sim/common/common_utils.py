@@ -169,9 +169,9 @@ def append_ts(original_ts, new_ts):
     original_ts_index = 0
     new_ts_index = 0
 
-    while new_ts_index < len(new_ts):
+    while original_ts_index < len(original_ts):
 
-        while original_ts_index < len(original_ts):
+        if new_ts_index < len(new_ts):
 
             if original_ts[original_ts_index][0] == new_ts[new_ts_index][0]:
                 appended_ts.append(original_ts[original_ts_index])
@@ -185,9 +185,8 @@ def append_ts(original_ts, new_ts):
                 appended_ts.append(new_ts[new_ts_index])
                 new_ts_index += 1
 
-        appended_ts.append(new_ts[new_ts_index])
-
-        new_ts_index += 1
+    if new_ts_index < len(new_ts):
+        appended_ts.extend(new_ts[new_ts_index:])
 
     return appended_ts
 
