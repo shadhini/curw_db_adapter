@@ -119,6 +119,43 @@ def convert_15_min_ts_to_5_mins_ts(newly_extracted_timeseries, expected_start=No
     return processed_ts
 
 
+def join_ts(TS1, TS2):
+    """
+    Joing time, value pairs of 2 timeseries, if both timeseries include same timestamp,
+    :return:
+    """
+
+    if TS1[-1][0] > TS2[-1][0]:
+        ts1 = TS1
+        ts2 = TS2
+    else:
+        ts1 = TS2
+        ts2 = TS1
+
+    output_ts=[]
+
+    ts1_index = 0
+    ts2_index = 0
+
+    # ts1 last entry has the largest timestamp
+    while ts2_index < len(ts2):
+        if ts1[ts1_index][0] == ts2[ts2_index][0]:
+            output_ts.append(ts1[ts1_index])
+            output_ts[-1].append(ts2[ts2_index][1])
+            ts1_index +=1
+            ts2_index +=1
+        elif ts1[ts1_index][0] < ts2[ts2_index][0]:
+            output_ts.append(ts1[ts1_index])
+            ts1_index += 1
+        elif ts1[ts1_index][0] > ts2[ts2_index][0]:
+            output_ts.append(ts2[ts2_index])
+            ts2_index +=1
+
+    output_ts.extend(ts1[ts1_index:])
+
+    return output_ts
+
+
 def append_value_for_timestamp(existing_ts, new_ts):
 
     """
