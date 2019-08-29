@@ -61,7 +61,7 @@ def update_rainfall_fcsts(target_model, method, grid_interpolation, model_list, 
                     'grid_id': 'rainfall_{}_{}'.format(obs_stations_dict.get(obs_id)[0], grid_interpolation)
                     }
 
-            tms_id = Sim_TS.get_timeseries_id(grid_id=meta_data.get('grid_id'), method=meta_data.get('method'))
+            tms_id = Sim_TS.get_timeseries_id_if_exists(meta_data=meta_data)
 
             if tms_id is None:
                 tms_id = Sim_TS.generate_timeseries_id(meta_data=meta_data)

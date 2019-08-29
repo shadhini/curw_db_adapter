@@ -61,7 +61,7 @@ def update_rainfall_obs(target_model, method, grid_interpolation, timestep):
                     'grid_id': 'rainfall_{}_{}'.format(obs_stations_dict.get(obs_id)[1], grid_interpolation)
                     }
 
-            tms_id = TS.get_timeseries_id(grid_id=meta_data.get('grid_id'), method=meta_data.get('method'))
+            tms_id = TS.get_timeseries_id_if_exists(meta_data=meta_data)
 
             if tms_id is None:
                 tms_id = TS.generate_timeseries_id(meta_data=meta_data)
