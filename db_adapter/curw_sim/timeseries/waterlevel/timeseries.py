@@ -435,3 +435,29 @@ class Timeseries:
         finally:
             if connection is not None:
                 connection.close()
+
+    def update_grid_id(self, id_, grid_id):
+        """
+        Update gird id for inserted timeseries
+        :param id_: timeseries id
+        :param grid_id: link to the grid maps
+        :return: True if update is successful, else raise DatabaseAdapterError
+        """
+
+        connection = self.pool.connection()
+        try:
+
+            with connection.cursor() as cursor:
+                sql_statement = "UPDATE `wl_run` SET `grid_id`=%s WHERE `id`=%s"
+                cursor.execute(sql_statement, (grid_id, id_))
+            connection.commit()
+            return True
+        except Exception as ex:
+            connection.rollback()
+            error_message = "Updating grid_id for id={} failed.".format(id_)
+            logger.error(error_message)
+            traceback.print_exc()
+            raise DatabaseAdapterError(error_message, ex)
+        finally:
+            if connection is not None:
+                connection.close()
