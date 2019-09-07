@@ -382,7 +382,7 @@ class Timeseries:
             if connection is not None:
                 connection.close()
 
-    def get_timeseris(self, id_, start_date, end_date):
+    def get_timeseries(self, id_, start_date, end_date):
         """
         Retrieve timeseries by id
         :param id_:
@@ -410,7 +410,7 @@ class Timeseries:
             if connection is not None:
                 connection.close()
 
-    def get_timeseris_end(self, id_):
+    def get_timeseries_end(self, id_):
         """
         Retrieve timeseries by id
         :param id_:
