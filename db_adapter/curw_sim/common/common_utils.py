@@ -185,6 +185,8 @@ def append_ts(original_ts, new_ts):
                 appended_ts.append(new_ts[new_ts_index])
                 new_ts_index += 1
         else:
+            if original_ts_index < len(original_ts):
+                appended_ts.extend(original_ts[original_ts_index:])
             break
 
     if new_ts_index < len(new_ts):
