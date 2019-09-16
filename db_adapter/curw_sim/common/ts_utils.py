@@ -29,6 +29,7 @@ def fill_ts_missing_entries(start, end, timeseries, interpolation_method, timest
     # fill missing values using specified interpolation method
     processed_df = pd.to_numeric(df[df.columns[0]], errors='coerce')
     final_df = processed_df.interpolate(method=interpolation_method, limit_direction='both')
+    final_df.index = final_df.index.map(str)
     return final_df.reset_index().values.tolist()
 
 
