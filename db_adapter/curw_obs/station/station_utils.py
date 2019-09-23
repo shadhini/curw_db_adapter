@@ -45,7 +45,7 @@ def get_station_by_id(pool, id_):
         error_message = "Retrieving station with station_id {} failed".format(id_)
         logger.error(error_message)
         traceback.print_exc()
-        return
+        raise DatabaseAdapterError(error_message, ex)
     finally:
         if connection is not None:
             connection.close()
@@ -84,7 +84,7 @@ def get_station_id(pool, latitude, longitude, station_type) -> str:
             .format(latitude, longitude, station_type)
         logger.error(error_message)
         traceback.print_exc()
-        return
+        raise DatabaseAdapterError(error_message, ex)
     finally:
         if connection is not None:
             connection.close()
@@ -157,7 +157,7 @@ def add_station(pool, name, latitude, longitude, station_type, description=None)
                         "and station_type={} failed.".format(name, latitude, longitude, description, station_type)
         logger.error(error_message)
         traceback.print_exc()
-        return
+        raise DatabaseAdapterError(error_message, ex)
     finally:
         if connection is not None:
             connection.close()
@@ -222,7 +222,7 @@ def delete_station(pool, latitude, longitude, station_type):
             .format(latitude, longitude, station_type)
         logger.error(error_message)
         traceback.print_exc()
-        return
+        raise DatabaseAdapterError(error_message, ex)
     finally:
         if connection is not None:
             connection.close()
@@ -252,7 +252,7 @@ def delete_station_by_id(pool, id_):
         error_message = "Deleting station with id {} failed.".format(id_)
         logger.error(error_message)
         traceback.print_exc()
-        return
+        raise DatabaseAdapterError(error_message, ex)
     finally:
         if connection is not None:
             connection.close()
@@ -284,7 +284,7 @@ def get_description(pool, id_):
         error_message = "Retrieving station description for id={} failed.".format(id_)
         logger.error(error_message)
         traceback.print_exc()
-        return
+        raise DatabaseAdapterError(error_message, ex)
     finally:
         if connection is not None:
             connection.close()
@@ -326,7 +326,7 @@ def update_description(pool, id_, description, append=True):
         error_message = "Updating station description for id={} failed.".format(id_)
         logger.error(error_message)
         traceback.print_exc()
-        return
+        raise DatabaseAdapterError(error_message, ex)
     finally:
         if connection is not None:
             connection.close()

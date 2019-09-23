@@ -41,7 +41,7 @@ def get_station_by_id(pool, id_):
         error_message = "Retrieving station with station_id {} failed".format(id_)
         logger.error(error_message)
         traceback.print_exc()
-        return
+        raise DatabaseAdapterError(error_message, ex)
     finally:
         if connection is not None:
             connection.close()
@@ -80,7 +80,7 @@ def get_station_id(pool, latitude, longitude, station_type) -> str:
             .format(latitude, longitude, station_type)
         logger.error(error_message)
         traceback.print_exc()
-        return
+        raise DatabaseAdapterError(error_message, ex)
     finally:
         if connection is not None:
             connection.close()
@@ -142,7 +142,7 @@ def add_station(pool, name, latitude, longitude, description, station_type):
                         "and station_type={} failed.".format(name, latitude, longitude, description, station_type)
         logger.error(error_message)
         traceback.print_exc()
-        return
+        raise DatabaseAdapterError(error_message, ex)
     finally:
         if connection is not None:
             connection.close()
@@ -207,7 +207,7 @@ def delete_station(pool, latitude, longitude, station_type):
             .format(latitude, longitude, station_type)
         logger.error(error_message)
         traceback.print_exc()
-        return
+        raise DatabaseAdapterError(error_message, ex)
     finally:
         if connection is not None:
             connection.close()
@@ -237,7 +237,7 @@ def delete_station_by_id(pool, id_):
         error_message = "Deleting station with id {} failed.".format(id_)
         logger.error(error_message)
         traceback.print_exc()
-        return
+        raise DatabaseAdapterError(error_message, ex)
     finally:
         if connection is not None:
             connection.close()
@@ -269,7 +269,7 @@ def add_wrf_stations(pool):
         error_message = "Insertion of wrf stations failed."
         logger.error(error_message)
         traceback.print_exc()
-        return
+        raise DatabaseAdapterError(error_message, ex)
     finally:
         if connection is not None:
             connection.close()
@@ -301,7 +301,7 @@ def get_wrf_stations(pool):
         error_message = "Retrieving wrf stations failed"
         logger.error(error_message)
         traceback.print_exc()
-        return
+        raise DatabaseAdapterError(error_message, ex)
     finally:
         if connection is not None:
             connection.close()
@@ -336,7 +336,7 @@ def get_flo2d_output_stations(pool, flo2d_model):
         error_message = "Retrieving flo2d output stations failed"
         logger.error(error_message)
         traceback.print_exc()
-        return
+        raise DatabaseAdapterError(error_message, ex)
     finally:
         if connection is not None:
             connection.close()
@@ -368,7 +368,7 @@ def get_hechms_stations(pool):
         error_message = "Retrieving hechms stations failed"
         logger.error(error_message)
         traceback.print_exc()
-        return
+        raise DatabaseAdapterError(error_message, ex)
     finally:
         if connection is not None:
             connection.close()
