@@ -39,7 +39,7 @@ def get_unit_by_id(pool, id_):
         error_message = "Retrieving unit with unit id {} failed".format(id_)
         logger.error(error_message)
         traceback.print_exc()
-        raise DatabaseAdapterError(error_message, ex)
+        return
     finally:
         if connection is not None:
             connection.close()
@@ -68,7 +68,7 @@ def get_unit_id(pool, unit, unit_type) -> str:
         error_message = "Retrieving unit id: unit={} and unit_type={} failed.".format(unit, unit_type)
         logger.error(error_message)
         traceback.print_exc()
-        raise DatabaseAdapterError(error_message, ex)
+        return
     finally:
         if connection is not None:
             connection.close()
@@ -99,7 +99,7 @@ def add_unit(pool, unit, unit_type):
         error_message = "Insertion of unit: unit={}, unit_type={} failed".format(unit, unit_type)
         logger.error(error_message)
         traceback.print_exc()
-        raise DatabaseAdapterError(error_message, ex)
+        return
     finally:
         if connection is not None:
             connection.close()
@@ -155,7 +155,7 @@ def delete_unit(pool, unit, unit_type):
         error_message = "Deleting unit with unit={} and unit_type={} failed.".format(unit, unit_type)
         logger.error(error_message)
         traceback.print_exc()
-        raise DatabaseAdapterError(error_message, ex)
+        return
     finally:
         if connection is not None:
             connection.close()
@@ -186,7 +186,7 @@ def delete_unit_by_id(pool, id_):
         error_message = "Deleting unit with id {} failed.".format(id_)
         logger.error(error_message)
         traceback.print_exc()
-        raise DatabaseAdapterError(error_message, ex)
+        return
     finally:
         if connection is not None:
             connection.close()

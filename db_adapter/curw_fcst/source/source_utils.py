@@ -46,7 +46,7 @@ def get_source_by_id(pool, id_):
         error_message = "Retrieving source with source_id {} failed".format(id_)
         logger.error(error_message)
         traceback.print_exc()
-        raise DatabaseAdapterError(error_message, ex)
+        return
     finally:
         if connection is not None:
             connection.close()
@@ -75,7 +75,7 @@ def get_source_id(pool, model, version) -> str:
         error_message = "Retrieving source id: model={} and version={} failed.".format(model, version)
         logger.error(error_message)
         traceback.print_exc()
-        raise DatabaseAdapterError(error_message, ex)
+        return
     finally:
         if connection is not None:
             connection.close()
@@ -107,7 +107,7 @@ def add_source(pool, model, version, parameters=None):
         error_message = "Insertion of source: model={}, version={} and parameters={} failed".format(model, version, parameters)
         logger.error(error_message)
         traceback.print_exc()
-        raise DatabaseAdapterError(error_message, ex)
+        return
     finally:
         if connection is not None:
             connection.close()
@@ -169,7 +169,7 @@ def delete_source(pool, model, version):
         error_message = "Deleting source with model={} and version={} failed.".format(model, version)
         logger.error(error_message)
         traceback.print_exc()
-        raise DatabaseAdapterError(error_message, ex)
+        return
     finally:
         if connection is not None:
             connection.close()
@@ -200,7 +200,7 @@ def delete_source_by_id(pool, id_):
         error_message = "Deleting source with id {} failed.".format(id_)
         logger.error(error_message)
         traceback.print_exc()
-        raise DatabaseAdapterError(error_message, ex)
+        return
     finally:
         if connection is not None:
             connection.close()
@@ -229,7 +229,7 @@ def get_source_parameters(pool, model, version):
         error_message = "Retrieving source parameters: model={} and version={} failed.".format(model, version)
         logger.error(error_message)
         traceback.print_exc()
-        raise DatabaseAdapterError(error_message, ex)
+        return
     finally:
         if connection is not None:
             connection.close()

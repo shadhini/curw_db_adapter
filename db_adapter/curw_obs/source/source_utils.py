@@ -39,7 +39,7 @@ def get_source_by_id(pool, id_):
         error_message = "Retrieving source with source_id {} failed".format(id_)
         logger.error(error_message)
         traceback.print_exc()
-        raise DatabaseAdapterError(error_message, ex)
+        return
     finally:
         if connection is not None:
             connection.close()
@@ -67,7 +67,7 @@ def get_source_id(pool, source) -> str:
         error_message = "Retrieving source id: source={} failed.".format(source)
         logger.error(error_message)
         traceback.print_exc()
-        raise DatabaseAdapterError(error_message, ex)
+        return
     finally:
         if connection is not None:
             connection.close()
@@ -98,7 +98,7 @@ def add_source(pool, source, parameters=None):
         error_message = "Insertion of source: source={}, and parameters={} failed".format(source, parameters)
         logger.error(error_message)
         traceback.print_exc()
-        raise DatabaseAdapterError(error_message, ex)
+        return
     finally:
         if connection is not None:
             connection.close()
@@ -156,7 +156,7 @@ def delete_source(pool, source):
         error_message = "Deleting source with source={} failed.".format(source)
         logger.error(error_message)
         traceback.print_exc()
-        raise DatabaseAdapterError(error_message, ex)
+        return
     finally:
         if connection is not None:
             connection.close()
@@ -187,7 +187,7 @@ def delete_source_by_id(pool, id_):
         error_message = "Deleting source with id {} failed.".format(id_)
         logger.error(error_message)
         traceback.print_exc()
-        raise DatabaseAdapterError(error_message, ex)
+        return
     finally:
         if connection is not None:
             connection.close()
