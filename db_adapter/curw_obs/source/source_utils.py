@@ -35,11 +35,11 @@ def get_source_by_id(pool, id_):
                 return cursor.fetchone()
             else:
                 return None
-    except Exception as ex:
+    except Exception as exception:
         error_message = "Retrieving source with source_id {} failed".format(id_)
         logger.error(error_message)
         traceback.print_exc()
-        raise DatabaseAdapterError(error_message, ex)
+        raise exception
     finally:
         if connection is not None:
             connection.close()
@@ -63,11 +63,11 @@ def get_source_id(pool, source) -> str:
                 return cursor.fetchone()['id']
             else:
                 return None
-    except Exception as ex:
+    except Exception as exception:
         error_message = "Retrieving source id: source={} failed.".format(source)
         logger.error(error_message)
         traceback.print_exc()
-        raise DatabaseAdapterError(error_message, ex)
+        raise exception
     finally:
         if connection is not None:
             connection.close()
@@ -93,12 +93,12 @@ def add_source(pool, source, parameters=None):
         else:
             logger.info("Source with source={} already exists in the database".format(source))
             return False
-    except Exception as ex:
+    except Exception as exception:
         connection.rollback()
         error_message = "Insertion of source: source={}, and parameters={} failed".format(source, parameters)
         logger.error(error_message)
         traceback.print_exc()
-        raise DatabaseAdapterError(error_message, ex)
+        raise exception
     finally:
         if connection is not None:
             connection.close()
@@ -151,12 +151,12 @@ def delete_source(pool, source):
             else:
                 logger.info("There's no record of source in the database with source={}".format(source))
                 return False
-    except Exception as ex:
+    except Exception as exception:
         connection.rollback()
         error_message = "Deleting source with source={} failed.".format(source)
         logger.error(error_message)
         traceback.print_exc()
-        raise DatabaseAdapterError(error_message, ex)
+        raise exception
     finally:
         if connection is not None:
             connection.close()
@@ -182,12 +182,12 @@ def delete_source_by_id(pool, id_):
             else:
                 logger.info("There's no record of source in the database with the source id {}".format(id_))
                 return False
-    except Exception as ex:
+    except Exception as exception:
         connection.rollback()
         error_message = "Deleting source with id {} failed.".format(id_)
         logger.error(error_message)
         traceback.print_exc()
-        raise DatabaseAdapterError(error_message, ex)
+        raise exception
     finally:
         if connection is not None:
             connection.close()

@@ -35,11 +35,11 @@ def get_unit_by_id(pool, id_):
                 return cursor.fetchone()
             else:
                 return None
-    except Exception as ex:
+    except Exception as exception:
         error_message = "Retrieving unit with unit id {} failed".format(id_)
         logger.error(error_message)
         traceback.print_exc()
-        raise DatabaseAdapterError(error_message, ex)
+        raise exception
     finally:
         if connection is not None:
             connection.close()
@@ -64,11 +64,11 @@ def get_unit_id(pool, unit, unit_type) -> str:
                 return cursor.fetchone()['id']
             else:
                 return None
-    except Exception as ex:
+    except Exception as exception:
         error_message = "Retrieving unit id: unit={} and unit_type={} failed.".format(unit, unit_type)
         logger.error(error_message)
         traceback.print_exc()
-        raise DatabaseAdapterError(error_message, ex)
+        raise exception
     finally:
         if connection is not None:
             connection.close()
@@ -94,12 +94,12 @@ def add_unit(pool, unit, unit_type):
         else:
             logger.info("Unit with unit={}, unit_type={} already exists in the database".format(unit, unit_type))
             return False
-    except Exception as ex:
+    except Exception as exception:
         connection.rollback()
         error_message = "Insertion of unit: unit={}, unit_type={} failed".format(unit, unit_type)
         logger.error(error_message)
         traceback.print_exc()
-        raise DatabaseAdapterError(error_message, ex)
+        raise exception
     finally:
         if connection is not None:
             connection.close()
@@ -150,12 +150,12 @@ def delete_unit(pool, unit, unit_type):
                 logger.info("There's no record of unit in the database with unit={} and unit_type={}".format(unit,
                         unit_type))
                 return False
-    except Exception as ex:
+    except Exception as exception:
         connection.rollback()
         error_message = "Deleting unit with unit={} and unit_type={} failed.".format(unit, unit_type)
         logger.error(error_message)
         traceback.print_exc()
-        raise DatabaseAdapterError(error_message, ex)
+        raise exception
     finally:
         if connection is not None:
             connection.close()
@@ -181,12 +181,12 @@ def delete_unit_by_id(pool, id_):
             else:
                 logger.info("There's no record of unit in the database with the unit id {}".format(id_))
                 return False
-    except Exception as ex:
+    except Exception as exception:
         connection.rollback()
         error_message = "Deleting unit with id {} failed.".format(id_)
         logger.error(error_message)
         traceback.print_exc()
-        raise DatabaseAdapterError(error_message, ex)
+        raise exception
     finally:
         if connection is not None:
             connection.close()

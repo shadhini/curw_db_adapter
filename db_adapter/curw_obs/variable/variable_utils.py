@@ -30,11 +30,11 @@ def get_variable_by_id(pool, id_):
                 return cursor.fetchone()
             else:
                 return None
-    except Exception as ex:
+    except Exception as exception:
         error_message = "Retrieving variable with variable_id {} failed".format(id_)
         logger.error(error_message)
         traceback.print_exc()
-        raise DatabaseAdapterError(error_message, ex)
+        raise exception
     finally:
         if connection is not None:
             connection.close()
@@ -58,11 +58,11 @@ def get_variable_id(pool, variable) -> str:
                 return cursor.fetchone()['id']
             else:
                 return None
-    except Exception as ex:
+    except Exception as exception:
         error_message = "Retrieving variable id: variable={} failed.".format(variable)
         logger.error(error_message)
         traceback.print_exc()
-        raise DatabaseAdapterError(error_message, ex)
+        raise exception
     finally:
         if connection is not None:
             connection.close()
@@ -87,12 +87,12 @@ def add_variable(pool, variable):
         else:
             logger.info("Variable with variable={} already exists in the database".format(variable))
             return False
-    except Exception as ex:
+    except Exception as exception:
         connection.rollback()
         error_message = "Insertion of variable: variable={} failed".format(variable)
         logger.error(error_message)
         traceback.print_exc()
-        raise DatabaseAdapterError(error_message, ex)
+        raise exception
     finally:
         if connection is not None:
             connection.close()
@@ -136,12 +136,12 @@ def delete_variable(pool, variable):
             else:
                 logger.info("There's no record of variable in the database with variable={}".format(variable))
                 return False
-    except Exception as ex:
+    except Exception as exception:
         connection.rollback()
         error_message = "Deleting variable with variable={} failed.".format(variable)
         logger.error(error_message)
         traceback.print_exc()
-        raise DatabaseAdapterError(error_message, ex)
+        raise exception
     finally:
         if connection is not None:
             connection.close()
@@ -167,12 +167,12 @@ def delete_variable_by_id(pool, id_):
             else:
                 logger.info("There's no record of variable in the database with the variable id {}".format(id_))
                 return False
-    except Exception as ex:
+    except Exception as exception:
         connection.rollback()
         error_message = "Deleting variable with id {} failed.".format(id_)
         logger.error(error_message)
         traceback.print_exc()
-        raise DatabaseAdapterError(error_message, ex)
+        raise exception
     finally:
         if connection is not None:
             connection.close()

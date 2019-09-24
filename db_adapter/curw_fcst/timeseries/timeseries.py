@@ -62,11 +62,11 @@ class Timeseries:
                 sql_statement = "SELECT 1 FROM `run` WHERE `id`=%s"
                 is_exist = cursor.execute(sql_statement, event_id)
             return event_id if is_exist > 0 else None
-        except Exception as ex:
+        except Exception as exception:
             error_message = "Retrieving timeseries id for metadata={} failed.".format(meta_data)
             logger.error(error_message)
             traceback.print_exc()
-            raise DatabaseAdapterError(error_message, ex)
+            raise exception
         finally:
             if connection is not None:
                 connection.close()
@@ -83,7 +83,7 @@ class Timeseries:
                 sql_statement = "SELECT 1 FROM `run` WHERE `id`=%s"
                 is_exist = cursor.execute(sql_statement, id_)
             return True if is_exist > 0 else False
-        except Exception as ex:
+        except Exception as exception:
             error_message = "Check operation to find timeseries id {} in the run table failed.".format(id_)
             logger.error(error_message)
             traceback.print_exc()
@@ -114,13 +114,13 @@ class Timeseries:
                 row_count = cursor.executemany(sql_statement, timeseries)
             connection.commit()
             return row_count
-        except Exception as ex:
+        except Exception as exception:
             connection.rollback()
             error_message = "Data insertion to data table for tms id {}, upsert={} failed.".format(timeseries[0][0],
                     upsert)
             logger.error(error_message)
             traceback.print_exc()
-            raise DatabaseAdapterError(error_message, ex)
+            raise exception
 
         finally:
             if connection is not None:
@@ -161,13 +161,13 @@ class Timeseries:
                 row_count = cursor.executemany(sql_statement, new_timeseries)
             connection.commit()
             return row_count
-        except Exception as ex:
+        except Exception as exception:
             connection.rollback()
             error_message = "Data insertion to data table for tms id {}, upsert={} failed.".format(timeseries[0][0],
                     upsert)
             logger.error(error_message)
             traceback.print_exc()
-            raise DatabaseAdapterError(error_message, ex)
+            raise exception
 
         finally:
             if connection is not None:
@@ -212,14 +212,14 @@ class Timeseries:
         #         logger.error(error_message)
         #         traceback.print_exc()
         #         raise DatabaseAdapterError(error_message, ie)
-        except Exception as ex:
+        except Exception as exception:
             connection.rollback()
             error_message = "Insertion failed for timeseries with tms_id={}, sim_tag={}, station_id={}, source_id={}," \
                             " variable_id={}, unit_id={}" \
                 .format(run_tuple[0], run_tuple[1], run_tuple[4], run_tuple[5], run_tuple[6], run_tuple[7])
             logger.error(error_message)
             traceback.print_exc()
-            raise DatabaseAdapterError(error_message, ex)
+            raise exception
         finally:
             if connection is not None:
                 connection.close()
@@ -243,14 +243,14 @@ class Timeseries:
     #
     #         connection.commit()
     #         return run_tuple[0]
-    #     except Exception as ex:
+    #     except Exception as exception:
     #         connection.rollback()
     #         error_message = "Insertion failed for run enty with tms_id={}, sim_tag={}, station_id={}, source_id={}," \
     #                         " variable_id={}, unit_id={}" \
     #             .format(run_tuple[0], run_tuple[1], run_tuple[4], run_tuple[5], run_tuple[6], run_tuple[7])
     #         logger.error(error_message)
     #         traceback.print_exc()
-    #         raise DatabaseAdapterError(error_message, ex)
+    #         raise exception
     #     finally:
     #         if connection is not None:
     #             connection.close()
@@ -285,7 +285,7 @@ class Timeseries:
 
             connection.commit()
             return run_meta.get('tms_id')
-        except Exception as ex:
+        except Exception as exception:
             connection.rollback()
             error_message = "Insertion failed for run enty with tms_id={}, sim_tag={}, station_id={}, source_id={}," \
                             " variable_id={}, unit_id={}" \
@@ -293,7 +293,7 @@ class Timeseries:
                     run_meta.get('source_id'), run_meta.get('variable_id'), run_meta.get('unit_id'))
             logger.error(error_message)
             traceback.print_exc()
-            raise DatabaseAdapterError(error_message, ex)
+            raise exception
         finally:
             if connection is not None:
                 connection.close()
@@ -326,12 +326,12 @@ class Timeseries:
 
             connection.commit()
             return
-        except Exception as ex:
+        except Exception as exception:
             connection.rollback()
             error_message = "Updating fgt for id={} failed.".format(id_)
             logger.error(error_message)
             traceback.print_exc()
-            raise DatabaseAdapterError(error_message, ex)
+            raise exception
         finally:
             if connection is not None:
                 connection.close()
@@ -365,12 +365,12 @@ class Timeseries:
 
             connection.commit()
             return
-        except Exception as ex:
+        except Exception as exception:
             connection.rollback()
             error_message = "Updating start_date for id={} failed.".format(id_)
             logger.error(error_message)
             traceback.print_exc()
-            raise DatabaseAdapterError(error_message, ex)
+            raise exception
         finally:
             if connection is not None:
                 connection.close()
@@ -418,11 +418,11 @@ class Timeseries:
                             ts.append([result.get('time'), result.get('value')])
             return ts
 
-        except Exception as ex:
+        except Exception as exception:
             error_message = "Retrieving latest timeseries failed."
             logger.error(error_message)
             traceback.print_exc()
-            raise DatabaseAdapterError(error_message, ex)
+            raise exception
         finally:
             if connection is not None:
                 connection.close()
