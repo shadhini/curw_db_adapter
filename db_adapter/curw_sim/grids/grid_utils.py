@@ -42,7 +42,7 @@ def add_flo2d_raincell_grid_mappings(pool, grid_interpolation, flo2d_model):
             sql_statement = "INSERT INTO `grid_map_flo2d_raincell` (`grid_id`, `obs1`, `obs2`, `obs3`, `fcst`)" \
                             " VALUES ( %s, %s, %s, %s, %s, %s) "\
                             "ON DUPLICATE KEY UPDATE `obs1`=VALUES(`obs1`), `obs2`=VALUES(`obs2`), " \
-                            "`obs3`=VALUES(`obs3`);"
+                            "`obs3`=VALUES(`obs3`), `fcst`=VALUES(`fcst`);"
             row_count = cursor.executemany(sql_statement, grid_mappings_list)
         connection.commit()
         return row_count
@@ -239,7 +239,8 @@ def add_flo2d_initial_conditions(pool, flo2d_model):
         with connection.cursor() as cursor:
             sql_statement = "INSERT INTO `grid_map_flo2d_initial_cond` (`grid_id`, `up_strm`, `down_strm`, `canal_seg`, `obs_wl`)" \
                             " VALUES ( %s, %s, %s, %s, %s) "\
-                            "ON DUPLICATE KEY UPDATE `obs_wl`=VALUES(`obs_wl`);"
+                            "ON DUPLICATE KEY UPDATE `up_strm`=VALUES(`up_strm`), `down_strm`=VALUES(`down_strm`), " \
+                            "`canal_seg`=VALUES(`canal_seg`), `obs_wl`=VALUES(`obs_wl`);"
             row_count = cursor.executemany(sql_statement, grid_mappings_list)
         connection.commit()
         return row_count
