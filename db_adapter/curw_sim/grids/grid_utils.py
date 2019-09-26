@@ -40,18 +40,18 @@ def add_flo2d_raincell_grid_mappings(pool, grid_interpolation, flo2d_model):
     try:
         with connection.cursor() as cursor:
             sql_statement = "INSERT INTO `grid_map_flo2d_raincell` (`grid_id`, `obs1`, `obs2`, `obs3`, `fcst`)" \
-                            " VALUES ( %s, %s, %s, %s, %s, %s) "\
+                            " VALUES ( %s, %s, %s, %s, %s) "\
                             "ON DUPLICATE KEY UPDATE `obs1`=VALUES(`obs1`), `obs2`=VALUES(`obs2`), " \
                             "`obs3`=VALUES(`obs3`), `fcst`=VALUES(`fcst`);"
             row_count = cursor.executemany(sql_statement, grid_mappings_list)
         connection.commit()
         return row_count
-    except Exception as ex:
+    except Exception as exception:
         connection.rollback()
         error_message = "Insertion of flo2d raincell grid mappings failed."
         logger.error(error_message)
         traceback.print_exc()
-        raise DatabaseAdapterError(error_message, ex)
+        raise exception
     finally:
         if connection is not None:
             connection.close()
@@ -81,11 +81,11 @@ def get_flo2d_cells_to_obs_grid_mappings(pool, grid_interpolation, flo2d_model):
                 return flo2d_grid_mappings
             else:
                 return None
-    except Exception as ex:
+    except Exception as exception:
         error_message = "Retrieving flo2d cells to obs grid mappings failed"
         logger.error(error_message)
         traceback.print_exc()
-        raise DatabaseAdapterError(error_message, ex)
+        raise exception
     finally:
         if connection is not None:
             connection.close()
@@ -115,11 +115,11 @@ def get_flo2d_cells_to_wrf_grid_mappings(pool, grid_interpolation, flo2d_model):
                 return flo2d_grid_mappings
             else:
                 return None
-    except Exception as ex:
+    except Exception as exception:
         error_message = "Retrieving flo2d cells to obs grid mappings failed"
         logger.error(error_message)
         traceback.print_exc()
-        raise DatabaseAdapterError(error_message, ex)
+        raise exception
     finally:
         if connection is not None:
             connection.close()
@@ -166,7 +166,7 @@ def add_obs_to_d03_grid_mappings_for_rainfall(pool, grid_interpolation):
             row_count = cursor.executemany(sql_statement, grid_mappings_list)
         connection.commit()
         return row_count
-    except Exception as ex:
+    except Exception as exception:
         connection.rollback()
         error_message = "Insertion of flo2d grid mappings failed."
         logger.error(error_message)
@@ -201,11 +201,11 @@ def get_obs_to_d03_grid_mappings_for_rainfall(pool, grid_interpolation):
                 return obs_grid_mappings
             else:
                 return None
-    except Exception as ex:
+    except Exception as exception:
         error_message = "Retrieving flo2d to obs grid mappings failed"
         logger.error(error_message)
         traceback.print_exc()
-        raise DatabaseAdapterError(error_message, ex)
+        raise exception
     finally:
         if connection is not None:
             connection.close()
@@ -244,12 +244,12 @@ def add_flo2d_initial_conditions(pool, flo2d_model):
             row_count = cursor.executemany(sql_statement, grid_mappings_list)
         connection.commit()
         return row_count
-    except Exception as ex:
+    except Exception as exception:
         connection.rollback()
         error_message = "Insertion of flo2d initial conditions failed."
         logger.error(error_message)
         traceback.print_exc()
-        raise DatabaseAdapterError(error_message, ex)
+        raise exception
     finally:
         if connection is not None:
             connection.close()
@@ -279,11 +279,11 @@ def get_flo2d_initial_conditions(pool, flo2d_model):
                 return initial_conditions
             else:
                 return None
-    except Exception as ex:
+    except Exception as exception:
         error_message = "Retrieving {} initial conditions failed".format(flo2d_model)
         logger.error(error_message)
         traceback.print_exc()
-        raise DatabaseAdapterError(error_message, ex)
+        raise exception
     finally:
         if connection is not None:
             connection.close()
