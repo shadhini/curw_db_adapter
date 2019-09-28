@@ -6,13 +6,15 @@ from db_adapter.logger import logger
 from db_adapter.exceptions import DatabaseAdapterError
 
 
-def add_flo2d_raincell_grid_mappings(pool, grid_interpolation, flo2d_model):
+def add_flo2d_raincell_grid_mappings(pool, grid_interpolation, flo2d_model, obs_map_file_path, d03_map_file_path):
 
     """
     Add flo2d grid mappings to the database
     :param pool:  database connection pool
     :param grid_interpolation: grid interpolation method
     :param flo2d_model: string: flo2d model (e.g. FLO2D_250, FLO2D_150, FLO2D_30)
+    :param obs_map_file_path: path to file containing flo2d grids to rainfall observational stations mapping
+    :param d03_map_file_path: path to file containing flo2d grids to d03 stations mapping
     :return: True if the insertion is successful, else False
     """
 
@@ -125,12 +127,14 @@ def get_flo2d_cells_to_wrf_grid_mappings(pool, grid_interpolation, flo2d_model):
             connection.close()
 
 
-def add_obs_to_d03_grid_mappings_for_rainfall(pool, grid_interpolation):
+def add_obs_to_d03_grid_mappings_for_rainfall(pool, grid_interpolation, obs_to_d03_map_path, active_obs_path):
 
     """
     Add observational stations grid mappings to the database
     :param pool:  database connection pool
     :param grid_interpolation: grid interpolation method
+    :param obs_to_d03_map_path: path to file containing curw rainfall observational stations to d03 stations mapping
+    :param active_obs_path: path to file containing all active curw rainfall observation stations
     :return: True if the insertion is successful, else False
     """
     # [obs_grid_id,d03_1_id,d03_1_dist,d03_2_id,d03_2_dist,d03_3_id,d03_3_dist]
