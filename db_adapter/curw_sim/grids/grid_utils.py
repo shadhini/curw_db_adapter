@@ -73,14 +73,10 @@ def get_flo2d_cells_to_obs_grid_mappings(pool, grid_interpolation, flo2d_model):
     try:
         with connection.cursor() as cursor:
             sql_statement = "SELECT * FROM `grid_map_flo2d_raincell` WHERE `grid_id` like %s ESCAPE '$'"
-            row_count = cursor.execute(sql_statement, "flo2d$_{}$_{}$_%".format(flo2d_model.split('_')[1], grid_interpolation))
-            if row_count > 0:
-                results = cursor.fetchall()
-                for dict in results:
-                    flo2d_grid_mappings[dict.get("grid_id")] = [dict.get("obs1"), dict.get("obs2"), dict.get("obs3")]
-                return flo2d_grid_mappings
-            else:
-                return None
+            cursor.execute(sql_statement, "flo2d$_{}$_{}$_%".format(flo2d_model.split('_')[1], grid_interpolation))
+            for dict in cursor:
+                flo2d_grid_mappings[dict.get("grid_id")] = [dict.get("obs1"), dict.get("obs2"), dict.get("obs3")]
+            return flo2d_grid_mappings
     except Exception as exception:
         error_message = "Retrieving flo2d cells to obs grid mappings failed"
         logger.error(error_message)
@@ -107,14 +103,10 @@ def get_flo2d_cells_to_wrf_grid_mappings(pool, grid_interpolation, flo2d_model):
     try:
         with connection.cursor() as cursor:
             sql_statement = "SELECT `grid_id`, `fcst` FROM `grid_map_flo2d_raincell` WHERE `grid_id` like %s ESCAPE '$'"
-            row_count = cursor.execute(sql_statement, "flo2d$_{}$_{}$_%".format(flo2d_model.split('_')[1], grid_interpolation))
-            if row_count > 0:
-                results = cursor.fetchall()
-                for dict in results:
-                    flo2d_grid_mappings[dict.get("grid_id")] = dict.get("fcst")
-                return flo2d_grid_mappings
-            else:
-                return None
+            cursor.execute(sql_statement, "flo2d$_{}$_{}$_%".format(flo2d_model.split('_')[1], grid_interpolation))
+            for dict in cursor:
+                flo2d_grid_mappings[dict.get("grid_id")] = dict.get("fcst")
+            return flo2d_grid_mappings
     except Exception as exception:
         error_message = "Retrieving flo2d cells to obs grid mappings failed"
         logger.error(error_message)
@@ -193,14 +185,10 @@ def get_obs_to_d03_grid_mappings_for_rainfall(pool, grid_interpolation):
         with connection.cursor() as cursor:
             sql_statement = "SELECT `grid_id`,`d03_1`,`d03_2`,`d03_3` FROM `grid_map_obs` " \
                             "WHERE `grid_id` like %s ESCAPE '$'"
-            row_count = cursor.execute(sql_statement, "rainfall$_%$_{}".format(grid_interpolation))
-            if row_count > 0:
-                results = cursor.fetchall()
-                for dict in results:
-                    obs_grid_mappings[dict.get("grid_id")] = [dict.get("d03_1"), dict.get("d03_2"), dict.get("d03_3")]
-                return obs_grid_mappings
-            else:
-                return None
+            cursor.execute(sql_statement, "rainfall$_%$_{}".format(grid_interpolation))
+            for dict in cursor:
+                obs_grid_mappings[dict.get("grid_id")] = [dict.get("d03_1"), dict.get("d03_2"), dict.get("d03_3")]
+            return obs_grid_mappings
     except Exception as exception:
         error_message = "Retrieving flo2d to obs grid mappings failed"
         logger.error(error_message)
@@ -271,14 +259,11 @@ def get_flo2d_initial_conditions(pool, flo2d_model):
         with connection.cursor() as cursor:
             sql_statement = "SELECT `grid_id`,`up_strm`,`down_strm`,`obs_wl` FROM `grid_map_flo2d_initial_cond` " \
                             "WHERE `grid_id` like %s ESCAPE '$'"
-            row_count = cursor.execute(sql_statement, "{}$_%".format(flo2d_model))
-            if row_count > 0:
-                results = cursor.fetchall()
-                for dict in results:
-                    initial_conditions[dict.get("grid_id")] = [dict.get("up_strm"), dict.get("down_strm"), dict.get("obs_wl")]
-                return initial_conditions
-            else:
-                return None
+            cursor.execute(sql_statement, "{}$_%".format(flo2d_model))
+            for dict in cursor:
+                initial_conditions[dict.get("grid_id")] = [dict.get("up_strm"), dict.get("down_strm"), dict.get("obs_wl")]
+            return initial_conditions
+
     except Exception as exception:
         error_message = "Retrieving {} initial conditions failed".format(flo2d_model)
         logger.error(error_message)
