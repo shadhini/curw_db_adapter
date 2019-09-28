@@ -277,10 +277,13 @@ def extract_obs_rain_15_min_ts(connection, id, start_time):
     try:
         # Extract per 5 min observed timeseries
         with connection.cursor() as cursor1:
-            sql_statement = "select max(`time`) as time, sum(`value`) as value from `data` where `id`=%s and `time` >= %s " \
-                            "group by floor((HOUR(TIMEDIFF(time, %s))*60+MINUTE(TIMEDIFF(time, %s))-1)/15);"
+            # sql_statement = "select max(`time`) as time, sum(`value`) as value from `data` where `id`=%s and `time` >= %s " \
+            #                 "group by floor((HOUR(TIMEDIFF(time, %s))*60+MINUTE(TIMEDIFF(time, %s))-1)/15);"
 
-            rows = cursor1.execute(sql_statement, (id, start_time, start_time, start_time))
+            sql_statement = "select max(`time`) as time, sum(`value`) as value from `data` where `id`=%s and `time` >= %s " \
+                            "group by floor(((to_seconds(time)/60)-1)/15);"
+
+            rows = cursor1.execute(sql_statement, (id, start_time))
             if rows > 0:
                 results = cursor1.fetchall()
                 for result in results:
