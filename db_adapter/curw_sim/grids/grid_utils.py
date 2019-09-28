@@ -211,16 +211,17 @@ def get_obs_to_d03_grid_mappings_for_rainfall(pool, grid_interpolation):
             connection.close()
 
 
-def add_flo2d_initial_conditions(pool, flo2d_model):
+def add_flo2d_initial_conditions(pool, flo2d_model, initial_condition_file_path):
 
     """
     Add flo2d grid mappings to the database
     :param pool:  database connection pool
     :param flo2d_model: string: flo2d model (e.g. enum values of FLO2D_250, FLO2D_150, FLO2D_30)
+    :param initial_condition_file_path: path to the file with flo2d initial conditions
     :return: True if the insertion is successful, else False
     """
 
-    with open('grid_maps/flo2d/initial_conditions/{}_initial_cond.csv'.format(flo2d_model), 'r') as f1:
+    with open(initial_condition_file_path, 'r') as f1:
         flo2d_init_cond=[line for line in csv.reader(f1)][1:]
 
     grid_mappings_list = []
