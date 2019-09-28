@@ -56,11 +56,11 @@ class Timeseries:
                 sql_statement = "SELECT 1 FROM `dis_run` WHERE `id`=%s"
                 is_exist = cursor.execute(sql_statement, event_id)
             return event_id if is_exist > 0 else None
-        except Exception as ex:
+        except Exception as exception:
             error_message = "Retrieving timeseries id for metadata={} failed.".format(meta_data)
             logger.error(error_message)
             traceback.print_exc()
-            raise DatabaseAdapterError(error_message, ex)
+            raise exception
         finally:
             if connection is not None:
                 connection.close()
@@ -83,11 +83,11 @@ class Timeseries:
                     return cursor.fetchone()['id']
                 else:
                     return None
-        except Exception as ex:
+        except Exception as exception:
             error_message = "Retrieving timeseries id for grid_id={} failed.".format(grid_id)
             logger.error(error_message)
             traceback.print_exc()
-            raise DatabaseAdapterError(error_message, ex)
+            raise exception
         finally:
             if connection is not None:
                 connection.close()
@@ -104,7 +104,7 @@ class Timeseries:
                 sql_statement = "SELECT 1 FROM `dis_run` WHERE `id`=%s"
                 is_exist = cursor.execute(sql_statement, id_)
             return False if is_exist > 0 is None else True
-        except Exception as ex:
+        except Exception as exception:
             error_message = "Check operation to find timeseries id {} in the dis_run table failed.".format(id_)
             logger.error(error_message)
             traceback.print_exc()
@@ -145,13 +145,13 @@ class Timeseries:
                 row_count = cursor.executemany(sql_statement, timeseries)
             connection.commit()
             return row_count
-        except Exception as ex:
+        except Exception as exception:
             connection.rollback()
             error_message = "Data insertion to dis_data table for tms id {}, upsert={} failed.".format(timeseries[0][0],
                     upsert)
             logger.error(error_message)
             traceback.print_exc()
-            raise DatabaseAdapterError(error_message, ex)
+            raise exception
 
         finally:
             if connection is not None:
@@ -189,13 +189,13 @@ class Timeseries:
                 row_count = cursor.executemany(sql_statement, timeseries)
             connection.commit()
             return row_count
-        except Exception as ex:
+        except Exception as exception:
             connection.rollback()
             error_message = "Data insertion to dis_data table for tms id {}, upsert={} failed.".format(timeseries[0][0],
                     upsert)
             logger.error(error_message)
             traceback.print_exc()
-            raise DatabaseAdapterError(error_message, ex)
+            raise exception
 
         finally:
             if connection is not None:
@@ -233,13 +233,13 @@ class Timeseries:
                 row_count = cursor.executemany(sql_statement, timeseries)
             connection.commit()
             return row_count
-        except Exception as ex:
+        except Exception as exception:
             connection.rollback()
             error_message = "Data insertion to dis_data table for tms id {}, upsert={} failed.".format(timeseries[0][0],
                     upsert)
             logger.error(error_message)
             traceback.print_exc()
-            raise DatabaseAdapterError(error_message, ex)
+            raise exception
 
         finally:
             if connection is not None:
@@ -292,14 +292,14 @@ class Timeseries:
 
             connection.commit()
             return dis_run_tuple[0]
-        except Exception as ex:
+        except Exception as exception:
             connection.rollback()
             error_message = "Insertion failed for timeseries with tms_id={}, latitude={}, longitude={}, model={}," \
                             " method={}" \
                 .format(dis_run_tuple[0], dis_run_tuple[1], dis_run_tuple[2], dis_run_tuple[3], dis_run_tuple[4])
             logger.error(error_message)
             traceback.print_exc()
-            raise DatabaseAdapterError(error_message, ex)
+            raise exception
         finally:
             if connection is not None:
                 connection.close()
@@ -320,12 +320,12 @@ class Timeseries:
                 cursor.execute(sql_statement, (obs_end, id_))
             connection.commit()
             return True
-        except Exception as ex:
+        except Exception as exception:
             connection.rollback()
             error_message = "Updating obs_end for id={} failed.".format(id_)
             logger.error(error_message)
             traceback.print_exc()
-            raise DatabaseAdapterError(error_message, ex)
+            raise exception
         finally:
             if connection is not None:
                 connection.close()
@@ -347,11 +347,11 @@ class Timeseries:
                     return cursor.fetchone()['obs_end']
                 else:
                     return None
-        except Exception as ex:
+        except Exception as exception:
             error_message = "Retrieving obs_end for id={} failed.".format(id_)
             logger.error(error_message)
             traceback.print_exc()
-            raise DatabaseAdapterError(error_message, ex)
+            raise exception
         finally:
             if connection is not None:
                 connection.close()
@@ -372,12 +372,12 @@ class Timeseries:
                 cursor.execute(sql_statement, (new_id, existing_id))
             connection.commit()
             return True
-        except Exception as ex:
+        except Exception as exception:
             connection.rollback()
             error_message = "Updating hash id {} to id={} failed.".format(existing_id, new_id)
             logger.error(error_message)
             traceback.print_exc()
-            raise DatabaseAdapterError(error_message, ex)
+            raise exception
         finally:
             if connection is not None:
                 connection.close()
@@ -401,11 +401,11 @@ class Timeseries:
                     for result in results:
                         ts.append([result.get('time'), result.get('value')])
             return ts
-        except Exception as ex:
+        except Exception as exception:
             error_message = "Retrieving timeseries for id {} failed.".format(id_)
             logger.error(error_message)
             traceback.print_exc()
-            raise DatabaseAdapterError(error_message, ex)
+            raise exception
         finally:
             if connection is not None:
                 connection.close()
@@ -427,11 +427,11 @@ class Timeseries:
                     return cursor.fetchone()['time']
                 else:
                     return None
-        except Exception as ex:
+        except Exception as exception:
             error_message = "Retrieving timeseries end for id {} failed.".format(id_)
             logger.error(error_message)
             traceback.print_exc()
-            raise DatabaseAdapterError(error_message, ex)
+            raise exception
         finally:
             if connection is not None:
                 connection.close()
@@ -452,12 +452,12 @@ class Timeseries:
                 cursor.execute(sql_statement, (grid_id, id_))
             connection.commit()
             return True
-        except Exception as ex:
+        except Exception as exception:
             connection.rollback()
             error_message = "Updating grid_id for id={} failed.".format(id_)
             logger.error(error_message)
             traceback.print_exc()
-            raise DatabaseAdapterError(error_message, ex)
+            raise exception
         finally:
             if connection is not None:
                 connection.close()
