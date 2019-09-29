@@ -210,7 +210,7 @@ def clear_initial_conditions(pool, flo2d_model):
     Clear existing initial conditions of a given flo2d model from database
     :param pool: database connection pool
     :param flo2d_model: string: flo2d model (e.g. FLO2D_250, FLO2D_150, FLO2D_30)
-    :return: affected row count if successfull
+    :return: affected row count if successful
     """
 
     connection = pool.connection()
