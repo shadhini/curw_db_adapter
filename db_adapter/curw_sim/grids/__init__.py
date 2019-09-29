@@ -1,5 +1,5 @@
-from .grid_utils import add_flo2d_raincell_grid_mappings, get_flo2d_cells_to_obs_grid_mappings, \
+from .flo2d_grid_utils import add_flo2d_raincell_grid_mappings, get_flo2d_cells_to_obs_grid_mappings, \
     get_flo2d_cells_to_wrf_grid_mappings
-from .grid_utils import add_obs_to_d03_grid_mappings_for_rainfall, get_obs_to_d03_grid_mappings_for_rainfall
-from .grid_utils import add_flo2d_initial_conditions, get_flo2d_initial_conditions
+from .obs_grid_utils import add_obs_to_d03_grid_mappings_for_rainfall, get_obs_to_d03_grid_mappings_for_rainfall
+from .flo2d_grid_utils import add_flo2d_initial_conditions, get_flo2d_initial_conditions
 from .grid_interpolation_method_enum import GridInterpolationEnum
