@@ -126,9 +126,6 @@ def get_flo2d_cells_to_wrf_grid_mappings(pool, grid_interpolation, flo2d_model):
             connection.close()
 
 
-
-
-
 def add_flo2d_initial_conditions(pool, flo2d_model, initial_condition_file_path):
 
     """
@@ -165,7 +162,7 @@ def add_flo2d_initial_conditions(pool, flo2d_model, initial_condition_file_path)
         return row_count
     except Exception as exception:
         connection.rollback()
-        error_message = "Insertion of flo2d initial conditions failed."
+        error_message = "Insertion of {} initial conditions failed.".format(flo2d_model)
         logger.error(error_message)
         traceback.print_exc()
         raise exception
@@ -200,6 +197,34 @@ def get_flo2d_initial_conditions(pool, flo2d_model):
                 return None
     except Exception as exception:
         error_message = "Retrieving {} initial conditions failed".format(flo2d_model)
+        logger.error(error_message)
+        traceback.print_exc()
+        raise exception
+    finally:
+        if connection is not None:
+            connection.close()
+
+
+def clear_initial_conditions(pool, flo2d_model):
+    """
+    Clear existing initial conditions of a given flo2d model from database
+    :param pool: database connection pool
+    :param flo2d_model: string: flo2d model (e.g. FLO2D_250, FLO2D_150, FLO2D_30)
+    :return: affected row count if successfull
+    """
+
+    connection = pool.connection()
+    try:
+        with connection.cursor() as cursor:
+            sql_statement = "DELETE FROM `grid_map_flo2d_initial_cond` " \
+                            "WHERE `grid_id` like %s ESCAPE '$'"
+            row_count = cursor.execute(sql_statement, "{}$_%".format(flo2d_model))
+
+        connection.commit()
+        return row_count
+    except Exception as exception:
+        connection.rollback()
+        error_message = "Deletion of {} initial conditions failed.".format(flo2d_model)
         logger.error(error_message)
         traceback.print_exc()
         raise exception
