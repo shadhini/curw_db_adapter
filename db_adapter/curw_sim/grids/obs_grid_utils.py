@@ -16,11 +16,11 @@ def add_obs_to_d03_grid_mappings_for_rainfall(pool, grid_interpolation, obs_to_d
     :return: True if the insertion is successful, else False
     """
     # [obs_grid_id,d03_1_id,d03_1_dist,d03_2_id,d03_2_dist,d03_3_id,d03_3_dist]
-    with open('grid_maps/obs_stations/rainfall/{}_obs_d03_stations_mapping.csv'.format(grid_interpolation), 'r') as f1:
+    with open(obs_to_d03_map_path, 'r') as f1:
         obs_d03_mapping=[line for line in csv.reader(f1)][1:]
 
     # [hash_id,station_id,station_name,latitude,longitude]
-    with open('grids/obs_stations/rainfall/curw_active_rainfall_obs_stations.csv', 'r') as f2:
+    with open(active_obs_path, 'r') as f2:
         obs_stations=[line for line in csv.reader(f2)][1:]
 
     obs_dict = {}

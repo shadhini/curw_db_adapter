@@ -18,11 +18,11 @@ def add_flo2d_raincell_grid_mappings(pool, grid_interpolation, flo2d_model, obs_
     """
 
     # [flo2d_grid_id,nearest_d03_station_id,dist]
-    with open('grid_maps/flo2d/{}_{}_d03_stations_mapping.csv'.format(grid_interpolation, flo2d_model), 'r') as f1:
+    with open(d03_map_file_path, 'r') as f1:
         flo2d_d03_mapping=[line for line in csv.reader(f1)][1:]
 
     # [flo2d_250_station_id,ob_1_id,ob_1_dist,ob_2_id,ob_2_dist,ob_3_id,ob_3_dist]
-    with open('grid_maps/flo2d/{}_{}_obs_mapping.csv'.format(grid_interpolation, flo2d_model), 'r') as f2:
+    with open(obs_map_file_path, 'r') as f2:
         flo2d_obs_mapping=[line for line in csv.reader(f2)][1:]
 
     grid_mappings_list = []
