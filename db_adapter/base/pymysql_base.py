@@ -9,7 +9,7 @@ from db_adapter.logger import logger
 
 def get_Pool(host, port, user, password, db):
 
-    pool = PooledDB(creator=pymysql, maxconnections=8, blocking=True,
+    pool = PooledDB(creator=pymysql, maxconnections=4, blocking=True,
             host=host, port=port, user=user, password=password, db=db, autocommit=False, cursorclass=pymysql.cursors.DictCursor)
 
     return pool
