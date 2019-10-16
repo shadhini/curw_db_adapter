@@ -426,3 +426,56 @@ class Timeseries:
         finally:
             if connection is not None:
                 connection.close()
+
+    def delete_timeseries(self, id_, fgt):
+        """
+        Delete specific timeseries identified by hash id and a fgt
+        :param id_: hash id
+        :param fgt: fgt
+        :return:
+        """
+
+        connection = self.pool.connection()
+        try:
+
+            with connection.cursor() as cursor:
+                sql_statement = "DELETE FROM `curw_fcst`.`data` WHERE `id`= %s AND `fgt`=%s ;"
+                row_count = cursor.execute(sql_statement, (id_, fgt))
+
+            connection.commit()
+            return row_count
+        except Exception as exception:
+            connection.rollback()
+            error_message = "Deletion of timeseries with hash id {} failed".format(id_)
+            logger.error(error_message)
+            traceback.print_exc()
+            raise exception
+        finally:
+            if connection is not None:
+                connection.close()
+
+    def delete_all_by_hash_id(self, id_):
+        """
+        Delete all timeseries with different fgts but with the same hash id (same meta data)
+        :param id_: hash id
+        :return:
+        """
+
+        connection = self.pool.connection()
+        try:
+
+            with connection.cursor() as cursor:
+                sql_statement = "DELETE FROM `curw_fcst`.`run` WHERE `id`= %s ;"
+                row_count = cursor.execute(sql_statement, id_)
+
+            connection.commit()
+            return row_count
+        except Exception as exception:
+            connection.rollback()
+            error_message = "Deletion of timeseries with hash id {} failed".format(id_)
+            logger.error(error_message)
+            traceback.print_exc()
+            raise exception
+        finally:
+            if connection is not None:
+                connection.close()
