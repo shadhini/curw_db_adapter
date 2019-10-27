@@ -232,6 +232,20 @@ def average_timeseries(timeseries):
     return avg_timeseries
 
 
+def sum_timeseries(timeseries):
+    """
+    Give sum of value series against timestamps for given timeseries containing several values per one timestamp
+    :param timeseries:
+    :return:
+    """
+    sum_timeseries = []
+
+    for i in range(len(timeseries)):
+        if len(timeseries[i])>1:
+            sum_timeseries.append([timeseries[i][0], '%.3f' % (sum(timeseries[i][1:]))])
+
+    return sum_timeseries
+
 ##########################
 # Extract obs timeseries #
 ##########################
