@@ -121,7 +121,7 @@ def convert_15_min_ts_to_5_mins_ts(newly_extracted_timeseries, expected_start=No
 
 def join_ts(TS1, TS2):
     """
-    Joing time, value pairs of 2 timeseries, if both timeseries include same timestamp,
+    Joing time, value pairs of 2 timeseries, if both timeseries include same timestamp
     :return:
     """
 
@@ -232,7 +232,7 @@ def average_timeseries(timeseries):
     return avg_timeseries
 
 
-def sum_timeseries(timeseries):
+def summed_timeseries(timeseries):
     """
     Give sum of value series against timestamps for given timeseries containing several values per one timestamp
     :param timeseries:
