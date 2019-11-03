@@ -34,7 +34,7 @@ def add_obs_to_d03_grid_mappings_for_rainfall(pool, grid_interpolation, obs_to_d
 
     for index in range(len(obs_d03_mapping)):
         obs_id = obs_d03_mapping[index][0]
-        grid_mapping = ['rainfall_{}_{}'.format(obs_dict.get(obs_id)[0], grid_interpolation),
+        grid_mapping = ['rainfall_{}_{}_{}'.format(obs_id, obs_dict.get(obs_id)[0], grid_interpolation),
                         obs_d03_mapping[index][1], obs_d03_mapping[index][3], obs_d03_mapping[index][5]]
         grid_mappings_list.append(tuple(grid_mapping))
 
