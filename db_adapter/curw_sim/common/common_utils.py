@@ -1,7 +1,17 @@
 import traceback
 from datetime import datetime, timedelta
+import math
 
 from db_adapter.logger import logger
+
+
+def round_up_datetime_to_nearest_x_minutes(datetime_value, mins):
+
+    base_time = datetime_value.replace(minute=0, second=0, microsecond=0)
+
+    multiplier = math.ceil(datetime_value.minute / mins)
+
+    return base_time + timedelta(minutes=mins*multiplier)
 
 
 def process_continuous_ts(original_ts, expected_start, filling_value, timestep):
@@ -289,7 +299,7 @@ def extract_obs_rain_15_min_ts(connection, id, start_time):
     timeseries = []
 
     try:
-        # Extract per 5 min observed timeseries
+        # Extract per 15 min observed timeseries
         with connection.cursor() as cursor1:
             # sql_statement = "select max(`time`) as time, sum(`value`) as value from `data` where `id`=%s and `time` >= %s " \
             #                 "group by floor((HOUR(TIMEDIFF(time, %s))*60+MINUTE(TIMEDIFF(time, %s))-1)/15);"
@@ -301,7 +311,8 @@ def extract_obs_rain_15_min_ts(connection, id, start_time):
             if rows > 0:
                 results = cursor1.fetchall()
                 for result in results:
-                    timeseries.append([result.get('time'), result.get('value')])
+                    timeseries.append([round_up_datetime_to_nearest_x_minutes(result.get('time'), 15),
+                                       result.get('value')])
 
         return timeseries
 
