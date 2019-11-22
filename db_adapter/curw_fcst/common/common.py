@@ -69,3 +69,27 @@ def get_curw_fcst_hash_ids(pool, sim_tag=None, source_id=None, variable_id=None,
     finally:
         if connection is not None:
             connection.close()
+
+
+def get_distinct_fgts_for_given_id(pool, id_):
+
+    sql_statement = "select distinct `fgt` from data where id=%s ;"
+
+    fgts = []
+    connection = pool.connection()
+    try:
+        with connection.cursor() as cursor:
+            row_count = cursor.execute(sql_statement, id_)
+            if row_count > 0:
+                results = cursor.fetchall()
+                for result in results:
+                    fgts.append(result.get('fgt'))
+        return fgts
+    except Exception as exception:
+        error_message = "Exception occurred while retrieving fgts for hash id {}. ".format(id_)
+        logger.error(error_message)
+        traceback.print_exc()
+        raise exception
+    finally:
+        if connection is not None:
+            connection.close()
