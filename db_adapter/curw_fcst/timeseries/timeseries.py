@@ -336,7 +336,7 @@ class Timeseries:
             if connection is not None:
                 connection.close()
 
-    def update_start_date(self, id_, start_date):
+    def update_start_date(self, id_, start_date, force=False):
         """
             Update (very first fgt) start_date for inserted timeseries, if new start_date is earlier than the existing
             :param id_: timeseries id
@@ -348,20 +348,26 @@ class Timeseries:
         if type(start_date) is str:
             start_date = datetime.strptime(start_date, COMMON_DATE_TIME_FORMAT)
 
-        existing_start_date = None
-
         try:
 
-            with connection.cursor() as cursor:
-                sql_statement = "SELECT `start_date` FROM `run` WHERE `id`=%s"
-                row_count= cursor.execute(sql_statement, id_)
-                if row_count > 0:
-                    existing_start_date = cursor.fetchone()['start_date']
+            if not force:
+                existing_start_date = None
 
-            if existing_start_date is None or existing_start_date > start_date:
-                with connection.cursor() as cursor2:
+                with connection.cursor() as cursor:
+                    sql_statement = "SELECT `start_date` FROM `run` WHERE `id`=%s"
+                    row_count= cursor.execute(sql_statement, id_)
+                    if row_count > 0:
+                        existing_start_date = cursor.fetchone()['start_date']
+
+                if existing_start_date is None or existing_start_date > start_date:
+                    with connection.cursor() as cursor2:
+                        sql_statement = "UPDATE `run` SET `start_date`=%s WHERE `id`=%s"
+                        cursor2.execute(sql_statement, (start_date, id_))
+
+            else:
+                with connection.cursor() as cursor3:
                     sql_statement = "UPDATE `run` SET `start_date`=%s WHERE `id`=%s"
-                    cursor2.execute(sql_statement, (start_date, id_))
+                    cursor3.execute(sql_statement, (start_date, id_))
 
             connection.commit()
             return
