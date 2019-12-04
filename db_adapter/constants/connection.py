@@ -1,6 +1,12 @@
 from db_adapter.logger import logger
 import json
 
+DB_CONFIG_FILE_PATH = 'db_adapter_config.json'
+
+
+def set_db_config_file_path(db_config_file_path):
+    DB_CONFIG_FILE_PATH = db_config_file_path
+
 
 def read_attribute_from_config_file(attribute, config):
     """
@@ -14,7 +20,7 @@ def read_attribute_from_config_file(attribute, config):
         logger.error("{} not specified in config file.".format(attribute))
 
 
-config = json.loads(open('db_adapter_config.json').read())
+config = json.loads(open(DB_CONFIG_FILE_PATH).read())
 
 DIALECT_MYSQL = "mysql"
 DRIVER_PYMYSQL = "pymysql"
