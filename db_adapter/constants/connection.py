@@ -12,7 +12,6 @@ def read_attribute_from_config_file(attribute, config):
         return config[attribute]
     else:
         logger.error("{} not specified in config file.".format(attribute))
-        exit(1)
 
 
 config = json.loads(open('db_adapter_config.json').read())
