@@ -1,0 +1,2 @@
+recursive-include package *
+include db_adapter/logger/logger_config.yaml

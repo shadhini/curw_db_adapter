@@ -20,12 +20,11 @@ setuptools.setup(
                 "Operating System :: OS Independent",
                 ],
         install_requires=['pymysql',
-                          'SQLAlchemy',
                           'pandas',
                           'numpy',
                           'PyYAML',
                           'aenum',
                           'DBUtils'],
-        zip_safe=False
-        # include_package_data=True # to add non-code files specified in "MANIFEST.in" file
+        zip_safe=False,
+        include_package_data=True  # to add non-code files specified in "MANIFEST.in" file
         )
