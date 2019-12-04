@@ -1,3 +1,4 @@
+from .connection import set_db_config_file_path
 from .connection import DIALECT_MYSQL, DRIVER_PYMYSQL
 from .connection import CURW_FCST_HOST, CURW_FCST_PORT, CURW_FCST_DATABASE, CURW_FCST_USERNAME, CURW_FCST_PASSWORD
 from .connection import CURW_OBS_HOST, CURW_OBS_PORT, CURW_OBS_DATABASE, CURW_OBS_USERNAME, CURW_OBS_PASSWORD
