@@ -9,6 +9,7 @@ from db_adapter.logger import logger
 from db_adapter.exceptions import DatabaseAdapterError, DuplicateEntryError
 from db_adapter.constants import COMMON_DATE_TIME_FORMAT
 
+
 class Timeseries:
     def __init__(self, pool):
         self.pool = pool
