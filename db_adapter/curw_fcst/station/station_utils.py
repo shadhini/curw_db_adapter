@@ -328,9 +328,10 @@ def get_flo2d_output_stations(pool, flo2d_model):
             if row_count > 0:
                 results = cursor.fetchall()
                 for dict in results:
-                    flo2d_output_stations[dict.get("name").split("_")[0]] = [dict.get("id"), dict.get("latitude"),
+                    station_name = dict.get("name")
+                    flo2d_output_stations[station_name.split("_")[0]] = [dict.get("id"), dict.get("latitude"),
                                                                              dict.get("longitude"),
-                                                                             '_'.join(dict.get("name").split('_')[:-1])]
+                                                                             '_'.join(station_name.split('_')[:-1])]
                 return flo2d_output_stations
             else:
                 return None
