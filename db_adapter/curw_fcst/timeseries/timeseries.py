@@ -434,6 +434,66 @@ class Timeseries:
             if connection is not None:
                 connection.close()
 
+    def get_nearest_timeseries(self, sim_tag, station_id, source_id, variable_id, unit_id, expected_fgt, start=None):
+
+        """
+        Retrieve the fcst timeseries nearest to the specified expected fgt and available for the given parameters.
+        :param sim_tag:
+        :param station_id:
+        :param source_id:
+        :param variable_id:
+        :param unit_id:
+        :param expected_fgt:
+        :param start: expected beginning of the timeseries
+        :return: return list of lists with time, value pairs [[time, value], [time1, value2]]
+        """
+
+        meta_data = {}
+        ts = []
+        connection = self.pool.connection()
+        try:
+            with connection.cursor() as cursor1:
+                sql_statement = "SELECT `id`, `end_date` FROM `run` WHERE `source`=%s AND `station`=%s " \
+                                "AND `sim_tag`=%s AND `variable`=%s AND `unit`=%s;"
+                is_exist = cursor1.execute(sql_statement, (source_id, station_id, sim_tag, variable_id, unit_id))
+                if is_exist > 0:
+                    meta_data = cursor1.fetchone()
+                else:
+                    return None
+
+            with connection.cursor() as cursor3:
+                cursor3.callproc('getNearestFGTs', (meta_data.get('id'), expected_fgt))
+                fgt = cursor3.fetchone()['fgt']
+                if fgt is None:
+                    return None
+
+            if start:
+                with connection.cursor() as cursor2:
+                    sql_statement = "SELECT `time`, `value` FROM `data` WHERE `id`=%s AND `fgt`=%s AND `time` >= %s;"
+                    rows = cursor2.execute(sql_statement, (meta_data.get('id'), fgt, start))
+                    if rows > 0:
+                        results = cursor2.fetchall()
+                        for result in results:
+                            ts.append([result.get('time'), result.get('value')])
+            else:
+                with connection.cursor() as cursor2:
+                    sql_statement = "SELECT `time`, `value` FROM `data` WHERE `id`=%s AND `fgt`=%s;"
+                    rows = cursor2.execute(sql_statement, (meta_data.get('id'), fgt))
+                    if rows > 0:
+                        results = cursor2.fetchall()
+                        for result in results:
+                            ts.append([result.get('time'), result.get('value')])
+            return ts
+
+        except Exception as exception:
+            error_message = "Retrieving latest timeseries failed."
+            logger.error(error_message)
+            traceback.print_exc()
+            raise exception
+        finally:
+            if connection is not None:
+                connection.close()
+
     def delete_timeseries(self, id_, fgt):
         """
         Delete specific timeseries identified by hash id and a fgt
