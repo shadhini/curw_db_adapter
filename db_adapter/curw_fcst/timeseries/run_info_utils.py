@@ -25,7 +25,7 @@ def insert_run_metadata(pool, source_id, sim_tag, fgt, metadata):
         return True
     except Exception as exception:
         connection.rollback()
-        error_message = "Insertion failed for run info enty with source={}, sim_tag={}, fgt={}, metadata={}" \
+        error_message = "Insertion failed for run info entry with source={}, sim_tag={}, fgt={}, metadata={}" \
             .format(source_id, sim_tag, fgt, json.dumps(metadata))
         logger.error(error_message)
         traceback.print_exc()
