@@ -19,7 +19,7 @@ def insert_run_metadata(pool, sim_tag, source_id, variable_id, fgt, metadata):
         with connection.cursor() as cursor:
             sql_statement = "INSERT INTO `run_info` (`sim_tag`, `source`, `variable`, `fgt`, `metadata`) " \
                             "VALUES ( %s, %s, %s, %s, %s)"
-            cursor.execute(sql_statement, (sim_tag, source_id, variable_id, fgt, metadata))
+            cursor.execute(sql_statement, (sim_tag, source_id, variable_id, fgt, json.dumps(metadata)))
 
         connection.commit()
         return True
