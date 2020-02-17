@@ -185,13 +185,14 @@ def get_flo2d_initial_conditions(pool, flo2d_model):
     connection = pool.connection()
     try:
         with connection.cursor() as cursor:
-            sql_statement = "SELECT `grid_id`,`up_strm`,`down_strm`,`obs_wl` FROM `grid_map_flo2d_initial_cond` " \
+            sql_statement = "SELECT `grid_id`,`up_strm`,`down_strm`,`obs_wl`, `obs_wl_down_strm` FROM `grid_map_flo2d_initial_cond` " \
                             "WHERE `grid_id` like %s ESCAPE '$'"
             row_count = cursor.execute(sql_statement, "{}$_%".format(flo2d_model))
             if row_count > 0:
                 results = cursor.fetchall()
                 for dict in results:
-                    initial_conditions[dict.get("grid_id")] = [dict.get("up_strm"), dict.get("down_strm"), dict.get("obs_wl")]
+                    initial_conditions[dict.get("grid_id")] = [dict.get("up_strm"), dict.get("down_strm"),
+                                                               dict.get("obs_wl"), dict.get("obs_wl_down_strm")]
                 return initial_conditions
             else:
                 return None
