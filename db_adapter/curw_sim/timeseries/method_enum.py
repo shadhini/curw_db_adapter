@@ -5,6 +5,7 @@ class MethodEnum(Enum):
     MME = 'Multi_Model_Ensemble'
     SF = 'Statistical_Forecasting'
     TSF = 'Time_Series_Forecasting'
+    MGF = 'Mobile_Geographics_Forecasts'
     Other = 'Other'
 
     @staticmethod
@@ -16,6 +17,8 @@ class MethodEnum(Enum):
             'SF': MethodEnum.SF,
             'Time_Series_Forecasting': MethodEnum.TSF,
             'TSF': MethodEnum.TSF,
+            'Mobile_Geographics_Forecasts': MethodEnum.MGF,
+            'MGF': MethodEnum.MGF,
             'Other': MethodEnum.Other
         }
 
@@ -27,6 +30,7 @@ class MethodEnum(Enum):
             MethodEnum.MME: 'MME',
             MethodEnum.SF: 'SF',
             MethodEnum.TSF: 'TSF',
+            MethodEnum.MGF: 'MGF',
             MethodEnum.Other: 'Other'
         }
 
