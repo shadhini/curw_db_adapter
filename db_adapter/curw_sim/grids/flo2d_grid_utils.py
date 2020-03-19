@@ -74,7 +74,7 @@ def get_flo2d_cells_to_obs_grid_mappings(pool, grid_interpolation, flo2d_model):
     try:
         with connection.cursor() as cursor:
             sql_statement = "SELECT * FROM `grid_map_flo2d_raincell` WHERE `grid_id` like %s ESCAPE '$'"
-            row_count = cursor.execute(sql_statement, "flo2d$_{}$_{}$_%".format(flo2d_model.split('_')[1], grid_interpolation))
+            row_count = cursor.execute(sql_statement, "flo2d$_{}$_{}$_%".format(flo2d_model.split('_')[1:], grid_interpolation))
             if row_count > 0:
                 results = cursor.fetchall()
                 for dict in results:
@@ -108,7 +108,7 @@ def get_flo2d_cells_to_wrf_grid_mappings(pool, grid_interpolation, flo2d_model):
     try:
         with connection.cursor() as cursor:
             sql_statement = "SELECT `grid_id`, `fcst` FROM `grid_map_flo2d_raincell` WHERE `grid_id` like %s ESCAPE '$'"
-            row_count = cursor.execute(sql_statement, "flo2d$_{}$_{}$_%".format(flo2d_model.split('_')[1], grid_interpolation))
+            row_count = cursor.execute(sql_statement, "flo2d$_{}$_{}$_%".format(flo2d_model.split('_')[1:], grid_interpolation))
             if row_count > 0:
                 results = cursor.fetchall()
                 for dict in results:
