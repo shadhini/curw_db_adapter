@@ -5,7 +5,7 @@ import pkg_resources
 from db_adapter.logger import logger
 
 
-def add_flo2d_raincell_grid_mappings(pool, grid_interpolation, flo2d_model, obs_map_file_path, d03_map_file_path):
+def add_flo2d_raincell_grid_mappings(pool, grid_interpolation, flo2d_model, obs_map_file_path, d03_map_file_path=None):
 
     """
     Add flo2d grid mappings to the database
@@ -17,33 +17,50 @@ def add_flo2d_raincell_grid_mappings(pool, grid_interpolation, flo2d_model, obs_
     :return: True if the insertion is successful, else False
     """
 
-    # [flo2d_grid_id,nearest_d03_station_id,dist]
-    with open(d03_map_file_path, 'r') as f1:
-        flo2d_d03_mapping=[line for line in csv.reader(f1)][1:]
-
     # [flo2d_250_station_id,ob_1_id,ob_1_dist,ob_2_id,ob_2_dist,ob_3_id,ob_3_dist]
     with open(obs_map_file_path, 'r') as f2:
         flo2d_obs_mapping=[line for line in csv.reader(f2)][1:]
 
     grid_mappings_list = []
 
-    for index in range(len(flo2d_obs_mapping)):
-        cell_id = flo2d_obs_mapping[index][0]
-        obs1 = flo2d_obs_mapping[index][1]
-        obs2 = flo2d_obs_mapping[index][3]
-        obs3 = flo2d_obs_mapping[index][5]
-        fcst = flo2d_d03_mapping[index][1]
-        grid_mapping = ['{}_{}_{}'.format(flo2d_model, grid_interpolation, (str(cell_id)).zfill(10)),
-                        obs1, obs2, obs3, fcst]
-        grid_mappings_list.append(tuple(grid_mapping))
+    if d03_map_file_path is not None:
+        # [flo2d_grid_id,nearest_d03_station_id,dist]
+        with open(d03_map_file_path, 'r') as f1:
+            flo2d_d03_mapping=[line for line in csv.reader(f1)][1:]
+
+        for index in range(len(flo2d_obs_mapping)):
+            cell_id = flo2d_obs_mapping[index][0]
+            obs1 = flo2d_obs_mapping[index][1]
+            obs2 = flo2d_obs_mapping[index][3]
+            obs3 = flo2d_obs_mapping[index][5]
+            fcst = flo2d_d03_mapping[index][1]
+            grid_mapping = ['{}_{}_{}'.format(flo2d_model, grid_interpolation, (str(cell_id)).zfill(10)),
+                            obs1, obs2, obs3, fcst]
+            grid_mappings_list.append(tuple(grid_mapping))
+
+        sql_statement = "INSERT INTO `grid_map_flo2d_raincell` (`grid_id`, `obs1`, `obs2`, `obs3`, `fcst`)" \
+                        " VALUES ( %s, %s, %s, %s, %s) " \
+                        "ON DUPLICATE KEY UPDATE `obs1`=VALUES(`obs1`), `obs2`=VALUES(`obs2`), " \
+                        "`obs3`=VALUES(`obs3`), `fcst`=VALUES(`fcst`);"
+    else:
+
+        for index in range(len(flo2d_obs_mapping)):
+            cell_id = flo2d_obs_mapping[index][0]
+            obs1 = flo2d_obs_mapping[index][1]
+            obs2 = flo2d_obs_mapping[index][3]
+            obs3 = flo2d_obs_mapping[index][5]
+            grid_mapping = ['{}_{}_{}'.format(flo2d_model, grid_interpolation, (str(cell_id)).zfill(10)),
+                            obs1, obs2, obs3]
+            grid_mappings_list.append(tuple(grid_mapping))
+
+        sql_statement = "INSERT INTO `grid_map_flo2d_raincell` (`grid_id`, `obs1`, `obs2`, `obs3`)" \
+                        " VALUES ( %s, %s, %s, %s, %s) " \
+                        "ON DUPLICATE KEY UPDATE `obs1`=VALUES(`obs1`), `obs2`=VALUES(`obs2`), " \
+                        "`obs3`=VALUES(`obs3`);"
 
     connection = pool.connection()
     try:
         with connection.cursor() as cursor:
-            sql_statement = "INSERT INTO `grid_map_flo2d_raincell` (`grid_id`, `obs1`, `obs2`, `obs3`, `fcst`)" \
-                            " VALUES ( %s, %s, %s, %s, %s) "\
-                            "ON DUPLICATE KEY UPDATE `obs1`=VALUES(`obs1`), `obs2`=VALUES(`obs2`), " \
-                            "`obs3`=VALUES(`obs3`), `fcst`=VALUES(`fcst`);"
             row_count = cursor.executemany(sql_statement, grid_mappings_list)
         connection.commit()
         return row_count
