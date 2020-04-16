@@ -18,7 +18,7 @@ class StationEnum(Enum, settings=NoAlias):
         - 1 1xx xxx - WRF (name: wrf_<SOMETHING>)
         - 1 2xx xxx - FLO2D 250(name: flo2d_250_<SOMETHING>)
         - 1 3xx xxx - FLO2D 150(name: flo2d_150_<SOMETHING>)
-        - 1 4xx xxx - FLO2D 30(name: flo2d_30_<SOMETHING>)
+        - 1 4xx xxx - FLO2D 150_v2(name: flo2d_150_v2_<SOMETHING>)
         - 1 8xx xxx - MIKE11(name: mike_<SOMETHING>)
 
         Other;
@@ -34,7 +34,7 @@ class StationEnum(Enum, settings=NoAlias):
     WRF = 1100000
     FLO2D_250 = 1200000
     FLO2D_150 = 1300000
-    FLO2D_30 = 1400000
+    FLO2D_150_v2 = 1400000
     MIKE11 = 1800000
 
     Public = 2000000
@@ -52,7 +52,7 @@ class StationEnum(Enum, settings=NoAlias):
             WRF                 : 100000,
             FLO2D_250           : 100000,
             FLO2D_150           : 100000,
-            FLO2D_30            : 200000,
+            FLO2D_150_v2        : 100000,
             MIKE11              : 100000,
 
             Public              : 8000000,
@@ -73,7 +73,7 @@ class StationEnum(Enum, settings=NoAlias):
                 StationEnum.WRF                 : 100000,
                 StationEnum.FLO2D_250           : 100000,
                 StationEnum.FLO2D_150           : 100000,
-                StationEnum.FLO2D_30            : 200000,
+                StationEnum.FLO2D_150_v2        : 100000,
                 StationEnum.MIKE11              : 100000,
 
                 StationEnum.Public              : 8000000,
@@ -95,7 +95,7 @@ class StationEnum(Enum, settings=NoAlias):
                 'WRF'                 : StationEnum.WRF,
                 'FLO2D_250'           : StationEnum.FLO2D_250,
                 'FLO2D_150'           : StationEnum.FLO2D_150,
-                'FLO2D_30'            : StationEnum.FLO2D_30,
+                'FLO2D_150_v2'        : StationEnum.FLO2D_150_v2,
                 'MIKE11'              : StationEnum.MIKE11,
 
                 'Public'              : StationEnum.Public,
@@ -118,7 +118,7 @@ class StationEnum(Enum, settings=NoAlias):
                 StationEnum.WRF                 : 'WRF',
                 StationEnum.FLO2D_250           : 'FLO2D_250',
                 StationEnum.FLO2D_150           : 'FLO2D_150',
-                StationEnum.FLO2D_30            : 'FLO2D_30',
+                StationEnum.FLO2D_150_v2        : 'FLO2D_150_v2',
                 StationEnum.MIKE11              : 'MIKE11',
 
                 StationEnum.Public              : 'Public',
