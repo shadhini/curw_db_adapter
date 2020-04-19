@@ -3,7 +3,7 @@ from db_adapter.logger import logger
 import json
 
 
-def insert_run_metadata(pool, sim_tag, source_id, variable_id, fgt, metadata):
+def insert_run_metadata(pool, sim_tag, source_id, variable_id, fgt, metadata, template=None):
     """
     Insert new run info entry
     :param source_id:
@@ -16,12 +16,20 @@ def insert_run_metadata(pool, sim_tag, source_id, variable_id, fgt, metadata):
     connection = pool.connection()
     try:
 
+        sql_statement = "INSERT INTO `run_info` (`sim_tag`, `source`, `variable`, `fgt`, `metadata`) " \
+                        "VALUES ( %s, %s, %s, %s, %s)"
+        data = (sim_tag, source_id, variable_id, fgt, json.dumps(metadata))
+
+        if template is not None:
+            sql_statement = "INSERT INTO `run_info` (`sim_tag`, `source`, `variable`, `fgt`, `metadata`, `template`) " \
+                                "VALUES ( %s, %s, %s, %s, %s, LOAD_FILE(%s))"
+            data = (sim_tag, source_id, variable_id, fgt, json.dumps(metadata), template)
+
         with connection.cursor() as cursor:
-            sql_statement = "INSERT INTO `run_info` (`sim_tag`, `source`, `variable`, `fgt`, `metadata`) " \
-                            "VALUES ( %s, %s, %s, %s, %s)"
-            cursor.execute(sql_statement, (sim_tag, source_id, variable_id, fgt, json.dumps(metadata)))
+            cursor.execute(sql_statement, data)
 
         connection.commit()
+
         return True
     except Exception as exception:
         connection.rollback()
