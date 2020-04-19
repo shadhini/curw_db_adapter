@@ -16,7 +16,7 @@ def write_file(data, filename):
         file.write(data)
 
 
-def insert_run_metadata(pool, sim_tag, source_id, variable_id, fgt, metadata, template=None):
+def insert_run_metadata(pool, sim_tag, source_id, variable_id, fgt, metadata, template_path=None):
     """
     Insert new run info entry
     :param source_id:
@@ -27,13 +27,15 @@ def insert_run_metadata(pool, sim_tag, source_id, variable_id, fgt, metadata, te
     """
 
     connection = pool.connection()
+
     try:
 
         sql_statement = "INSERT INTO `run_info` (`sim_tag`, `source`, `variable`, `fgt`, `metadata`) " \
                         "VALUES ( %s, %s, %s, %s, %s)"
         data = (sim_tag, source_id, variable_id, fgt, json.dumps(metadata))
 
-        if template is not None:
+        if template_path is not None:
+            template = convertToBinaryData(template_path)
             sql_statement = "INSERT INTO `run_info` (`sim_tag`, `source`, `variable`, `fgt`, `metadata`, `template`) " \
                                 "VALUES ( %s, %s, %s, %s, %s, %s)"
             data = (sim_tag, source_id, variable_id, fgt, json.dumps(metadata), template)
