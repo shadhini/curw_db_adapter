@@ -54,7 +54,7 @@ def add_flo2d_raincell_grid_mappings(pool, grid_interpolation, flo2d_model, obs_
             grid_mappings_list.append(tuple(grid_mapping))
 
         sql_statement = "INSERT INTO `grid_map_flo2d_raincell` (`grid_id`, `obs1`, `obs2`, `obs3`)" \
-                        " VALUES ( %s, %s, %s, %s, %s) " \
+                        " VALUES ( %s, %s, %s, %s) " \
                         "ON DUPLICATE KEY UPDATE `obs1`=VALUES(`obs1`), `obs2`=VALUES(`obs2`), " \
                         "`obs3`=VALUES(`obs3`);"
 
