@@ -245,6 +245,45 @@ class Timeseries:
             if connection is not None:
                 connection.close()
 
+    def replace_data(self, timeseries, tms_id):
+        """
+        Insert timeseries to Data table in the database
+        :param tms_id: hash value
+        :param timeseries: list of [tms_id, time, value] lists
+        :param boolean upsert: If True, upsert existing values ON DUPLICATE KEY. Default is False.
+        Ref: 1). https://stackoverflow.com/a/14383794/1461060
+             2). https://chartio.com/resources/tutorials/how-to-insert-if-row-does-not-exist-upsert-in-mysql/
+        :return: row count if insertion was successful, else raise DatabaseAdapterError
+        """
+
+        new_timeseries = []
+        for t in [i for i in timeseries]:
+            if len(t) > 1:
+                # Insert EventId in front of timestamp, value list
+                t.insert(0, tms_id)
+                new_timeseries.append(t)
+            else:
+                logger.warning('Invalid timeseries data:: %s', t)
+
+        row_count = 0
+        connection = self.pool.connection()
+        try:
+            with connection.cursor() as cursor:
+                sql_statement = "REPLACE INTO `data` (`id`, `time`, `value`) VALUES (%s, %s, %s)"
+                row_count = cursor.executemany(sql_statement, timeseries)
+            connection.commit()
+            return row_count
+        except Exception as exception:
+            connection.rollback()
+            error_message = "Data replace to data table for tms id {} failed.".format(timeseries[0][0])
+            logger.error(error_message)
+            traceback.print_exc()
+            raise exception
+
+        finally:
+            if connection is not None:
+                connection.close()
+
     def insert_run(self, meta_data):
         """
         Insert new run entry
