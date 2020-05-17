@@ -8,7 +8,7 @@ class StationEnum(Enum, settings=NoAlias):
         - 1 xx xxx - CUrW_WeatherStation (station_id: curw_<SOMETHING>)
         - 1 xx xxx - CUrW_WaterLevelGauge (station_id: curw_wl_<SOMETHING>)
         - 3 xx xxx - CUrW_CrossSection (station_id: megapolis_<SOMETHING>)
-        - 4 xx xxx - Government (station_id: gov_<SOMETHING>. May follow as gov_irr_<SOMETHING>)
+        - 4 xx xxx - Irrigation_Department (station_id: gov_<SOMETHING>. May follow as gov_irr_<SOMETHING>)
         - 5 xx xxx - Satellite (station_id: sat_<SOMETHING>)
 
         - 2 xxx xxx - Public (station_id: pub_<SOMETHING>)
@@ -27,7 +27,7 @@ class StationEnum(Enum, settings=NoAlias):
     CUrW_WeatherStation = 100000
     CUrW_WaterLevelGauge = 100000
     CUrW_CrossSection = 300000
-    Government = 400000
+    Irrigation_Department = 400000
     Satellite = 500000
 
     HECHMS = 1000000
@@ -45,7 +45,7 @@ class StationEnum(Enum, settings=NoAlias):
             CUrW_WeatherStation : 200000,
             CUrW_WaterLevelGauge: 200000,
             CUrW_CrossSection   : 100000,
-            Government          : 100000,
+            Irrigation_Department: 100000,
             Satellite           : 500000,
 
             HECHMS              : 100000,
@@ -66,7 +66,7 @@ class StationEnum(Enum, settings=NoAlias):
                 StationEnum.CUrW_WeatherStation : 200000,
                 StationEnum.CUrW_WaterLevelGauge: 200000,
                 StationEnum.CUrW_CrossSection   : 100000,
-                StationEnum.Government          : 100000,
+                StationEnum.Irrigation_Department: 100000,
                 StationEnum.Satellite           : 500000,
 
                 StationEnum.HECHMS              : 100000,
@@ -88,7 +88,7 @@ class StationEnum(Enum, settings=NoAlias):
                 'CUrW_WeatherStation' : StationEnum.CUrW_WeatherStation,
                 'CUrW_WaterLevelGauge': StationEnum.CUrW_WaterLevelGauge,
                 'CUrW_CrossSection'   : StationEnum.CUrW_CrossSection,
-                'Government'          : StationEnum.Government,
+                'Irrigation_Department': StationEnum.Irrigation_Department,
                 'Satellite'           : StationEnum.Satellite,
 
                 'HECHMS'              : StationEnum.HECHMS,
@@ -111,7 +111,7 @@ class StationEnum(Enum, settings=NoAlias):
                 StationEnum.CUrW_WeatherStation : 'CUrW_WeatherStation',
                 StationEnum.CUrW_WaterLevelGauge: 'CUrW_WaterLevelGauge',
                 StationEnum.CUrW_CrossSection   : 'CUrW_CrossSection',
-                StationEnum.Government          : 'Government',
+                StationEnum.Irrigation_Department: 'Irrigation_Department',
                 StationEnum.Satellite           : 'Satellite',
 
                 StationEnum.HECHMS              : 'HECHMS',
