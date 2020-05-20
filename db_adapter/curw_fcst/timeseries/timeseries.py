@@ -381,7 +381,7 @@ class Timeseries:
                                 "AND `sim_tag`=%s AND `variable`=%s AND `unit`=%s;"
                 is_exist = cursor1.execute(sql_statement, (source_id, station_id, sim_tag, variable_id, unit_id))
                 if is_exist > 0:
-                    return cursor1.fetchone()
+                    return cursor1.fetchone()['end_date']
                 else:
                     return None
 
