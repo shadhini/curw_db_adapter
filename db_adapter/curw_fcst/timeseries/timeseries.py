@@ -362,6 +362,38 @@ class Timeseries:
             if connection is not None:
                 connection.close()
 
+    def get_end_date(self, sim_tag, station_id, source_id, variable_id, unit_id):
+
+        """
+        Retrieve the latest fgt of fcst timeseries available for the given parameters
+        :param sim_tag:
+        :param station_id:
+        :param source_id:
+        :param variable_id:
+        :param unit_id:
+        :return:
+        """
+
+        connection = self.pool.connection()
+        try:
+            with connection.cursor() as cursor1:
+                sql_statement = "SELECT `end_date` FROM `run` WHERE `source`=%s AND `station`=%s " \
+                                "AND `sim_tag`=%s AND `variable`=%s AND `unit`=%s;"
+                is_exist = cursor1.execute(sql_statement, (source_id, station_id, sim_tag, variable_id, unit_id))
+                if is_exist > 0:
+                    return cursor1.fetchone()
+                else:
+                    return None
+
+        except Exception as exception:
+            error_message = "Retrieving latest fgt failed."
+            logger.error(error_message)
+            traceback.print_exc()
+            raise exception
+        finally:
+            if connection is not None:
+                connection.close()
+
     def update_start_date(self, id_, start_date, force=False):
         """
             Update (very first fgt) start_date for inserted timeseries, if new start_date is earlier than the existing
