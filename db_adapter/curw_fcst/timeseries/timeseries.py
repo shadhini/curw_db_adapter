@@ -337,6 +337,31 @@ class Timeseries:
             if connection is not None:
                 connection.close()
 
+    def get_latest_fgt(self, id_):
+        """
+        Retrive latest fgt for given id
+        :param id_: timeseries id
+        :return:
+        """
+
+        connection = self.pool.connection()
+
+        try:
+
+            with connection.cursor() as cursor:
+                sql_statement = "SELECT `end_date` FROM `run` WHERE `id`=%s"
+                row_count= cursor.execute(sql_statement, id_)
+                if row_count > 0:
+                    return cursor.fetchone()['end_date']
+        except Exception as exception:
+            error_message = "Retrieving latest fgt for id={} failed.".format(id_)
+            logger.error(error_message)
+            traceback.print_exc()
+            raise exception
+        finally:
+            if connection is not None:
+                connection.close()
+
     def update_start_date(self, id_, start_date, force=False):
         """
             Update (very first fgt) start_date for inserted timeseries, if new start_date is earlier than the existing
