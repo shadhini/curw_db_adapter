@@ -375,3 +375,35 @@ def get_hechms_stations(pool):
     finally:
         if connection is not None:
             connection.close()
+
+
+def get_mike_stations(pool):
+
+    """
+    Retrieve ids of mike11 stations, for each station name
+    :param pool: database connection pool
+    :return: dictionary with keys of type "<name>" and corresponding id as the value
+    """
+
+    mike_stations = {}
+
+    connection = pool.connection()
+    try:
+        with connection.cursor() as cursor:
+            sql_statement = "SELECT `id`, `name` FROM `station` WHERE `id` like %s"
+            row_count = cursor.execute(sql_statement, "18_____")
+            if row_count > 0:
+                results = cursor.fetchall()
+                for dict in results:
+                    mike_stations[dict.get("name")] = dict.get("id")
+                return mike_stations
+            else:
+                return None
+    except Exception as exception:
+        error_message = "Retrieving mike stations failed"
+        logger.error(error_message)
+        traceback.print_exc()
+        raise exception
+    finally:
+        if connection is not None:
+            connection.close()
