@@ -382,7 +382,7 @@ def get_mike_stations(pool):
     """
     Retrieve ids of mike11 stations, for each station name
     :param pool: database connection pool
-    :return: dictionary with keys of type "<name>" and corresponding id as the value
+    :return: dictionary with station names as keys and list of station [name, latitude and longitude] as the value
     """
 
     mike_stations = {}
@@ -390,12 +390,12 @@ def get_mike_stations(pool):
     connection = pool.connection()
     try:
         with connection.cursor() as cursor:
-            sql_statement = "SELECT `id`, `name` FROM `station` WHERE `id` like %s"
+            sql_statement = "SELECT * FROM `station` WHERE `id` like %s"
             row_count = cursor.execute(sql_statement, "18_____")
             if row_count > 0:
                 results = cursor.fetchall()
                 for dict in results:
-                    mike_stations[dict.get("name")] = dict.get("id")
+                    mike_stations[dict.get("name")] = [dict.get("id"), dict.get("latitude"), dict.get("longitude")]
                 return mike_stations
             else:
                 return None
