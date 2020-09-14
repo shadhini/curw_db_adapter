@@ -332,6 +332,47 @@ def extract_obs_rain_15_min_ts(connection, id, start_time, end_time=None):
         logger.error("Exception occurred while retrieving observed rainfall 15 min timeseries from database")
 
 
+def extract_obs_rain_custom_min_intervals(connection, id, time_step, start_time, end_time=None):
+    """
+    Extract obs station timeseries (custom min intervals)
+    :param connection: connection to curw database
+    :param start_time: start of timeseries
+    :param id: hash id of the timeseries
+    :param time_step: frequency of the timeseries
+    :param end_time: end of the timeseries
+    :return:
+    """
+
+    timeseries = []
+
+    try:
+        # Extract per 15 min observed timeseries
+        with connection.cursor() as cursor1:
+            # sql_statement = "select max(`time`) as time, sum(`value`) as value from `data` where `id`=%s and `time` >= %s " \
+            #                 "group by floor((HOUR(TIMEDIFF(time, %s))*60+MINUTE(TIMEDIFF(time, %s))-1)/15);"
+
+            if end_time is None:
+                sql_statement = "select max(`time`) as time, sum(`value`) as value from `data` where `id`=%s and `time` >= %s " \
+                                "group by floor(((to_seconds(time)/60)-1)/" + time_step + ");"
+                rows = cursor1.execute(sql_statement, (id, start_time))
+            else:
+                sql_statement = "select max(`time`) as time, sum(`value`) as value from `data` where `id`=%s and `time` >= %s and `time` <= %s " \
+                                "group by floor(((to_seconds(time)/60)-1)/" + time_step + ");"
+                rows = cursor1.execute(sql_statement, (id, start_time, end_time))
+
+            if rows > 0:
+                results = cursor1.fetchall()
+                for result in results:
+                    timeseries.append([round_up_datetime_to_nearest_x_minutes(result.get('time'), 15),
+                                       result.get('value')])
+
+        return timeseries
+
+    except Exception as ex:
+        traceback.print_exc()
+        logger.error("Exception occurred while retrieving observed rainfall 15 min timeseries from database")
+
+
 ########
 # test #
 ########
