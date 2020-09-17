@@ -363,7 +363,7 @@ def extract_obs_rain_custom_min_intervals(connection, id, time_step, start_time,
             if rows > 0:
                 results = cursor1.fetchall()
                 for result in results:
-                    timeseries.append([result.get('time'),
+                    timeseries.append([round_up_datetime_to_nearest_x_minutes(result.get('time'), 60),
                                        result.get('value')])
 
         return timeseries
