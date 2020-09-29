@@ -19,12 +19,12 @@ setuptools.setup(
                 "License :: OSI Approved :: MIT License",
                 "Operating System :: OS Independent",
                 ],
-        install_requires=['pymysql',
-                          'pandas',
-                          'numpy',
-                          'PyYAML',
-                          'aenum',
-                          'DBUtils'],
+        install_requires=['PyMySQL==0.9.3',
+                          'pandas==0.24.2',
+                          'numpy==1.16.2',
+                          'PyYAML==5.1',
+                          'aenum==2.1.2',
+                          'DBUtils==1.3'],
         zip_safe=False,
         include_package_data=True  # to add non-code files specified in "MANIFEST.in" file
         )
